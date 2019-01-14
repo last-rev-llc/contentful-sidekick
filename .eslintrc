@@ -1,0 +1,26 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true,
+    "jquery": true
+  },
+  "extends": "airbnb-base",
+  "rules": {
+    "no-param-reassign": [2, { "props": false }],
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+    "max-len": ["error", {"comments": 200, "code": 150}],
+    "arrow-body-style": ["error", "as-needed"],
+    "import/no-extraneous-dependencies": ["error", {"devDependencies": ["webpack/**.js", "test/**/**.js"]}]
+  },
+  "parserOptions": {
+    "ecmaVersion": 8,
+    "ecmaFeatures": {
+      "legacyDecorators": true
+    }
+  },
+  "globals": {
+    "_": true,
+    "DOMPurify": true
+  }
+}

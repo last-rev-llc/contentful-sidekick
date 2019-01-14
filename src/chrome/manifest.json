@@ -1,0 +1,33 @@
+{
+    "manifest_version": 2,
+    "name": "Contentful Sidekick",
+    "short_name": "Contentful Sidekick",
+    "description": "Chrome Extension that enables inline editing for websites created in Contentful",
+    "version": "1.0.0",
+    "permissions": [
+      "activeTab",
+      "cookies",
+      "identity",
+      "storage",
+      "tabs",
+      "webRequest",
+      "webRequestBlocking",
+      "http://*/*",
+      "https://*/*",
+      "*://*/*"
+    ],
+    "browser_action": {
+      "default_icon": "img/icon-128.png",
+      "default_popup": "html/popup.html"
+    },
+    "background": {
+      "scripts": [
+        "js/background.js"
+      ]
+   },
+    "web_accessible_resources": [
+      "js/content.js"
+    ],
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+  }
+  

@@ -1,0 +1,41 @@
+{
+  "name": "contentful-sidekick",
+  "version": "1.0.0",
+  "description": "Chrome Extension that enables inline editing for websites created in Contentful",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:clean": "rimraf dist",
+    "build:chrome": "npm run build:clean && webpack --progress --config webpack/webpack.config.chrome.js",
+    "build:dev": "npm run build:clean && webpack --watch --progress --config webpack/webpack.config.chrome.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bradtaylorsf/contentful-sidekick.git"
+  },
+  "keywords": [
+    "contentful",
+    "chrome",
+    "cms"
+  ],
+  "author": "Brad Taylor <bradtaylorsf@gmail.com>",
+  "license": "GPL-1.0-or-later",
+  "bugs": {
+    "url": "https://github.com/bradtaylorsf/contentful-sidekick/issues"
+  },
+  "homepage": "https://github.com/bradtaylorsf/contentful-sidekick#readme",
+  "dependencies": {
+    "copy-webpack-plugin": "^4.6.0",
+    "eslint": "^5.12.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-loader": "^2.1.1",
+    "eslint-plugin-import": "^2.14.0",
+    "jquery": "^3.3.1",
+    "lodash": "^4.17.11",
+    "webpack": "^4.28.4",
+    "webpack-merge": "^4.2.1"
+  },
+  "devDependencies": {
+    "webpack-cli": "^3.2.1"
+  }
+}
