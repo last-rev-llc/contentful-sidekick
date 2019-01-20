@@ -5,7 +5,7 @@ const commonTags = require('common-tags');
 const helperFn = require('./helpers');
 
 
-const CONTENTFUL_OAUTH_CLIENTID = '7862b715f1cd95104c4b522cac4f1cab66253aa21a64ace39428332bcd1d0546';
+const CONTENTFUL_OAUTH_CLIENTID = 'd509a1a8f532d5519557cb060c7b035caae04f032a7533d445ef11ae85a0a0c1';
 const OAUTH_STATE_LOCAL_KEY = 'oauthState';
 
 const getStateFromStorage = () => new Promise((resolve) => {
@@ -55,7 +55,14 @@ const getAuthState = (previousState) => {
 
       let state = '';
       const randos = new Uint32Array(4);
-      crypto.randomBytes(randos.length);
+      window.crypto.getRandomValues(randos);
+
+      for (let i = 0; i < randos.length; i++) {
+        state += randos[i].toString();
+      }
+      // let state = '';
+      // const randos = new Uint32Array(4);
+      // crypto.randomBytes(randos.length);
 
       for (let i = 0; i < randos.length; i++) {
         state += randos[i].toString();
@@ -79,13 +86,7 @@ const getAuthToken = () => {
       .then(getAuthState)
       .then(setStateInStorage)
       .then((oauthState) => {
-        const oauthUrl = commonTags.oneLineTrim`https://be.contentful.com/oauth/authorize?
-            response_type=token
-            &client_id=${CONTENTFUL_OAUTH_CLIENTID}
-            &redirect_uri=${encodeURIComponent(chrome.identity.getRedirectURL('oauth2'))}
-            &scope=content_management_manage
-            &state=${oauthState.val}`;
-        debugger;
+        const oauthUrl = commonTags.oneLineTrim`https://be.contentful.com/oauth/authorize?response_type=token&client_id=${CONTENTFUL_OAUTH_CLIENTID}&redirect_uri=${encodeURIComponent(chrome.identity.getRedirectURL('oauth2'))}&scope=content_management_manage&state=${oauthState.val}`;
         console.log(oauthUrl);
         chrome.identity.launchWebAuthFlow({
           url: oauthUrl,
