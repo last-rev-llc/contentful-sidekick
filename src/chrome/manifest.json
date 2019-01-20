@@ -10,8 +10,6 @@
       "identity",
       "storage",
       "tabs",
-      "webRequest",
-      "webRequestBlocking",
       "http://*/*",
       "https://*/*",
       "*://*/*"
@@ -22,9 +20,17 @@
     },
     "background": {
       "scripts": [
-        "js/background.js"
-      ]
-   },
+        "js/background.js",
+        "js/vendor.js"
+      ],
+      "persistent": false
+    },
+    "content_scripts": [
+      {
+        "matches": ["http://*/*", "https://*/*"],
+        "js": ["js/vendor.js", "js/content.js"]
+      }
+    ],
     "web_accessible_resources": [
       "js/content.js"
     ],

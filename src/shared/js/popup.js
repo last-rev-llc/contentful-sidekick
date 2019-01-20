@@ -2,8 +2,8 @@
 /* eslint no-undef: "error" */
 import 'jquery';
 
-$('#test').show();
-$('#test').css({color: 'blue'});
+
+// Check if there are spaces sent
 
 chrome.runtime.sendMessage({
   method: 'initAuthFlow',

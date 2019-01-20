@@ -51,6 +51,8 @@ module.exports = {
   entry: {
     popup: `${sharedDir}/js/popup.js`,
     background: `${sharedDir}/js/background.js`,
+    settings: `${sharedDir}/js/settings.js`,
+    content: `${sharedDir}/js/content.js`,
   },
   // This specifys where you want the files to be out put to
   // and the name of the source maps, if your environment outputs them.

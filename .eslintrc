@@ -11,7 +11,7 @@
     "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
     "max-len": ["error", {"comments": 200, "code": 150}],
     "arrow-body-style": ["error", "as-needed"],
-    "import/no-extraneous-dependencies": ["error", {"devDependencies": ["webpack/**.js", "test/**/**.js"]}]
+    "import/no-extraneous-dependencies": ["error", {"devDependencies": ["webpack/**.js", "tests/**/**.js"]}]
   },
   "parserOptions": {
     "ecmaVersion": 8,
@@ -21,6 +21,5 @@
   },
   "globals": {
     "_": true,
-    "DOMPurify": true
   }
 }
