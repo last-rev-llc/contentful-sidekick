@@ -18,17 +18,11 @@
       "default_icon": "img/icon-128.png",
       "default_popup": "html/popup.html"
     },
-    "background": {
-      "scripts": [
-        "js/background.js",
-        "js/vendor.js"
-      ],
-      "persistent": false
-    },
     "content_scripts": [
       {
-        "matches": ["http://*/*", "https://*/*"],
-        "js": ["js/vendor.js", "js/content.js"]
+        "matches": ["http://*/*", "https://*/*"], 
+        "js": ["js/vendor.js", "js/editbuttons.js"],
+        "css": ["css/page.css"]
       }
     ],
     "web_accessible_resources": [
