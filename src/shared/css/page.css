@@ -1,3 +1,87 @@
 .csk-element {
-  border: 2px solid green;
+  position: relative;
+  /* cursor: context-menu; */
+  cursor: pointer;
+  user-select: none;
+}
+.csk-element:not(section) {
+  outline: 2px solid #00a7f7;
+}
+.csk-element:not(section):hover {
+  /* background-color: #d8effb; */
+  outline: 1px dashed #00a7f7;
+  box-shadow: 0 0 0 4px rgba(0, 167, 247, 0.3);
+}
+section.csk-element:hover {
+  background: #FFF url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJElEQVQoU2NkQAOfPn36z8fHx4gujiEwGBWC3ITucGz8oeAZAHwmJ+DOmZpcAAAAAElFTkSuQmCC) repeat !important;
+}
+section.csk-element:hover .panel {
+  background-color: #FFF;
+}
+section.csk-element:hover .panel * {
+  color: #000 !important;
+}
+main > section.csk-element:first-child {
+  box-shadow: #00a7f7 0 82px 0 0 inset, #00a7f7 0 0 0 2px inset;
+}
+main > section.csk-element:first-child > .csk-edit-button {
+  top: 96px;
+  height: calc(100% - 96px);
+}
+figure.csk-element:hover,
+[class*='image'].csk-element:hover {
+  background: #FFF url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQoU2P8+PHjfwY0wM/Pz4guxjgUFKI7GsTH5m4M3w1ChQDnnScldUubYwAAAABJRU5ErkJggg==) repeat !important;
+}
+.csk-element:not(section):not([class*='image']):hover:after {
+  content: '';
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 167, 247, 0.3);
+}
+.csk-edit-button {
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* box-shadow: 0 0 0 6px rgba(0, 167, 247, 0.3);
+  color: #00a7f7; */
+  /* background-color: transparent;
+  border: 0;
+  color: transparent;
+  font: 0/0 a;
+  text-shadow: none; */
+}
+.csk-edit-button:before {
+  content: 'EDIT';
+  position: absolute;
+  top: -16px;
+  left: -2px;
+  padding: 2px 5px;
+  background-color: #00a4fa;
+  border-radius: 2px 2px 0 0;
+  color: #FFF;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+/* .csk-edit-button:before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: middle;
+  background: transparent url('https://images.ctfassets.net/zw48pl1isxmc/4BLb3fe0aULJqyy3gGQRvx/599823b2648429f54a29f01a49f3c1c8/icon-edit.svg') no-repeat 0 0;
+  background-size: contain;
+} */
+.csk-edit-button:hover {
+  color: #000;
+  text-decoration: none;
 }
