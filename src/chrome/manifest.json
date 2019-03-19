@@ -21,8 +21,8 @@
     "content_scripts": [
       {
         "matches": ["http://*/*", "https://*/*"], 
-        "js": ["js/vendor.js", "js/editbuttons.js"],
-        "css": ["css/page.css"]
+        "js": ["js/vendor.js", "js/content.js"],
+        "css": ["css/content.css"]
       }
     ],
     "web_accessible_resources": [
