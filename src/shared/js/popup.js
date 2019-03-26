@@ -9,7 +9,7 @@ const loadStorage = () => {
   chrome.storage.sync.get({
     sideKickEnabled: false,
   }, (items) => {
-    sideKickEnabled = items.sideKickEnabled;
+    sideKickEnabled = items[sideKickEnabled];
     $('#sideKickEnabled').prop('checked', sideKickEnabled);
   });
 };
