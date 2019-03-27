@@ -7,7 +7,7 @@
     "test": "jest tests/*.test.js",
     "build:clean": "rimraf dist",
     "build:chrome": "npm run build:clean && webpack --progress --config webpack/webpack.config.chrome.js",
-    "build:dev": "npm run build:clean && webpack --watch --progress --config webpack/webpack.config.chrome.js"
+    "start": "npm run build:clean && webpack --watch --progress --config webpack/webpack.config.chrome.js"
   },
   "repository": {
     "type": "git",
@@ -38,7 +38,7 @@
     "webpack-merge": "^4.2.1"
   },
   "devDependencies": {
-    "jest": "^23.6.0",
+    "jest": "^24.5.0",
     "sinon-chrome": "^2.3.2",
     "webpack-cli": "^3.2.1"
   }

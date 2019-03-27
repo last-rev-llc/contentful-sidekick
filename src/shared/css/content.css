@@ -1,0 +1,43 @@
+.csk-element {
+  position: relative;
+  user-select: none;
+}
+.csk-element:not(section) {
+  outline: 2px solid #00a7f7;
+}
+.csk-element:not(section):hover {
+  outline: 1px dashed #00a7f7;
+  box-shadow: 0 0 0 4px rgba(0, 167, 247, 0.3);
+}
+
+main > section.csk-element:first-child {
+  box-shadow: #00a7f7 0 82px 0 0 inset, #00a7f7 0 0 0 2px inset;
+}
+main > section.csk-element:first-child > .csk-edit-button {
+  top: 96px;
+  height: calc(100% - 96px);
+}
+.csk-edit-button {
+  z-index: 1;
+  position: absolute;
+  top: -16px;
+  left: 0;
+  width: 32px;
+  height: 17px;
+  cursor: pointer;
+}
+
+.csk-edit-button:before {
+  content: 'EDIT';
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 2px 5px;
+  background-color: #00a4fa;
+  border-radius: 2px 2px 0 0;
+  color: #FFF;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
