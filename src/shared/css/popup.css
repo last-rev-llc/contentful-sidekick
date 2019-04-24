@@ -62,3 +62,8 @@ input:checked + label:after {
 label:active:after {
 	width: 130px;
 }
+
+.version {
+    float: right;
+    padding-right: 10px;
+}
