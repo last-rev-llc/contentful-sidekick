@@ -1,4 +1,4 @@
-# Contetnful Sidekick
+# Contentful Sidekick
 Chrome Extension that helps end users of Contentful find the content they want to edit quickly on highly nested pages that use alot of different peices of content to make up the page.
 
 ## Download
