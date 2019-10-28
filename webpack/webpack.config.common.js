@@ -50,6 +50,7 @@ module.exports = {
   // https://webpack.js.org/configuration/entry-context/
   entry: {
     popup: `${sharedDir}/js/popup.js`,
+    background: `${sharedDir}/js/background.js`,
     content: `${sharedDir}/js/content.js`,
   },
   // This specifys where you want the files to be out put to
