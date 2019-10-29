@@ -6,6 +6,7 @@ const clickEvent = (e) => {
 
   if (!$(e.target).attr('data-csk-entry-id')) return;
   window.open(getContentfulUrl($(e.target).attr('data-csk-entry-id')));
+  return true;
 };
 
 const resetDom = () => {
