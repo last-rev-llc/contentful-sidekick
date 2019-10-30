@@ -1,54 +1,41 @@
 /* global chrome */
+const clickEvent = (e) => {
+  const CONTENTFUL_CURRENT_SPACE_ID = $('[name="contentful_space"]').attr('content');
+  const CONTENTFUL_ENVIRONMENT = $('[name="contentful_environment"]').attr('content');
+  const getContentfulUrl = elementId => `https://app.contentful.com/spaces/${CONTENTFUL_CURRENT_SPACE_ID}/environments/${CONTENTFUL_ENVIRONMENT}/entries/${elementId}`;
 
-const setupDom = () => {
-  $('body').attr('data-init-csk', true);
-  if (!$('#csk-overlay').length) {
-    $('body').append($('<div>').attr('id', 'csk-overlay'));
-  }
+  if (!$(e.target).attr('data-csk-entry-id')) return;
+  window.open(getContentfulUrl($(e.target).attr('data-csk-entry-id')));
+  return true;
 };
 
 const resetDom = () => {
   $('body').removeAttr('data-init-csk');
   $('#csk-overlay').remove();
+  $('body').off('click', '[data-csk-entry-id]', clickEvent);
 };
 
-const getState = new Promise((resolve, reject) => {
-  chrome.storage.sync.get({
-    sideKickEnabled: false,
-  }, (items) => {
-    resolve(items.sideKickEnabled);
-  });
-});
-
-
 const init = () => {
+  const $els = $('[data-csk-entry-id]');
   const CONTENTFUL_CURRENT_SPACE_ID = $('[name="contentful_space"]').attr('content');
   const CONTENTFUL_ENVIRONMENT = $('[name="contentful_environment"]').attr('content');
-  const getContentfulUrl = elementId => `https://app.contentful.com/spaces/${CONTENTFUL_CURRENT_SPACE_ID}/environments/${CONTENTFUL_ENVIRONMENT}/entries/${elementId}`;
 
-  const $els = $('[data-csk-entry-id]');
   if ($els.length && CONTENTFUL_CURRENT_SPACE_ID && CONTENTFUL_ENVIRONMENT) {
+    $('body').on('click', '[data-csk-entry-id]', clickEvent);
+
     $.each($els, (index, el) => {
-      const elementId = $(el).data('csk-entry-id');
-
       let inheritedBgColor;
-      $(el)
-        .off('click')
-        .on('click', (e) => {
-          if ($(e.target).data('csk-entry-id') !== elementId) return;
-          e.stopPropagation();
-          window.open(getContentfulUrl(elementId));
-        })
-        .filter(() => {
-          const bgImageUrl = $(el).css('background-image');
-          const bgColor = $(el).css('background-color');
-          if (bgImageUrl !== 'none' || bgColor.indexOf('rgba') === -1 || bgColor.replace(/^.*,(.+)\)/, '$1').trim() !== '0') {
-            $(el).attr('data-csk-init-bg', true);
-            return false;
-          }
 
-          return true;
-        })
+      $(el).filter(() => {
+        const bgImageUrl = $(el).css('background-image');
+        const bgColor = $(el).css('background-color');
+        if (bgImageUrl !== 'none' || bgColor.indexOf('rgba') === -1 || bgColor.replace(/^.*,(.+)\)/, '$1').trim() !== '0') {
+          $(el).attr('data-csk-init-bg', true);
+          return false;
+        }
+
+        return true;
+      })
         .parents()
         .each((i, v) => {
           const bgImageUrl = $(v).css('background-image');
@@ -85,25 +72,22 @@ const init = () => {
     .on('mouseenter', () => { $('#csk-overlay').addClass('show'); })
     .on('mouseleave', () => { $('#csk-overlay').removeClass('show'); });
 
-  getState.then((active) => {
-    if (active && $els && $els.length) {
-      setupDom();
-    } else {
-      resetDom();
-    }
-  });
+  $('body').attr('data-init-csk', true);
+  if (!$('#csk-overlay').length) {
+    $('body').append($('<div>').attr('id', 'csk-overlay'));
+  }
 };
 
 $(() => {
   setTimeout(init, 2000);
 });
 
-chrome.runtime.onMessage.addListener(
-  (request, sender, sendResponse) => {
-    if (request.message === 'enable') {
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.sideKickEnabled) {
+    if (changes.sideKickEnabled.newValue === true) {
       init();
-    } else if (request.message === 'disable') {
+    } else {
       resetDom();
     }
-  },
-);
+  }
+});

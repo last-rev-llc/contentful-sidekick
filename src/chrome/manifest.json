@@ -3,7 +3,7 @@
     "name": "Contentful Sidekick",
     "short_name": "Contentful Sidekick",
     "description": "Chrome Extension that enables inline editing for websites created in Contentful",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "permissions": [
       "activeTab",
       "cookies",
