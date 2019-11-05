@@ -72,10 +72,16 @@ const init = () => {
     .on('mouseenter', () => { $('#csk-overlay').addClass('show'); })
     .on('mouseleave', () => { $('#csk-overlay').removeClass('show'); });
 
-  $('body').attr('data-init-csk', true);
-  if (!$('#csk-overlay').length) {
-    $('body').append($('<div>').attr('id', 'csk-overlay'));
-  }
+  chrome.storage.sync.get({
+    sideKickEnabled: false,
+  }, (items) => {
+    if (items.sideKickEnabled) {
+      $('body').attr('data-init-csk', true);
+      if (!$('#csk-overlay').length) {
+        $('body').append($('<div>').attr('id', 'csk-overlay'));
+      }
+    }
+  });
 };
 
 $(() => {
