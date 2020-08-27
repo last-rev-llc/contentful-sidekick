@@ -2,11 +2,11 @@
 const clickEvent = (e) => {
   const CONTENTFUL_CURRENT_SPACE_ID = $('[name="contentful_space"]').attr('content');
   const CONTENTFUL_ENVIRONMENT = $('[name="contentful_environment"]').attr('content');
+  // eslint-disable-next-line max-len
   const getContentfulUrl = elementId => `https://app.contentful.com/spaces/${CONTENTFUL_CURRENT_SPACE_ID}/environments/${CONTENTFUL_ENVIRONMENT}/entries/${elementId}`;
 
   if (!$(e.target).attr('data-csk-entry-id')) return;
   window.open(getContentfulUrl($(e.target).attr('data-csk-entry-id')));
-  return true;
 };
 
 const resetDom = () => {
@@ -16,6 +16,16 @@ const resetDom = () => {
 };
 
 const init = () => {
+  $('[data-csk-entry-field]')
+    .hover((e) => {
+      const field = $(e.currentTarget).data('csk-entry-field');
+      if (field !== undefined || field !== 'false') {
+        $(e.currentTarget).append(`<div class="cs-item-name">${field}</div>`);
+      }
+    }, () => {
+      $('[data-init-csk] .cs-item-name').remove();
+    });
+
   const $els = $('[data-csk-entry-id]');
   const CONTENTFUL_CURRENT_SPACE_ID = $('[name="contentful_space"]').attr('content');
   const CONTENTFUL_ENVIRONMENT = $('[name="contentful_environment"]').attr('content');
