@@ -1,109 +1,165 @@
-/* global chrome */
-const clickEvent = (e) => {
-  const CONTENTFUL_CURRENT_SPACE_ID = $('[name="contentful_space"]').attr('content');
-  const CONTENTFUL_ENVIRONMENT = $('[name="contentful_environment"]').attr('content');
-  // eslint-disable-next-line max-len
-  const getContentfulUrl = elementId => `https://app.contentful.com/spaces/${CONTENTFUL_CURRENT_SPACE_ID}/environments/${CONTENTFUL_ENVIRONMENT}/entries/${elementId}`;
+import 'regenerator-runtime/runtime';
+import React from 'react';
+// import { createClient } from 'contentful';
+import ReactDOM from 'react-dom';
+import getIsSideKickEnabledFromStorage from './helpers/getIsSideKickEnabledFromStorage';
+import hasContentfulVars from './helpers/hasContentfulVars';
+import Sidebar from './components/Sidebar';
+import addSidekickEnabledListener from './helpers/addSidekickEnabledListener';
+import buildCskEntryTree from './helpers/buildCskEntryTree';
+import { CSK_ENTRY_UUID_NAME } from './helpers/constants';
+// import getContentfulVars from './helpers/getContentfulVars';
 
-  if (!$(e.target).attr('data-csk-entry-id')) return;
-  window.open(getContentfulUrl($(e.target).attr('data-csk-entry-id')));
+const handleCskEntryIdHoverOn = () => {
+  $('#csk-overlay').addClass('show');
 };
 
-const resetDom = () => {
+const handleCskEntryIdHoverOff = () => {
+  $('#csk-overlay').removeClass('show');
+};
+
+const loadSidebar = () => {
+  // const CONTENTFUL_ACCESSTOKEN = 'jt-D9xc88GjIGA9EJniknD2N20rqkVknbgFrZ2YIEfU';
+  // const CONTENTFUL_HOST = 'preview.contentful.com'; // TODO: do we always use preview, or add a field to the popup for it?
+
+  // const [space, environment] = getContentfulVars();
+  // // TODO: some of these vars to be replaced with oauth
+  // const client = createClient({
+  //   space,
+  //   environment,
+  //   accessToken: CONTENTFUL_ACCESSTOKEN,
+  //   host: CONTENTFUL_HOST || 'preview.contentful.com'
+  // });
+
+  $('body').prepend('<div id="csk-sidebar-container"></div>');
+
+  ReactDOM.render(<Sidebar tree={buildCskEntryTree()} />, document.getElementById('csk-sidebar-container'));
+};
+
+const removeSidebar = () => {
+  $('#csk-sidebar-container').remove();
+  // $('#csk-site-content').detach().children().appendTo('body');
+};
+
+const addInitAttribute = () => {
+  $('body').attr('data-init-csk', true);
+};
+
+const removeInitAttribute = () => {
   $('body').removeAttr('data-init-csk');
-  $('#csk-overlay').remove();
-  $('body').off('click', '[data-csk-entry-id]', clickEvent);
 };
 
-const init = () => {
-  $('[data-csk-entry-field]')
-    .hover((e) => {
-      const field = $(e.currentTarget).data('csk-entry-field');
-      if (field !== undefined || field !== 'false') {
-        $(e.currentTarget).append(`<div class="cs-item-name">${field}</div>`);
-      }
-    }, () => {
-      $('[data-init-csk] .cs-item-name').remove();
-    });
+const addOverlay = () => {
+  if (!$('#csk-overlay').length) {
+    $('body').append($('<div>').attr('id', 'csk-overlay'));
+  }
+};
 
-  const $els = $('[data-csk-entry-id]');
-  const CONTENTFUL_CURRENT_SPACE_ID = $('[name="contentful_space"]').attr('content');
-  const CONTENTFUL_ENVIRONMENT = $('[name="contentful_environment"]').attr('content');
+const removeOverlay = () => {
+  $('#csk-overlay').remove();
+};
 
-  if ($els.length && CONTENTFUL_CURRENT_SPACE_ID && CONTENTFUL_ENVIRONMENT) {
-    $('body').on('click', '[data-csk-entry-id]', clickEvent);
+const addIdHoverHandlers = () => {
+  $('[data-csk-uuid]').hover(handleCskEntryIdHoverOn, handleCskEntryIdHoverOff);
+};
 
-    $.each($els, (index, el) => {
-      let inheritedBgColor;
+const removeIdHoverHandlers = () => {
+  $('[data-csk-uuid]').unbind('hover');
+};
 
-      $(el).filter(() => {
+const applyBgColorVar = () => {
+  $(`[data-${CSK_ENTRY_UUID_NAME}]`).each((_index, el) => {
+    let inheritedBgColor;
+
+    $(el)
+      .filter(() => {
         const bgImageUrl = $(el).css('background-image');
         const bgColor = $(el).css('background-color');
-        if (bgImageUrl !== 'none' || bgColor.indexOf('rgba') === -1 || bgColor.replace(/^.*,(.+)\)/, '$1').trim() !== '0') {
+        if (
+          bgImageUrl !== 'none' ||
+          bgColor.indexOf('rgba') === -1 ||
+          bgColor.replace(/^.*,(.+)\)/, '$1').trim() !== '0'
+        ) {
           $(el).attr('data-csk-init-bg', true);
           return false;
         }
 
         return true;
       })
-        .parents()
-        .each((i, v) => {
-          const bgImageUrl = $(v).css('background-image');
-          if (bgImageUrl !== 'none') {
-            inheritedBgColor = false;
-            return false;
-          }
+      .parents()
+      .each((i, v) => {
+        const $el = $(v);
+        const bgImageUrl = $el.css('background-image');
+        if (bgImageUrl !== 'none') {
+          inheritedBgColor = false;
+          return false;
+        }
 
-          const bgColor = $(v).css('background-color');
+        const bgColor = $el.css('background-color');
 
-          if (bgColor.indexOf('rgba') > -1) {
-            if (bgColor.replace(/^.*,(.+)\)/, '$1').trim() !== '0') {
-              inheritedBgColor = bgColor;
-              return false;
-            }
-          } else {
+        if (bgColor.indexOf('rgba') > -1) {
+          if (bgColor.replace(/^.*,(.+)\)/, '$1').trim() !== '0') {
             inheritedBgColor = bgColor;
             return false;
           }
-        })
-        .end()
-        .attr('style', () => {
-          const curStyleAttr = $(el).attr('style') || '';
-          const curBgColor = inheritedBgColor || 'inherit';
-          if (curStyleAttr.indexOf('--bgColor') === -1) {
-            return `${curStyleAttr} --bgColor:${curBgColor};`;
-          }
-          return curStyleAttr;
-        });
-    });
+        } else {
+          inheritedBgColor = bgColor;
+          return false;
+        }
+        return true;
+      })
+      .end()
+      .attr('style', () => {
+        const curStyleAttr = $(el).attr('style') || '';
+        const curBgColor = inheritedBgColor || 'inherit';
+        if (curStyleAttr.indexOf('--bgColor') === -1) {
+          return `${curStyleAttr} --bgColor:${curBgColor};`;
+        }
+        return curStyleAttr;
+      });
+  });
+};
+
+const removeBgColorVar = () => {
+  $(`[data-${CSK_ENTRY_UUID_NAME}]`).css('--bgColor', '');
+};
+
+const resetDom = () => {
+  removeInitAttribute();
+  removeSidebar();
+  removeOverlay();
+  removeIdHoverHandlers();
+  removeBgColorVar();
+};
+
+const loadSidekick = async () => {
+  addInitAttribute();
+  loadSidebar();
+  addOverlay();
+  addIdHoverHandlers();
+  applyBgColorVar();
+};
+
+const init = async () => {
+  if (!hasContentfulVars()) return; // not an enabled page
+
+  const sideKickEnabled = await getIsSideKickEnabledFromStorage(); // extension not enabled
+
+  if (sideKickEnabled) {
+    loadSidekick();
+  } else {
+    resetDom();
   }
 
-  $('[data-csk-entry-id]')
-    .on('mouseenter', () => { $('#csk-overlay').addClass('show'); })
-    .on('mouseleave', () => { $('#csk-overlay').removeClass('show'); });
-
-  chrome.storage.sync.get({
-    sideKickEnabled: false,
-  }, (items) => {
-    if (items.sideKickEnabled) {
-      $('body').attr('data-init-csk', true);
-      if (!$('#csk-overlay').length) {
-        $('body').append($('<div>').attr('id', 'csk-overlay'));
-      }
+  addSidekickEnabledListener((isEnabled) => {
+    if (isEnabled) {
+      loadSidekick();
+    } else {
+      resetDom();
     }
   });
 };
 
 $(() => {
   setTimeout(init, 2000);
-});
-
-chrome.storage.onChanged.addListener((changes) => {
-  if (changes.sideKickEnabled) {
-    if (changes.sideKickEnabled.newValue === true) {
-      init();
-    } else {
-      resetDom();
-    }
-  }
 });
