@@ -33,7 +33,7 @@
     "eslint-loader": "^2.1.1",
     "eslint-plugin-import": "^2.14.0",
     "jquery": "^3.5.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "webpack": "^4.28.4",
     "webpack-merge": "^4.2.1"
   },
