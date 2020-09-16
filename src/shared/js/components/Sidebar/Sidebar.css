@@ -1,0 +1,40 @@
+/* Sidekick popup styles */
+.csk-element-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 30vw;
+  height: 100%;
+  background-color: wheat;
+  z-index: 1055;
+  overflow: scroll;
+}
+
+.csk-element-sidebar ul {
+  list-style-type: none;
+}
+
+.csk-element-sidebar .item {
+  cursor: pointer;
+  position: relative;
+  transform: scale(1);
+  display: inline-block;
+}
+
+.csk-element-sidebar .csk-expand-collapse-link {
+  display: inline;
+  cursor: pointer;
+}
+
+.csk-element-sidebar .csk-sidebar-node.collapsed > .csk-expand-collapse-link::after {
+  content: '+';
+}
+
+.csk-element-sidebar .csk-sidebar-node.expanded > .csk-expand-collapse-link::after {
+  content: '-';
+}
+
+.csk-element-sidebar .csk-sidebar-node.collapsed > ul {
+  display: none;
+  overflow: hidden;
+}

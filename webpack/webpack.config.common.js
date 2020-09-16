@@ -1,3 +1,4 @@
+require('dotenv');
 const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -38,10 +39,29 @@ module.exports = {
         commons: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendor',
-          chunks: 'all',
-        },
+          chunks: 'all'
+        }
+      }
+    }
+  },
+  // User Modern JS and transpile
+  module: {
+    rules: [
+      {
+        test: /\.m?js$/,
+        // exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env', '@babel/preset-react']
+          }
+        }
       },
-    },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      }
+    ]
   },
   // This is where you specify the files that will be the input
   // Here we have two types of inputs, one for the original site,
@@ -51,7 +71,7 @@ module.exports = {
   entry: {
     popup: `${sharedDir}/js/popup.js`,
     background: `${sharedDir}/js/background.js`,
-    content: `${sharedDir}/js/content.js`,
+    content: `${sharedDir}/js/content.js`
   },
   // This specifys where you want the files to be out put to
   // and the name of the source maps, if your environment outputs them.
@@ -59,12 +79,12 @@ module.exports = {
   output: {
     filename: 'js/[name].js',
     path: distDir,
-    sourceMapFilename: 'js/[name].js.map',
+    sourceMapFilename: 'js/[name].js.map'
   },
   // Tell webpack what directories should be searched when resolving modules.
   // https://webpack.js.org/configuration/resolve/#resolve-modules
   resolve: {
-    modules: ['node_modules'],
+    modules: ['node_modules']
   },
   // https://webpack.js.org/plugins/
   plugins: [
@@ -75,28 +95,35 @@ module.exports = {
     // https://webpack.js.org/plugins/provide-plugin
     new webpack.ProvidePlugin({
       $: 'jquery',
-      jQuery: 'jquery',
-      _: 'lodash',
+      jQuery: 'jquery'
+      // _: 'lodash'
+    }),
+    new webpack.DefinePlugin({
+      NODE_ENV: process.NODE_ENV || 'development',
+      CONTENTFUL_ACCESSTOKEN: process.CONTENTFUL_ACCESSTOKEN,
+      CONTENTFUL_SPACE_ID: process.CONTENTFUL_SPACE_ID,
+      CONTENTFUL_HOST: process.CONTENTFUL_HOST,
+      CONTENTFUL_ENV: process.CONTENTFUL_ENV
     }),
     // This plugin will copy all files
     // to the dist directoy
     new CopyWebpackPlugin([
       {
         from: `${sharedDir}/html`,
-        to: `${distDir}/html`,
+        to: `${distDir}/html`
       },
       {
         from: `${sharedDir}/css`,
-        to: `${distDir}/css`,
+        to: `${distDir}/css`
       },
       {
         from: `${sharedDir}/img`,
-        to: `${distDir}/img`,
+        to: `${distDir}/img`
       },
       {
         from: `${chromeDir}/manifest.json`,
-        to: `${distDir}/manifest.json`,
-      },
-    ]),
-  ],
+        to: `${distDir}/manifest.json`
+      }
+    ])
+  ]
 };
