@@ -66,9 +66,6 @@
   left: 0;
   top: 0;
   z-index: -1;
-}
-
-[data-init-csk] .csk-entry-unblur::after {
   outline: 0.125rem solid #00a7f7;
 }
 
