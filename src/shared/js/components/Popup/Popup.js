@@ -3,6 +3,8 @@ import getIsSideKickEnabledFromStorage from '../../helpers/getIsSideKickEnabledF
 import setSideKickEnabledInStorage from '../../helpers/setSideKickEnabled';
 import './Popup.css';
 
+const { version } = require('../../../../../package.json');
+
 function Popup() {
   const [sideKickEnabled, setSideKickEnabled] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -39,7 +41,7 @@ function Popup() {
         <div>Is Enabled: {sideKickEnabled ? 'Yes' : 'No'}</div>
       </main>
       <footer>
-        <small className="version">v0.0.9</small>
+        <small className="version">v{version}</small>
       </footer>
     </>
   );
