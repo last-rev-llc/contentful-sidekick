@@ -39,7 +39,7 @@ function Popup() {
         <div>Is Enabled: {sideKickEnabled ? 'Yes' : 'No'}</div>
       </main>
       <footer>
-        <small className="version">v1.0.0</small>
+        <small className="version">v0.0.9</small>
       </footer>
     </>
   );
