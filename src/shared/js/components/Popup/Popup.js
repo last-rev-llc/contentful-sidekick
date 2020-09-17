@@ -26,9 +26,8 @@ function Popup() {
   return (
     <>
       <header>
-        <div>
-          <h1>Contentful Sidekick</h1>
-        </div>
+        <div className="csk-h1">Contentful Sidekick</div>
+        <img className="csk-lr-logo" src="../../../img/lr.png" width="30px" alt="Last Rev" />
       </header>
       <main>
         <div className="enable">
@@ -40,7 +39,7 @@ function Popup() {
         <div>Is Enabled: {sideKickEnabled ? 'Yes' : 'No'}</div>
       </main>
       <footer>
-        <span className="version">v0.0.9</span>
+        <small className="version">v1.0.0</small>
       </footer>
     </>
   );
