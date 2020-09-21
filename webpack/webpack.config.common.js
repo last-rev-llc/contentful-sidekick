@@ -64,9 +64,6 @@ module.exports = {
     ]
   },
   // This is where you specify the files that will be the input
-  // Here we have two types of inputs, one for the original site,
-  // One for the redeisgn. If you need to add a new inout location
-  // add it to the webpack.entries.js file
   // https://webpack.js.org/configuration/entry-context/
   entry: {
     popup: `${sharedDir}/js/popup.js`,
@@ -88,22 +85,11 @@ module.exports = {
   },
   // https://webpack.js.org/plugins/
   plugins: [
-    // Skip the emitting phase when there are compilation errors
-    // https://webpack.js.org/configuration/optimization/#optimization-noemitonerrors
-    new webpack.NoEmitOnErrorsPlugin(),
     // Use modules without having to use import/require
     // https://webpack.js.org/plugins/provide-plugin
     new webpack.ProvidePlugin({
       $: 'jquery',
       jQuery: 'jquery'
-      // _: 'lodash'
-    }),
-    new webpack.DefinePlugin({
-      NODE_ENV: process.NODE_ENV || 'development',
-      CONTENTFUL_ACCESSTOKEN: process.CONTENTFUL_ACCESSTOKEN,
-      CONTENTFUL_SPACE_ID: process.CONTENTFUL_SPACE_ID,
-      CONTENTFUL_HOST: process.CONTENTFUL_HOST,
-      CONTENTFUL_ENV: process.CONTENTFUL_ENV
     }),
     // This plugin will copy all files
     // to the dist directoy
