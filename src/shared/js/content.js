@@ -1,6 +1,4 @@
-import 'regenerator-runtime/runtime';
 import React from 'react';
-// import { createClient } from 'contentful';
 import ReactDOM from 'react-dom';
 import getIsSideKickEnabledFromStorage from './helpers/getIsSideKickEnabledFromStorage';
 import hasContentfulVars from './helpers/hasContentfulVars';
@@ -10,27 +8,15 @@ import buildCskEntryTree from './helpers/buildCskEntryTree';
 import { CSK_ENTRY_UUID_NAME } from './helpers/constants';
 // import getContentfulVars from './helpers/getContentfulVars';
 
-const handleCskEntryIdHoverOn = () => {
-  $('#csk-overlay').addClass('show');
-};
+// const handleCskEntryIdHoverOn = () => {
+//   $('#csk-overlay').addClass('show');
+// };
 
-const handleCskEntryIdHoverOff = () => {
-  $('#csk-overlay').removeClass('show');
-};
+// const handleCskEntryIdHoverOff = () => {
+//   $('#csk-overlay').removeClass('show');
+// };
 
 const loadSidebar = () => {
-  // const CONTENTFUL_ACCESSTOKEN = 'jt-D9xc88GjIGA9EJniknD2N20rqkVknbgFrZ2YIEfU';
-  // const CONTENTFUL_HOST = 'preview.contentful.com'; // TODO: do we always use preview, or add a field to the popup for it?
-
-  // const [space, environment] = getContentfulVars();
-  // // TODO: some of these vars to be replaced with oauth
-  // const client = createClient({
-  //   space,
-  //   environment,
-  //   accessToken: CONTENTFUL_ACCESSTOKEN,
-  //   host: CONTENTFUL_HOST || 'preview.contentful.com'
-  // });
-
   $('body').prepend('<div id="csk-sidebar-container"></div>');
 
   ReactDOM.render(<Sidebar tree={buildCskEntryTree()} />, document.getElementById('csk-sidebar-container'));
@@ -38,7 +24,6 @@ const loadSidebar = () => {
 
 const removeSidebar = () => {
   $('#csk-sidebar-container').remove();
-  // $('#csk-site-content').detach().children().appendTo('body');
 };
 
 const addInitAttribute = () => {
@@ -59,13 +44,13 @@ const removeOverlay = () => {
   $('#csk-overlay').remove();
 };
 
-const addIdHoverHandlers = () => {
-  $('[data-csk-uuid]').hover(handleCskEntryIdHoverOn, handleCskEntryIdHoverOff);
-};
+// const addIdHoverHandlers = () => {
+//   $(`[data-${CSK_ENTRY_UUID_NAME}]`).on('mouseover', handleCskEntryIdHoverOn).on('mouseout', handleCskEntryIdHoverOff);
+// };
 
-const removeIdHoverHandlers = () => {
-  $('[data-csk-uuid]').unbind('hover');
-};
+// const removeIdHoverHandlers = () => {
+//   $(`[data-${CSK_ENTRY_UUID_NAME}]`).off('mouseover').off('mouseout');
+// };
 
 const applyBgColorVar = () => {
   $(`[data-${CSK_ENTRY_UUID_NAME}]`).each((_index, el) => {
@@ -128,7 +113,7 @@ const resetDom = () => {
   removeInitAttribute();
   removeSidebar();
   removeOverlay();
-  removeIdHoverHandlers();
+  // removeIdHoverHandlers();
   removeBgColorVar();
 };
 
@@ -136,7 +121,7 @@ const loadSidekick = async () => {
   addInitAttribute();
   loadSidebar();
   addOverlay();
-  addIdHoverHandlers();
+  // addIdHoverHandlers();
   applyBgColorVar();
 };
 
@@ -157,6 +142,16 @@ const init = async () => {
     } else {
       resetDom();
     }
+  });
+
+  chrome.runtime.onMessage.addListener((request) => {
+    const { changedUrl } = request;
+    getIsSideKickEnabledFromStorage().then((enabled) => {
+      if (changedUrl && enabled) {
+        resetDom();
+        loadSidekick();
+      }
+    });
   });
 };
 

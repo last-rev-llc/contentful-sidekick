@@ -1,5 +1,3 @@
-// Called when the user clicks on the browser action
-
 import getIsSideKickEnabledFromStorage from './helpers/getIsSideKickEnabledFromStorage';
 
 const setExtensionIcon = (curEnabled = false) => {
@@ -30,12 +28,16 @@ const setExtensionIcon = (curEnabled = false) => {
 
 const toggleActive = async () => {
   const curEnabled = await getIsSideKickEnabledFromStorage();
+
   chrome.storage.sync.set({ sideKickEnabled: curEnabled });
   setExtensionIcon(curEnabled);
 };
 
-chrome.tabs.onUpdated.addListener(async () => {
-  setExtensionIcon(await getIsSideKickEnabledFromStorage());
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  getIsSideKickEnabledFromStorage().then((opt) => setExtensionIcon(opt));
+  if (changeInfo.url) {
+    chrome.tabs.sendMessage(tabId, { changedUrl: changeInfo.url });
+  }
 });
 
 chrome.browserAction.onClicked.addListener(() => {
