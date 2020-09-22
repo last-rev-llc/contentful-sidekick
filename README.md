@@ -26,23 +26,21 @@ data-csk-entry-id={entry.sys.id}
 data-csk-entry-field="yourFieldApiName"
 data-csk-entry-type={entry.sys.contentType.sys.id}
 data-csk-entry-display-text={entry.fields.internalTitle}
-data-csk-entry-uuid={generateUUID(entry)}
 ```
 
-**Note** `data-csk-entry-uuid` is required. It is highly recommended to use `data-csk-entry-display-text` for all entries. If you purely want to visually group items, you can omit the other tags. Otherwise, for best future functionality, it is best to use all the tags.
+**Note** It is highly recommended to use `data-csk-entry-display-text` for all entries. If you purely want to visually group items, you can omit the other tags. Otherwise, for best future functionality, it is best to use all the tags.
 
 To quickly add these tags to a react app, the LastRev Sidekick Utility is recommended (link TBD once published).
 
 Example:
 
 ```html
-<div data-csk-entry-display-text="Main Modules" data-csk-entry-uuid="fg8234">
+<div data-csk-entry-display-text="Main Modules">
   <div
     class="module-panel"
     data-csk-entry-id="js7sjsushs63h36shsgd63g"
     data-csk-entry-type="modulePanel"
     data-csk-entry-display-text="Module - Panel"
-    data-csk-entry-uuid="fg8234"
   >
     <div
       class="panel-title"
