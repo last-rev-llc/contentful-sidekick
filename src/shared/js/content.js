@@ -1,20 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { map } from 'lodash';
 import getIsSideKickEnabledFromStorage from './helpers/getIsSideKickEnabledFromStorage';
 import hasContentfulVars from './helpers/hasContentfulVars';
 import Sidebar from './components/Sidebar';
 import addSidekickEnabledListener from './helpers/addSidekickEnabledListener';
 import buildCskEntryTree from './helpers/buildCskEntryTree';
-import { CSK_ENTRY_UUID_NAME } from './helpers/constants';
-// import getContentfulVars from './helpers/getContentfulVars';
-
-// const handleCskEntryIdHoverOn = () => {
-//   $('#csk-overlay').addClass('show');
-// };
-
-// const handleCskEntryIdHoverOff = () => {
-//   $('#csk-overlay').removeClass('show');
-// };
+import { CSK_ENTRY_SELECTOR } from './helpers/constants';
+import { resetBlur, setBlur } from './helpers/blur';
 
 const loadSidebar = () => {
   $('body').prepend('<div id="csk-sidebar-container"></div>');
@@ -34,26 +27,8 @@ const removeInitAttribute = () => {
   $('body').removeAttr('data-init-csk');
 };
 
-const addOverlay = () => {
-  if (!$('#csk-overlay').length) {
-    $('body').append($('<div>').attr('id', 'csk-overlay'));
-  }
-};
-
-const removeOverlay = () => {
-  $('#csk-overlay').remove();
-};
-
-// const addIdHoverHandlers = () => {
-//   $(`[data-${CSK_ENTRY_UUID_NAME}]`).on('mouseover', handleCskEntryIdHoverOn).on('mouseout', handleCskEntryIdHoverOff);
-// };
-
-// const removeIdHoverHandlers = () => {
-//   $(`[data-${CSK_ENTRY_UUID_NAME}]`).off('mouseover').off('mouseout');
-// };
-
 const applyBgColorVar = () => {
-  $(`[data-${CSK_ENTRY_UUID_NAME}]`).each((_index, el) => {
+  $(CSK_ENTRY_SELECTOR).each((_index, el) => {
     let inheritedBgColor;
 
     $(el)
@@ -106,22 +81,46 @@ const applyBgColorVar = () => {
 };
 
 const removeBgColorVar = () => {
-  $(`[data-${CSK_ENTRY_UUID_NAME}]`).css('--bgColor', '');
+  $(CSK_ENTRY_SELECTOR).css('--bgColor', '');
+};
+
+const handleCskEntryMouseenter = (e) => {
+  if (!e.currentTarget) return;
+  setBlur($(e.target));
+};
+
+const handleCskEntryMouseleave = (e) => {
+  if (!e.currentTarget) return;
+  resetBlur();
+};
+
+const addBlurCode = () => {
+  $('body').append(
+    ...map(['top', 'bottom', 'left', 'right'], (dir) => $('<div>', { id: `csk-blur-${dir}`, class: 'csk-blur' }))
+  );
+  $('body')
+    .on('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
+    .on('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave);
+};
+
+const removeBlurCode = () => {
+  $('.csk-blur').remove();
+  $('body')
+    .off('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
+    .off('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave);
 };
 
 const resetDom = () => {
   removeInitAttribute();
   removeSidebar();
-  removeOverlay();
-  // removeIdHoverHandlers();
+  removeBlurCode();
   removeBgColorVar();
 };
 
 const loadSidekick = async () => {
   addInitAttribute();
   loadSidebar();
-  addOverlay();
-  // addIdHoverHandlers();
+  addBlurCode();
   applyBgColorVar();
 };
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Sidebar.css';
 import getContentfulItemUrl from '../../helpers/getContentfulItemUrl';
 import { CSK_ENTRY_UUID_NAME } from '../../helpers/constants';
+import { resetBlur, setBlur } from '../../helpers/blur';
 
 const calcElScrollTop = (el) => {
   const elOffset = el.offset().top;
@@ -24,13 +25,12 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes }) {
   };
 
   const handleMouseEnter = () => {
-    $('#csk-overlay').addClass('show');
-    el.addClass('csk-entry-unblur');
+    setBlur(el);
     scrollToElement();
   };
 
   const handleMouseLeave = () => {
-    $('#csk-overlay').removeClass('show');
+    resetBlur();
     el.removeClass('csk-entry-unblur');
   };
 
