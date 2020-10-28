@@ -14,6 +14,7 @@ export const setBlur = ($el) => {
   $('#csk-blur-right').css({ width: posRight, height: docHeight });
   $('#csk-blur-top').css('height', posTop);
   $('#csk-blur-bottom').css({ bottom: bodyHeight - docHeight, height: posBottom });
+  $('#csk-blur-actions').css({'top': posTop, 'left': posLeft + ctWidth});
 };
 
 export const resetBlur = () => {

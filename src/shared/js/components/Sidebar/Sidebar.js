@@ -36,6 +36,7 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes }) {
 
   const handleExpandCollapseClick = () => {
     setIsCollapsed(!isCollapsed);
+    setTimeout(() => { console.log('collapsed', isCollapsed); $('body').css('padding-left', $('.csk-element-sidebar').outerWidth(true)); }, 0);
   };
 
   return (
@@ -52,7 +53,7 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes }) {
         ) : null}
         <span
           className="csk-item"
-          onMouseEnter={handleMouseEnter}
+          onMouseEnter={scrollToElement}
           onMouseLeave={handleMouseLeave}
           onClick={handleExpandCollapseClick}
           onKeyDown={handleExpandCollapseClick}
@@ -65,6 +66,9 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes }) {
             Edit
           </a>
         )}
+        <a href={url} target="_blank" rel="noreferrer" className="view" onMouseEnter={handleMouseEnter}>
+            View
+          </a>
       </div>
       {childNodes && childNodes.length ? (
         <ul>
