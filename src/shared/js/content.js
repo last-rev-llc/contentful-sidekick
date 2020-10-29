@@ -94,20 +94,16 @@ const handleCskEntryMouseenter = (e) => {
 };
 
 const handleCskEntryMouseleave = (e) => {
-  console.log('handleCskEntryMouseleave');
   if (e.toElement && e.toElement.getAttribute('id') === 'csk-blur-actions') {
-    console.log('to element actions');
     return;
   }
   if (!e.currentTarget) {
-    console.log('no current target');
     return;
   }
   resetBlur();
 };
 
 const handleActionsMouseleave = (e) => {
-  console.log('handleActionsMouseleave');
   if (e.toElement && $(CSK_ENTRY_SELECTOR).is(e.toElement)) {
     return;
   }

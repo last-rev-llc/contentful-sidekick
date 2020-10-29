@@ -37,7 +37,6 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes }) {
   const handleExpandCollapseClick = () => {
     setIsCollapsed(!isCollapsed);
     setTimeout(() => {
-      console.log('collapsed', isCollapsed);
       $('body').css('padding-left', $('.csk-element-sidebar').outerWidth(true));
     }, 0);
   };
