@@ -2,13 +2,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Kumbh+Sans&display=swap');
 
 .csk-element-sidebar {
-  z-index: 1055;
+  z-index: 1000000;
   position: fixed;
   top: 0;
   left: 0;
-  width: 20vw;
-  min-width: 320px;
-  height: 100%;
+  min-width: 20vw;
+  height: 100vh;
+  max-height: 100vh;
   overflow: scroll;
   background-color: #F6F9FC;
   box-shadow: 0 0 7px 0 rgba(0,0,0,0.2);
@@ -93,7 +93,8 @@
   overflow: hidden;
 }
 
-.csk-element-sidebar .edit {
+.csk-element-sidebar .edit,
+.csk-element-sidebar .view {
   margin-left: 5px;
   padding: 4px 5px 2.4px;
   background-color: #eaeaea;
@@ -105,9 +106,16 @@
   text-decoration: none;
   text-transform: uppercase;
   transition: background-color 0.1s linear, color 0.05s linear;
+  opacity: 0;
 }
 
-.csk-element-sidebar .csk-item-group:hover .edit {
+.csk-element-sidebar .csk-item-group:hover .edit,
+.csk-element-sidebar .csk-item-group:hover .view {
+  opacity: 1;
+}
+
+.csk-element-sidebar .csk-item-group .edit:hover,
+.csk-element-sidebar .csk-item-group .view:hover {
   background-color: #9146ff;
   color: #fff;
   transition: background-color 0.1s linear, color 0.05s linear;
