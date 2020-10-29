@@ -1,6 +1,6 @@
-export const setBlur = ($el) => {
+export const setBlur = ($el, editUrl) => {
   const docHeight = $(document).height();
-  const docWidth = $(document).width();
+  const docWidth = $(window).width();
   const bodyHeight = $('body').height();
   const ctHeight = $el.outerHeight(true);
   const ctWidth = $el.outerWidth(true);
@@ -14,7 +14,10 @@ export const setBlur = ($el) => {
   $('#csk-blur-right').css({ width: posRight, height: docHeight });
   $('#csk-blur-top').css('height', posTop);
   $('#csk-blur-bottom').css({ bottom: bodyHeight - docHeight, height: posBottom });
-  $('#csk-blur-actions').css({'top': posTop, 'left': posLeft + ctWidth});
+
+  if (editUrl) {
+    $('#csk-blur-actions').removeClass('hidden').css({ top: posTop, left: posLeft }).attr('href', editUrl);
+  }
 };
 
 export const resetBlur = () => {
@@ -22,4 +25,5 @@ export const resetBlur = () => {
   $('#csk-blur-bottom').css('height', 0);
   $('#csk-blur-left').css('width', 0);
   $('#csk-blur-right').css('width', 0);
+  $('#csk-blur-actions').addClass('hidden').css({ left: 0, top: 0 }).attr('href', '#');
 };

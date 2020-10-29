@@ -36,7 +36,10 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes }) {
 
   const handleExpandCollapseClick = () => {
     setIsCollapsed(!isCollapsed);
-    setTimeout(() => { console.log('collapsed', isCollapsed); $('body').css('padding-left', $('.csk-element-sidebar').outerWidth(true)); }, 0);
+    setTimeout(() => {
+      console.log('collapsed', isCollapsed);
+      $('body').css('padding-left', $('.csk-element-sidebar').outerWidth(true));
+    }, 0);
   };
 
   return (
@@ -67,8 +70,8 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes }) {
           </a>
         )}
         <a href={url} target="_blank" rel="noreferrer" className="view" onMouseEnter={handleMouseEnter}>
-            View
-          </a>
+          View
+        </a>
       </div>
       {childNodes && childNodes.length ? (
         <ul>

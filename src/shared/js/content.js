@@ -6,11 +6,12 @@ import hasContentfulVars from './helpers/hasContentfulVars';
 import Sidebar from './components/Sidebar';
 import addSidekickEnabledListener from './helpers/addSidekickEnabledListener';
 import buildCskEntryTree from './helpers/buildCskEntryTree';
-import { CSK_ENTRY_SELECTOR } from './helpers/constants';
+import { CSK_ENTRY_ID_NAME, CSK_ENTRY_SELECTOR } from './helpers/constants';
 import { resetBlur, setBlur } from './helpers/blur';
+import getContentfulItemUrl from './helpers/getContentfulItemUrl';
 
 const loadSidebar = () => {
-  $('body').prepend('<div id="csk-sidebar-container"></div>')
+  $('body').prepend('<div id="csk-sidebar-container"></div>');
 
   ReactDOM.render(<Sidebar tree={buildCskEntryTree()} />, document.getElementById('csk-sidebar-container'));
 };
@@ -86,32 +87,46 @@ const removeBgColorVar = () => {
 
 const handleCskEntryMouseenter = (e) => {
   if (!e.currentTarget) return;
-  setBlur($(e.target));
+  const $ct = $(e.currentTarget);
+  const id = $ct.data(CSK_ENTRY_ID_NAME);
+  const url = id ? getContentfulItemUrl(id) : null;
+  setBlur($(e.target), url);
 };
 
 const handleCskEntryMouseleave = (e) => {
-  console.log('handleCskEntryMouseleave')
+  console.log('handleCskEntryMouseleave');
   if (e.toElement && e.toElement.getAttribute('id') === 'csk-blur-actions') {
-    console.log('to element actions')
+    console.log('to element actions');
     return;
   }
   if (!e.currentTarget) {
-    console.log('no current target')
+    console.log('no current target');
     return;
   }
   resetBlur();
 };
 
+const handleActionsMouseleave = (e) => {
+  console.log('handleActionsMouseleave');
+  if (e.toElement && $(CSK_ENTRY_SELECTOR).is(e.toElement)) {
+    return;
+  }
+
+  resetBlur();
+};
+
 const addBlurCode = () => {
   $('body').append(
-    ...map(['top', 'bottom', 'left', 'right'], (dir) => $('<div>', { id: `csk-blur-${dir}`, class: `csk-blur csk-blur-${dir}` }))
+    ...map(['top', 'bottom', 'left', 'right'], (dir) =>
+      $('<div>', { id: `csk-blur-${dir}`, class: `csk-blur csk-blur-${dir}` })
+    )
   );
   $('body')
     .on('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
     .on('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave)
-    .append($('<a>', {id: 'csk-blur-actions', href: '#'}).text('Edit'))
-      .on('mouseleave', handleCskEntryMouseleave);
-    
+    .append($('<a>', { id: 'csk-blur-actions', href: '#', target: '_blank' }).text('Edit'));
+
+  $('#csk-blur-actions').on('mouseleave', handleActionsMouseleave);
 };
 
 const removeBlurCode = () => {
