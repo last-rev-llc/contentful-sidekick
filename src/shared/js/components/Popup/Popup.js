@@ -21,6 +21,7 @@ function Popup() {
     const curSideKickEnabled = !sideKickEnabled;
     setSideKickEnabled(curSideKickEnabled);
     setSideKickEnabledInStorage(curSideKickEnabled);
+    window.close();
   };
 
   if (!loaded) return <div>Loading...</div>;
