@@ -127,7 +127,7 @@ const addBlurCode = () => {
 };
 
 const removeBlurCode = () => {
-  $('.csk-blur').remove();
+  $('.csk-blur, #csk-blur-actions').remove();
   $('body')
     .off('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
     .off('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave);
