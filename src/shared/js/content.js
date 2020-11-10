@@ -18,6 +18,7 @@ const loadSidebar = () => {
 
 const removeSidebar = () => {
   $('#csk-sidebar-container').remove();
+  $('body').css('padding-left', 0);
 };
 
 const addInitAttribute = () => {
