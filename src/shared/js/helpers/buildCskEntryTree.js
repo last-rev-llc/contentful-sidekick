@@ -14,8 +14,11 @@ function traverseDomNode(jqObj, domEl, results) {
 
   if (isEl) {
     const $el = $(domEl);
-    const uuid = uuidv4();
+    const prevUuid = $el.attr(`data-${CSK_ENTRY_UUID_NAME}`);
+    const uuid = prevUuid || uuidv4();
+
     $el.attr(`data-${CSK_ENTRY_UUID_NAME}`, uuid);
+
     results.push({
       id: $el.data(CSK_ENTRY_ID_NAME),
       field: $el.data(CSK_ENTRY_FIELD_NAME),
@@ -38,7 +41,7 @@ export default () => {
 
   traverseDomNode(
     $(
-      `[data-${CSK_ENTRY_ID_NAME}],[data-${CSK_ENTRY_TYPE_NAME}],[data-${CSK_ENTRY_FIELD_NAME}],[data-${CSK_ENTRY_DISPLAY_TEXT_NAME}]`
+      `[data-${CSK_ENTRY_ID_NAME}]:visible,[data-${CSK_ENTRY_TYPE_NAME}]:visible,[data-${CSK_ENTRY_FIELD_NAME}]:visible,[data-${CSK_ENTRY_DISPLAY_TEXT_NAME}]:visible`
     ),
     document.body,
     tree

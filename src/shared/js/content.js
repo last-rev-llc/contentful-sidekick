@@ -13,7 +13,7 @@ import getContentfulItemUrl from './helpers/getContentfulItemUrl';
 const loadSidebar = () => {
   $('body').prepend('<div id="csk-sidebar-container"></div>');
 
-  ReactDOM.render(<Sidebar tree={buildCskEntryTree()} />, document.getElementById('csk-sidebar-container'));
+  ReactDOM.render(<Sidebar defaultTree={buildCskEntryTree()} />, document.getElementById('csk-sidebar-container'));
 };
 
 const removeSidebar = () => {
