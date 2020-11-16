@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Sidebar.css';
 import getContentfulItemUrl from '../../helpers/getContentfulItemUrl';
 import { CSK_ENTRY_UUID_NAME } from '../../helpers/constants';
 import { resetBlur, setBlur } from '../../helpers/blur';
+import buildCskEntryTree from '../../helpers/buildCskEntryTree';
 
 const calcElScrollTop = (el) => {
   const elOffset = el.offset().top;
@@ -11,9 +12,7 @@ const calcElScrollTop = (el) => {
   return elHeight < windowHeight ? elOffset - (windowHeight / 2 - elHeight / 2) : elOffset;
 };
 
-function TreeNode({ id, field, type, displayText, uuid, childNodes }) {
-  const [isCollapsed, setIsCollapsed] = useState(true);
-
+function TreeNode({ id, field, type, displayText, uuid, childNodes, isExpanded, setIsExpanded }) {
   const url = id ? getContentfulItemUrl(id) : null;
   const text = `${displayText || field || type || id}`;
 
@@ -35,14 +34,14 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes }) {
   };
 
   const handleExpandCollapseClick = () => {
-    setIsCollapsed(!isCollapsed);
+    setIsExpanded(uuid, !isExpanded(uuid));
     setTimeout(() => {
       $('body').css('padding-left', $('.csk-element-sidebar').outerWidth(true));
     }, 0);
   };
 
   return (
-    <li className={`csk-sidebar-node ${isCollapsed ? 'collapsed' : 'expanded'}`}>
+    <li className={`csk-sidebar-node ${isExpanded(uuid) ? 'expanded' : 'collapsed'}`}>
       <div className="csk-item-group">
         {childNodes && childNodes.length ? (
           <span
@@ -83,6 +82,8 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes }) {
               displayText={childNode.displayText}
               uuid={childNode.uuid}
               childNodes={childNode.children}
+              isExpanded={isExpanded}
+              setIsExpanded={setIsExpanded}
             />
           ))}
         </ul>
@@ -91,7 +92,28 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes }) {
   );
 }
 
-function Sidebar({ tree }) {
+function Sidebar({ defaultTree }) {
+  const [tree, setTree] = useState(defaultTree);
+  const [expandedState, setExpandedState] = useState({});
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTree(buildCskEntryTree());
+    }, 3000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  const isExpanded = (uuid) => {
+    return !!expandedState[uuid];
+  };
+
+  const setIsExpanded = (uuid, state) => {
+    setExpandedState({ ...expandedState, [uuid]: state });
+  };
+
   return (
     <div className="csk-element-sidebar">
       <div className="csk-h1">
@@ -103,19 +125,22 @@ function Sidebar({ tree }) {
       <div className="csk-h2">Page Elements</div>
       {/* {loaded ? ( */}
       <ul>
-        {tree.map((node) => {
-          return (
-            <TreeNode
-              key={node.uuid}
-              id={node.id}
-              field={node.field}
-              type={node.type}
-              displayText={node.displayText}
-              uuid={node.uuid}
-              childNodes={node.children}
-            />
-          );
-        })}
+        {tree &&
+          tree.map((node) => {
+            return (
+              <TreeNode
+                key={node.uuid}
+                id={node.id}
+                field={node.field}
+                type={node.type}
+                displayText={node.displayText}
+                uuid={node.uuid}
+                childNodes={node.children}
+                isExpanded={isExpanded}
+                setIsExpanded={setIsExpanded}
+              />
+            );
+          })}
       </ul>
     </div>
   );
