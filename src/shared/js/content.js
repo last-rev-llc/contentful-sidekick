@@ -121,6 +121,7 @@ const addBlurCode = () => {
   $('body')
     .on('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
     .on('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave)
+    .on('mouseover',  CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
     .append($('<a>', { id: 'csk-blur-actions', href: '#', target: '_blank' }).text('Edit'));
 
   $('#csk-blur-actions').on('mouseleave', handleActionsMouseleave);

@@ -9,7 +9,7 @@ export const setBlur = ($el, editUrl) => {
   const posBottom = docHeight - (posTop + ctHeight);
   const posLeft = parseInt($el.offset().left - $(document).scrollLeft(), 10);
   const posRight = docWidth - posLeft - ctWidth;
-
+  $('.csk-blur').css('opacity', 1);
   $('#csk-blur-left').css({ width: posLeft, height: docHeight });
   $('#csk-blur-right').css({ width: posRight, height: docHeight });
   $('#csk-blur-top').css('height', posTop);
@@ -26,4 +26,5 @@ export const resetBlur = () => {
   $('#csk-blur-left').css('width', 0);
   $('#csk-blur-right').css('width', 0);
   $('#csk-blur-actions').addClass('hidden').css({ left: 0, top: 0 }).attr('href', '#');
+  $('.csk-blur').css('opacity', 0);
 };

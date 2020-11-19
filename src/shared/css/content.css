@@ -7,7 +7,7 @@
 [data-init-csk] {
   /* position: relative; */
   padding-left: 20vw;
-  width: 100vw;
+  /* width: 100vw; */
 }
 
 [data-init-csk] [data-csk-entry-uuid] {
@@ -99,6 +99,7 @@
   width: 0;
   z-index: 100000;
   transition: all 0.25s ease-out;
+  pointer-events:none;
 }
 
 [data-init-csk] #csk-blur-top {
