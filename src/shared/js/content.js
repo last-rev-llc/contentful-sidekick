@@ -10,15 +10,38 @@ import { CSK_ENTRY_ID_NAME, CSK_ENTRY_SELECTOR } from './helpers/constants';
 import { resetBlur, setBlur } from './helpers/blur';
 import getContentfulItemUrl from './helpers/getContentfulItemUrl';
 
+const shrinkContent = () => {
+  $('body').css('padding-left', '20vw');
+  $('*').filter(function () {
+    const $el = $(this);
+    if ($el.css('position') == 'fixed') {
+      const padding = $el.css('padding-left');
+      $el.data('padding-left', padding);
+      $el.css('padding-left', `calc(20vw + ${padding})`);
+    }
+  });
+};
+const expandContent = () => {
+  $('*').filter(function () {
+    const $el = $(this);
+    if ($el.css('position') == 'fixed') {
+      const padding = $el.data('padding-left');
+      $el.css('padding-left', padding);
+    }
+  });
+  $('body').css('padding-left', 0);
+};
+
 const loadSidebar = () => {
   $('body').prepend('<div id="csk-sidebar-container"></div>');
-
+  shrinkContent();
   ReactDOM.render(<Sidebar defaultTree={buildCskEntryTree()} />, document.getElementById('csk-sidebar-container'));
 };
 
 const removeSidebar = () => {
   $('#csk-sidebar-container').remove();
-  $('body').css('padding-left', 0);
+
+  expandContent();
 };
 
 const addInitAttribute = () => {
@@ -121,7 +144,7 @@ const addBlurCode = () => {
   $('body')
     .on('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
     .on('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave)
-    .on('mouseover',  CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
+    .on('mouseover', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
     .append($('<a>', { id: 'csk-blur-actions', href: '#', target: '_blank' }).text('Edit'));
 
   $('#csk-blur-actions').on('mouseleave', handleActionsMouseleave);

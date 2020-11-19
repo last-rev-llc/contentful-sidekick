@@ -9,7 +9,7 @@
   min-width: 20vw;
   height: 100vh;
   max-height: 100vh;
-  overflow: scroll;
+  overflow-y: auto;
   background-color: #F6F9FC;
   box-shadow: 0 0 7px 0 rgba(0,0,0,0.2);
   color: #111;
@@ -18,6 +18,11 @@
   line-height: 2rem;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: transform .5s;
+  transform: translateX(-100%);
+}
+[data-init-csk] .csk-element-sidebar.show {
+  transform: translateX(0);
 }
 
 .csk-h1,

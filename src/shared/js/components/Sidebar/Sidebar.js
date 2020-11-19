@@ -41,7 +41,7 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes, isExpanded, 
   };
 
   return (
-    <li className={`csk-sidebar-node ${isExpanded(uuid) ? 'expanded' : 'collapsed'}`}>
+    <li className={`csk-sidebar-node ${isExpanded(uuid) ? 'expanded' : 'collapsed'}`}  onMouseEnter={handleMouseEnter}>
       <div className="csk-item-group">
         {childNodes && childNodes.length ? (
           <span
@@ -67,9 +67,9 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes, isExpanded, 
             Edit
           </a>
         )}
-        <a href={url} target="_blank" rel="noreferrer" className="view" onMouseEnter={handleMouseEnter}>
+        {/* <a href={url} target="_blank" rel="noreferrer" className="view" onMouseEnter={handleMouseEnter}>
           View
-        </a>
+        </a> */}
       </div>
       {childNodes && childNodes.length ? (
         <ul>
@@ -94,13 +94,14 @@ function TreeNode({ id, field, type, displayText, uuid, childNodes, isExpanded, 
 
 function Sidebar({ defaultTree }) {
   const [tree, setTree] = useState(defaultTree);
+  const [show, setShow] = useState(false);
   const [expandedState, setExpandedState] = useState({});
 
   useEffect(() => {
     const interval = setInterval(() => {
       setTree(buildCskEntryTree());
     }, 3000);
-
+    setTimeout(() => setShow(true), 300);
     return () => {
       clearInterval(interval);
     };
@@ -115,7 +116,7 @@ function Sidebar({ defaultTree }) {
   };
 
   return (
-    <div className="csk-element-sidebar">
+    <div className={`csk-element-sidebar ${show && 'show'}`}>
       <div className="csk-h1">
         <span>Contentful Sidekick</span>
         <svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">

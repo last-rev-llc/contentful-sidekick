@@ -3,7 +3,9 @@
   top: 0;
   left: 300px;
 } */
-
+body {
+  transition: padding .5s;
+}
 [data-init-csk] {
   /* position: relative; */
   padding-left: 20vw;
@@ -99,6 +101,7 @@
   width: 0;
   z-index: 100000;
   transition: all 0.25s ease-out;
+  transition-delay: .05s;
   pointer-events:none;
 }
 
@@ -149,6 +152,7 @@
   line-height: 1.7;
   text-transform: uppercase;
   transition: all 0.25s ease-out;
+  transition-delay: .05s;
   padding-bottom: 2px;
 }
 
