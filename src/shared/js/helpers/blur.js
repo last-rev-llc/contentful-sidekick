@@ -1,4 +1,9 @@
-export const setBlur = ($el, editUrl) => {
+export const setBlur = ($target, editUrl) => {
+  let $el = $target;
+  if (!$el.data('cskEntryId')) {
+    const $parentEl = $target.parents('[data-csk-entry-id]');
+    $el = $($parentEl[0]);
+  }
   const docHeight = $(document).height();
   const docWidth = $(window).width();
   const bodyHeight = $('body').height();
