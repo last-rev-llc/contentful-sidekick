@@ -8,10 +8,12 @@ import { ElementHighlighter } from './ElementHighlighter';
 import ErrorTooltip from './ErrorTooltip';
 
 const calcElScrollTop = (el) => {
-  const elOffset = el.offset().top;
-  const elHeight = el.height();
-  const windowHeight = $(window).height();
-  return elHeight < windowHeight ? elOffset - (windowHeight / 2 - elHeight / 2) : elOffset;
+  if(el && el.offset()){
+    const elOffset = el.offset().top;
+    const elHeight = el.height();
+    const windowHeight = $(window).height();
+    return elHeight < windowHeight ? elOffset - (windowHeight / 2 - elHeight / 2) : elOffset;
+  }
 };
 
 function TreeNode({
