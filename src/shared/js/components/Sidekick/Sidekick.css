@@ -6,10 +6,10 @@
   position: fixed;
   top: 0;
   left: 0;
-  min-width: 20vw;
+  width: 20vw;
   height: 100vh;
   max-height: 100vh;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   background-color: #F6F9FC;
   box-shadow: 0 0 7px 0 rgba(0,0,0,0.2);
   color: #111;
