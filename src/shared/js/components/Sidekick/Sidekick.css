@@ -63,9 +63,10 @@
   color: #111;
   line-height: 2;
   user-select: none;
+  transition: .3s;
 }
 
-.csk-element-sidebar .csk-item-group:hover {
+ .csk-element-sidebar .csk-item-group.selected, .csk-element-sidebar .csk-item-group:hover {
   background-color: #ececec;
 }
 

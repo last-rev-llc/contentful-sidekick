@@ -1,14 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { map } from 'lodash';
 import getIsSideKickEnabledFromStorage from './helpers/getIsSideKickEnabledFromStorage';
 import hasContentfulVars from './helpers/hasContentfulVars';
-import Sidebar from './components/Sidebar';
+import Sidekick from './components/Sidekick';
 import addSidekickEnabledListener from './helpers/addSidekickEnabledListener';
 import buildCskEntryTree from './helpers/buildCskEntryTree';
-import { CSK_ENTRY_ID_NAME, CSK_ENTRY_SELECTOR } from './helpers/constants';
-import { resetBlur, setBlur } from './helpers/blur';
-import getContentfulItemUrl from './helpers/getContentfulItemUrl';
+import { CSK_ENTRY_SELECTOR } from './helpers/constants';
 
 const shrinkContent = () => {
   $('body').css('padding-left', '20vw');
@@ -35,12 +32,11 @@ const expandContent = () => {
 const loadSidebar = () => {
   $('body').prepend('<div id="csk-sidebar-container"></div>');
   shrinkContent();
-  ReactDOM.render(<Sidebar defaultTree={buildCskEntryTree()} />, document.getElementById('csk-sidebar-container'));
+  ReactDOM.render(<Sidekick defaultTree={buildCskEntryTree()} />, document.getElementById('csk-sidebar-container'));
 };
 
 const removeSidebar = () => {
   $('#csk-sidebar-container').remove();
-
   expandContent();
 };
 
@@ -109,65 +105,15 @@ const removeBgColorVar = () => {
   $(CSK_ENTRY_SELECTOR).css('--bgColor', '');
 };
 
-const handleCskEntryMouseenter = (e) => {
-  if (!e.currentTarget) return;
-  const $ct = $(e.currentTarget);
-  const id = $ct.data(CSK_ENTRY_ID_NAME);
-  const url = id ? getContentfulItemUrl(id) : null;
-  setBlur($(e.target), url);
-};
-
-const handleCskEntryMouseleave = (e) => {
-  if (e.toElement && e.toElement.getAttribute('id') === 'csk-blur-actions') {
-    return;
-  }
-  if (!e.currentTarget) {
-    return;
-  }
-  resetBlur();
-};
-
-const handleActionsMouseleave = (e) => {
-  if (e.toElement && $(CSK_ENTRY_SELECTOR).is(e.toElement)) {
-    return;
-  }
-
-  resetBlur();
-};
-
-const addBlurCode = () => {
-  $('body').append(
-    ...map(['top', 'bottom', 'left', 'right'], (dir) =>
-      $('<div>', { id: `csk-blur-${dir}`, class: `csk-blur csk-blur-${dir}` })
-    )
-  );
-  $('body')
-    .on('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
-    .on('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave)
-    .on('mouseover', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
-    .append($('<a>', { id: 'csk-blur-actions', href: '#', target: '_blank' }).text('Edit'));
-
-  $('#csk-blur-actions').on('mouseleave', handleActionsMouseleave);
-};
-
-const removeBlurCode = () => {
-  $('.csk-blur, #csk-blur-actions').remove();
-  $('body')
-    .off('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
-    .off('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave);
-};
-
 const resetDom = () => {
   removeInitAttribute();
   removeSidebar();
-  removeBlurCode();
   removeBgColorVar();
 };
 
 const loadSidekick = async () => {
   addInitAttribute();
   loadSidebar();
-  addBlurCode();
   applyBgColorVar();
 };
 
