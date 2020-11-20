@@ -5,6 +5,7 @@ import { CSK_ENTRY_UUID_NAME } from '../../helpers/constants';
 import { resetBlur, setBlur } from '../../helpers/blur';
 import buildCskEntryTree from '../../helpers/buildCskEntryTree';
 import { ElementHighlighter } from './ElementHighlighter';
+import ErrorTooltip from './ErrorTooltip';
 
 const calcElScrollTop = (el) => {
   const elOffset = el.offset().top;
@@ -20,6 +21,7 @@ function TreeNode({
   displayText,
   uuid,
   childNodes,
+  errors,
   isExpanded,
   setIsExpanded,
   setSelected,
@@ -51,6 +53,7 @@ function TreeNode({
       $('body').css('padding-left', $('.csk-element-sidebar').outerWidth(true));
     }, 0);
   };
+
   return (
     <li className={`csk-sidebar-node ${isExpanded(uuid) ? 'expanded' : 'collapsed'}`} onMouseEnter={handleMouseEnter}>
       <div className={`csk-item-group ${selected == uuid ? 'selected' : ''}`}>
@@ -73,6 +76,7 @@ function TreeNode({
           tabIndex={0}>
           {text}
         </span>
+        {errors && Object.keys(errors).length ? <ErrorTooltip field={field} errors={errors} /> : null}
         {url && (
           <a href={url} target="_blank" rel="noreferrer" className="edit">
             Edit
@@ -93,6 +97,10 @@ function TreeNode({
               displayText={childNode.displayText}
               uuid={childNode.uuid}
               childNodes={childNode.children}
+              errors={{
+                ...(errors && errors[childNode.field] ? { [childNode.field]: errors[childNode.field] } : {}),
+                ...childNode.errors
+              }}
               isExpanded={isExpanded}
               setIsExpanded={setIsExpanded}
               setSelected={setSelected}
@@ -172,6 +180,7 @@ function Sidebar({ defaultTree }) {
                   displayText={node.displayText}
                   uuid={node.uuid}
                   childNodes={node.children}
+                  errors={node.errors}
                   isExpanded={isExpanded}
                   setIsExpanded={setIsExpanded}
                   setSelected={setSelected}

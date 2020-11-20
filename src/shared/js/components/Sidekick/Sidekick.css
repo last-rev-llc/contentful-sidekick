@@ -155,3 +155,34 @@
 .csk-element-sidebar li li li li li li .csk-item-group {
   text-indent: 151px;
 }
+
+.csk-element-sidebar .csk-error-icon {
+  width: 16px;
+  height: 16px;
+  margin-left: 8px;
+}
+
+.csk-element-sidebar .csk-tooltip-container {
+  position: relative;
+  display: inline-block;
+  text-indent: initial;
+}
+
+.csk-element-sidebar .csk-item-group:hover .csk-tooltip-content {
+  opacity: 1;
+}
+
+.csk-element-sidebar .csk-tooltip-content {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 42px);
+  transform: translateY(-50%);
+  padding: 8px;
+  background: white;
+  box-shadow: 1px 1px 10px 0px #00000024;
+  border-radius: 2px;
+  opacity: 0;
+  transition: .3s;
+  width: 170px;
+  font-size: 12px;
+}
