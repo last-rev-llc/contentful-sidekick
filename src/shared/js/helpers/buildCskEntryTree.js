@@ -52,7 +52,7 @@ export default () => {
 
   traverseDomNode(
     $(
-      `[data-${CSK_ENTRY_ID_NAME}]:visible,[data-${CSK_ENTRY_TYPE_NAME}]:visible,[data-${CSK_ENTRY_FIELD_NAME}]:visible,[data-${CSK_ENTRY_DISPLAY_TEXT_NAME}]:visible`
+      `[data-${CSK_ENTRY_ID_NAME}],[data-${CSK_ENTRY_TYPE_NAME}],[data-${CSK_ENTRY_FIELD_NAME}],[data-${CSK_ENTRY_DISPLAY_TEXT_NAME}]`
     ),
     document.body,
     tree

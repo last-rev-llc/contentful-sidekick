@@ -4,16 +4,18 @@ import { resetBlur, setBlur } from '../../helpers/blur';
 import { CSK_ENTRY_ID_NAME, CSK_ENTRY_SELECTOR, CSK_ENTRY_UUID_NAME } from '../../helpers/constants';
 
 export const handleCskEntryMouseenter = ({ setSelected }) => (e) => {
-  if (!e.currentTarget) return;
-  const $ct = $(e.currentTarget);
-  const id = $ct.data(CSK_ENTRY_ID_NAME);
-  const url = id ? getContentfulItemUrl(id) : null;
+  if (!e.target) return;
+  const $ct = $(e.target);
+  let id = $ct.data(CSK_ENTRY_ID_NAME);
+  let url = id ? getContentfulItemUrl(id) : null;
   let uuid = $(e.target).data(CSK_ENTRY_UUID_NAME);
   if (!uuid) {
     // The mouse enter target might not be the element with sidekick props
     // So we look for it on the parents
     const $parentEl = $(e.target).parents(`[data-${CSK_ENTRY_UUID_NAME}]`);
     uuid = $($parentEl[0]).data(CSK_ENTRY_UUID_NAME);
+    id = $($parentEl[0]).data(CSK_ENTRY_ID_NAME);
+    url = id ? getContentfulItemUrl(id) : null;
   }
   setBlur($(e.target), url);
   setSelected(uuid);
@@ -22,7 +24,7 @@ export const handleCskEntryMouseleave = ({ setSelected }) => (e) => {
   if (e.toElement && e.toElement.getAttribute('id') === 'csk-blur-actions') {
     return;
   }
-  if (!e.currentTarget) {
+  if (!e.target) {
     return;
   }
   setSelected();
