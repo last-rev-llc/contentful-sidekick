@@ -6,10 +6,10 @@
   position: fixed;
   top: 0;
   left: 0;
-  min-width: 20vw;
+  width: 20vw;
   height: 100vh;
   max-height: 100vh;
-  overflow: scroll;
+  /* overflow-y: auto; */
   background-color: #F6F9FC;
   box-shadow: 0 0 7px 0 rgba(0,0,0,0.2);
   color: #111;
@@ -18,6 +18,11 @@
   line-height: 2rem;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: transform .5s;
+  transform: translateX(-100%);
+}
+[data-init-csk] .csk-element-sidebar.show {
+  transform: translateX(0);
 }
 
 .csk-h1,
@@ -58,9 +63,10 @@
   color: #111;
   line-height: 2;
   user-select: none;
+  transition: .3s;
 }
 
-.csk-element-sidebar .csk-item-group:hover {
+ .csk-element-sidebar .csk-item-group.selected, .csk-element-sidebar .csk-item-group:hover {
   background-color: #ececec;
 }
 
@@ -148,4 +154,35 @@
 
 .csk-element-sidebar li li li li li li .csk-item-group {
   text-indent: 151px;
+}
+
+.csk-element-sidebar .csk-error-icon {
+  width: 16px;
+  height: 16px;
+  margin-left: 8px;
+}
+
+.csk-element-sidebar .csk-tooltip-container {
+  position: relative;
+  display: inline-block;
+  text-indent: initial;
+}
+
+.csk-element-sidebar .csk-item-group:hover .csk-tooltip-content {
+  opacity: 1;
+}
+
+.csk-element-sidebar .csk-tooltip-content {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 42px);
+  transform: translateY(-50%);
+  padding: 8px;
+  background: white;
+  box-shadow: 1px 1px 10px 0px #00000024;
+  border-radius: 2px;
+  opacity: 0;
+  transition: .3s;
+  width: 170px;
+  font-size: 12px;
 }
