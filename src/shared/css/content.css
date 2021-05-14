@@ -4,7 +4,7 @@
   left: 300px;
 } */
 body {
-  transition: padding .5s;
+  transition: padding 0.5s;
 }
 [data-init-csk] {
   /* position: relative; */
@@ -15,7 +15,7 @@ body {
 [data-init-csk] [data-csk-entry-uuid] {
   cursor: pointer;
   /* position: relative; */
-  transform: scale(1);
+  /* transform: scale(1); */
 }
 /* 
 [data-init-csk] [data-csk-entry-uuid]:hover,
@@ -92,7 +92,10 @@ body {
 } */
 
 [data-init-csk] {
-  position: relative !important;
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100%;
 }
 
 [data-init-csk] .csk-blur {
@@ -101,8 +104,8 @@ body {
   width: 0;
   z-index: 100000;
   transition: all 0.25s ease-out;
-  transition-delay: .05s;
-  pointer-events:none;
+  transition-delay: 0.05s;
+  pointer-events: none;
 }
 
 [data-init-csk] #csk-blur-top {
@@ -152,7 +155,7 @@ body {
   line-height: 1.7;
   text-transform: uppercase;
   transition: all 0.25s ease-out;
-  transition-delay: .05s;
+  transition-delay: 0.05s;
   padding-bottom: 2px;
 }
 

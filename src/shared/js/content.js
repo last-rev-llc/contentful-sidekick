@@ -9,23 +9,23 @@ import { CSK_ENTRY_SELECTOR } from './helpers/constants';
 
 const shrinkContent = () => {
   $('body').css('padding-left', '20vw');
-  $('*').filter(function () {
-    const $el = $(this);
-    if ($el.css('position') == 'fixed') {
-      const padding = $el.css('padding-left');
-      $el.data('padding-left', padding);
-      $el.css('padding-left', `calc(20vw + ${padding})`);
-    }
-  });
+  // $('*').filter(function () {
+  //   const $el = $(this);
+  //   if ($el.css('position') == 'fixed') {
+  //     const padding = $el.css('padding-left');
+  //     $el.data('padding-left', padding);
+  //     $el.css('padding-left', `calc(20vw + ${padding})`);
+  //   }
+  // });
 };
 const expandContent = () => {
-  $('*').filter(function () {
-    const $el = $(this);
-    if ($el.css('position') == 'fixed') {
-      const padding = $el.data('padding-left');
-      $el.css('padding-left', padding);
-    }
-  });
+  // $('*').filter(function () {
+  //   const $el = $(this);
+  //   if ($el.css('position') == 'fixed') {
+  //     const padding = $el.data('padding-left');
+  //     $el.css('padding-left', padding);
+  //   }
+  // });
   $('body').css('padding-left', 0);
 };
 
