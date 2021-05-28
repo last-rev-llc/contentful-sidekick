@@ -9,16 +9,16 @@
   width: 20vw;
   height: 100vh;
   max-height: 100vh;
-  /* overflow-y: auto; */
-  background-color: #F6F9FC;
-  box-shadow: 0 0 7px 0 rgba(0,0,0,0.2);
+  overflow-y: auto;
+  background-color: #f6f9fc;
+  box-shadow: 0 0 7px 0 rgba(0, 0, 0, 0.2);
   color: #111;
   font-family: 'Kumbh Sans', Verdana, sans-serif;
   font-size: 13px;
   line-height: 2rem;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: transform .5s;
+  transition: transform 0.5s;
   transform: translateX(-100%);
 }
 [data-init-csk] .csk-element-sidebar.show {
@@ -63,10 +63,11 @@
   color: #111;
   line-height: 2;
   user-select: none;
-  transition: .3s;
+  transition: 0.3s;
 }
 
- .csk-element-sidebar .csk-item-group.selected, .csk-element-sidebar .csk-item-group:hover {
+.csk-element-sidebar .csk-item-group.selected,
+.csk-element-sidebar .csk-item-group:hover {
   background-color: #ececec;
 }
 
@@ -78,6 +79,10 @@
 .csk-element-sidebar .csk-item:focus,
 .csk-element-sidebar .csk-icon-expand:focus {
   outline: none;
+}
+
+.csk-sidebar-node {
+  padding: 0 0;
 }
 
 .csk-sidebar-node .csk-icon-expand:before {
@@ -182,7 +187,7 @@
   box-shadow: 1px 1px 10px 0px #00000024;
   border-radius: 2px;
   opacity: 0;
-  transition: .3s;
+  transition: 0.3s;
   width: 170px;
   font-size: 12px;
 }
