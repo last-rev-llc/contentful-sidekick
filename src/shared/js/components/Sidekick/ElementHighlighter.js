@@ -1,18 +1,20 @@
 import React from 'react';
 import throttle from 'lodash/throttle';
+import { useContextSelector } from 'use-context-selector';
 import getContentfulItemUrl from '../../helpers/getContentfulItemUrl';
 import { resetBlur, setBlur } from '../../helpers/blur';
 import { CSK_ENTRY_ID_NAME, CSK_ENTRY_SELECTOR, CSK_ENTRY_UUID_NAME } from '../../helpers/constants';
-import { useTreeUpdater } from './tree-context';
+import { TreeStateContext, useTreeUpdater } from './tree-context';
 
 const ElementHighlighter = () => {
   const { setSelected } = useTreeUpdater();
+  const selectedPath = useContextSelector(TreeStateContext, (context) => context.selectedPath);
   React.useEffect(() => {
     const handleCskEntryMouseenter = throttle((e) => {
       if (!e.target) return;
       const $ct = $(e.target);
       let id = $ct.data(CSK_ENTRY_ID_NAME);
-      let url = id ? getContentfulItemUrl(id) : null;
+      let url = id ? getContentfulItemUrl(id, selectedPath) : null;
       let uuid = $(e.target).data(CSK_ENTRY_UUID_NAME);
       if (!uuid) {
         // The mouse enter target might not be the element with sidekick props
@@ -20,7 +22,7 @@ const ElementHighlighter = () => {
         const $parentEl = $(e.target).parents(`[data-${CSK_ENTRY_UUID_NAME}]`);
         uuid = $($parentEl[0]).data(CSK_ENTRY_UUID_NAME);
         id = $($parentEl[0]).data(CSK_ENTRY_ID_NAME);
-        url = id ? getContentfulItemUrl(id) : null;
+        url = id ? getContentfulItemUrl(id, selectedPath) : null;
       }
       setBlur($(e.target), url);
       setSelected(uuid);
@@ -63,7 +65,7 @@ const ElementHighlighter = () => {
         $('#csk-blur-actions').on('mouseleave', handleActionsMouseleave);
       }
     };
-  }, [setSelected]);
+  }, [setSelected, selectedPath]);
 
   return (
     <>
