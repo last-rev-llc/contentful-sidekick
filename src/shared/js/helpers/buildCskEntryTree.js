@@ -11,9 +11,9 @@ import {
 
 const parseErrors = ($el) => {
   try {
-    const error =  $el.data(CSK_ENTRY_ERROR);
+    const error = $el.data(CSK_ENTRY_ERROR);
     return error.errors;
-  } catch(e) {
+  } catch (e) {
     return null;
   }
 };
@@ -28,7 +28,7 @@ function traverseDomNode(jqObj, domEl, results) {
     const uuid = prevUuid || uuidv4();
 
     $el.attr(`data-${CSK_ENTRY_UUID_NAME}`, uuid);
- 
+
     results.push({
       id: $el.data(CSK_ENTRY_ID_NAME),
       field: $el.data(CSK_ENTRY_FIELD_NAME),
