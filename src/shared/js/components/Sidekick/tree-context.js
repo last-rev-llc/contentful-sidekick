@@ -1,7 +1,7 @@
 import React from 'react';
 import { createContext, useContextSelector } from 'use-context-selector';
 
-const TreeStateContext = createContext({
+export const TreeStateContext = createContext({
   selected: null,
   expandedState: {},
   selectedPath: []
@@ -14,13 +14,13 @@ const TreeUpdaterContext = createContext({
 
 const getPath = ({ node, uuid }) => {
   if (node.uuid == uuid) {
-    return [uuid];
+    return [node];
   }
   if (node.children && node.children.length) {
     for (const child of node.children) {
       const path = getPath({ node: child, uuid });
       if (path.length) {
-        return [...path, node.uuid];
+        return [...path, node];
       }
     }
   }
@@ -72,7 +72,7 @@ const useNode = (uuid) => {
   const selectedPath = useContextSelector(TreeStateContext, (context) => context.selectedPath);
   const selected = useContextSelector(TreeStateContext, (context) => context.selected);
 
-  const isExpanded = React.useMemo(() => expanded || (selected && selectedPath.includes(uuid)), [
+  const isExpanded = React.useMemo(() => expanded || (selected && selectedPath.find((n) => n.uuid === uuid)), [
     uuid,
     expanded,
     selected,

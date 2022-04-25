@@ -8,7 +8,7 @@ import buildCskEntryTree from './helpers/buildCskEntryTree';
 import { CSK_ENTRY_SELECTOR } from './helpers/constants';
 
 const shrinkContent = () => {
-  $('body').css('padding-left', '20vw');
+  // $('body').css('padding-left', '20vw');
   // $('*').filter(function () {
   //   const $el = $(this);
   //   if ($el.css('position') == 'fixed') {
@@ -140,8 +140,8 @@ const init = async () => {
     const { changedUrl } = request;
     getIsSideKickEnabledFromStorage().then((enabled) => {
       if (changedUrl && enabled) {
-        resetDom();
-        loadSidekick();
+        // resetDom();
+        // loadSidekick();
       }
     });
   });

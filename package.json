@@ -1,6 +1,6 @@
 {
   "name": "contentful-sidekick",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Chrome Extension that enables inline editing for websites created in Contentful",
   "main": "index.js",
   "browserslist": [
@@ -10,7 +10,7 @@
     "test": "jest tests/*.test.js",
     "build:clean": "rimraf dist",
     "build:chrome": "npm run build:clean && webpack --progress --config webpack/webpack.config.chrome.js",
-    "start": "npm run build:clean && webpack --watch --progress --config webpack/webpack.config.chrome.js"
+    "dev": "npm run build:clean && webpack --watch --progress --config webpack/webpack.config.chrome.js"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,11 @@
   },
   "homepage": "https://github.com/bradtaylorsf/contentful-sidekick#readme",
   "dependencies": {
+    "@emotion/react": "^11.7.0",
+    "@emotion/styled": "^11.6.0",
+    "@mui/icons-material": "^5.2.1",
+    "@mui/material": "^5.2.3",
+    "@mui/system": "^5.2.3",
     "common-tags": "^1.8.0",
     "contentful": "^7.14.6",
     "contentful-management": "^5.4.0",

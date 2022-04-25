@@ -1,9 +1,10 @@
 import React from 'react';
+import { useContextSelector } from 'use-context-selector';
 import getContentfulItemUrl from '../../helpers/getContentfulItemUrl';
 import { CSK_ENTRY_UUID_NAME } from '../../helpers/constants';
 import { resetBlur, setBlur } from '../../helpers/blur';
 import ErrorTooltip from './ErrorTooltip';
-import { useNode, useTreeUpdater } from './tree-context';
+import { TreeStateContext, useNode, useTreeUpdater } from './tree-context';
 
 const calcElScrollTop = (el) => {
   if (el && el.offset()) {
@@ -16,6 +17,7 @@ const calcElScrollTop = (el) => {
 
 const TreeNode = ({ id, field, type, displayText, uuid, childNodes, errors }) => {
   const { isExpanded, isSelected } = useNode(uuid);
+  const selectedPath = useContextSelector(TreeStateContext, (context) => context.selectedPath);
   const { setIsExpanded } = useTreeUpdater();
   const handleExpandCollapseClick = React.useCallback(() => {
     setIsExpanded(uuid, !isExpanded);
@@ -44,7 +46,7 @@ const TreeNode = ({ id, field, type, displayText, uuid, childNodes, errors }) =>
           ))}
         </ul>
       ) : null,
-    [childNodes]
+    [childNodes, selectedPath]
   );
   const el = React.useMemo(() => $(`[data-${CSK_ENTRY_UUID_NAME}='${uuid}']`), [uuid]);
 
@@ -53,7 +55,7 @@ const TreeNode = ({ id, field, type, displayText, uuid, childNodes, errors }) =>
     $('html, body').stop().animate({ scrollTop }, 300);
   }, [el]);
 
-  const url = id ? getContentfulItemUrl(id) : null;
+  const url = id ? getContentfulItemUrl(id, selectedPath) : null;
   const text = `${displayText || field || type || id}`;
   const handleMouseEnter = () => {
     setBlur(el);
