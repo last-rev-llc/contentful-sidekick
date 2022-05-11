@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/bradtaylorsf/contentful-sidekick#readme",
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@mui/icons-material": "^5.2.1",
@@ -35,10 +36,11 @@
     "@mui/system": "^5.2.3",
     "common-tags": "^1.8.0",
     "contentful": "^7.14.6",
-    "contentful-management": "^5.4.0",
+    "contentful-management": "10.0.0",
     "copy-webpack-plugin": "^4.6.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-loader": "^2.1.1",
+    "imurmurhash": "^0.1.4",
     "jquery": "^3.5.0",
     "lodash": "^4.17.19",
     "react": "^17.0.2",
@@ -52,6 +54,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",
+    "@babel/plugin-transform-runtime": "^7.17.10",
     "@babel/preset-env": "^7.11.5",
     "@babel/preset-react": "^7.10.4",
     "@last-rev/generator": "^1.0.8",

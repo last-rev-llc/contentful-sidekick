@@ -162,3 +162,12 @@ body {
 [data-init-csk] #csk-blur-actions.hidden {
   transform: translate(-100%, -100%);
 }
+
+[data-init-csk] .csk-templates {
+  position: absolute;
+  width: 399px;
+  height: 400px;
+  z-index: 10000;
+  background-color: #000;
+  color: white;
+}

@@ -3,8 +3,8 @@
   "name": "Contentful Sidekick",
   "short_name": "Contentful Sidekick",
   "description": "Chrome Extension that enables inline editing for websites created in Contentful",
-  "version": "0.1.1",
-  "permissions": ["activeTab", "storage", "tabs", "http://*/*", "https://*/*", "*://*/*"],
+  "version": "2.0.0",
+  "permissions": ["activeTab", "storage", "tabs", "identity", "http://*/*", "https://*/*", "*://*/*"],
   "icons": {
     "16": "img/icon16.png",
     "32": "img/icon32.png",
@@ -29,5 +29,10 @@
     }
   ],
   "web_accessible_resources": ["js/content.js"],
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1aXO0rFwc1hDoM2lgHWIVjv6+UpmjLrEWS5fOouR78uF7YzMb8P8PtnSu1EDu7IudsXOF+pBVW/45vS/TaiJW8br3waO13ltYZY7MALEB6qTvtTPmLojS97FCA6xxlQjFubPx5VNCjZLUDfGLNRnFTLuyyCPJaYg0/K+Otxvy8eeFSPolbemMHwGrAewDTOdOb9Gmbkh65jww4Cdi/E1TUaPNVgnebQAagZtFk7LIQedgZ7HmNrUzQwfVLplxOz1jEMg/u21/uu4ihuT3bpW+0TASUgqL3ljCaNr7fYIqaKdyXX7MC/PrBASP7gWSAofI8V8ey6uLba/KN83gVhrtwIDAQAB",
+  "oauth2": {
+    "client_id": "https://be.contentful.com/oauth/authorize?response_type=token&client_id=WccRf7M_eDzfIgOrC1gFKBEi4Pae7w1lw_LbQZHiK4U&redirect_uri=https://cmheemjjmooepppggclooeejginffobo.chromiumapp.org&scope=content_management_manage",
+    "scopes": ["content_management_manage"]
+  }
 }

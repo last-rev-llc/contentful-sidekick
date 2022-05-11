@@ -24,6 +24,21 @@ function Popup() {
     window.close();
   };
 
+  const handleOauth = () => {
+    chrome.identity.launchWebAuthFlow(
+      {
+        interactive: true,
+        url: "https://be.contentful.com/oauth/authorize?response_type=token&client_id=WccRf7M_eDzfIgOrC1gFKBEi4Pae7w1lw_LbQZHiK4U&redirect_uri=https://cmheemjjmooepppggclooeejginffobo.chromiumapp.org&scope=content_management_manage"
+      },
+      (token) => {
+        let cma = token.split('=')[1];
+        cma = cma.substring(0,cma.indexOf('&'));
+        console.log(cma);
+        chrome.storage.sync.set({cma});
+      }
+    );
+  };
+
   if (!loaded) return <div>Loading...</div>;
 
   return (
@@ -40,6 +55,8 @@ function Popup() {
           <label htmlFor="sideKickEnabled" />
         </div>
         <div>Is Enabled: {sideKickEnabled ? 'Yes' : 'No'}</div>
+        <div><button type="submit" className="oauth-button" onClick={handleOauth}>OAUTH</button></div>
+        
       </main>
       <footer>
         <small className="version">v{version}</small>

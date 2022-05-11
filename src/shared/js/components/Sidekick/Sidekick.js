@@ -1,6 +1,7 @@
 import { SpeedDial, SpeedDialAction } from '@mui/material';
 import HighlightIcon from '@mui/icons-material/HighlightAlt';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
+import AddIcon from '@mui/icons-material/Add';
 import { ThemeProvider } from '@mui/system';
 import debounce from 'lodash/debounce';
 
@@ -9,6 +10,7 @@ import buildCskEntryTree from '../../helpers/buildCskEntryTree';
 import { TreeProvider } from './tree-context';
 import ElementHighlighter from './ElementHighlighter';
 import Sidebar from './Sidebar';
+import Templates from './Templates';
 import './Sidekick.css';
 import theme from '../../theme';
 import useStorageState from '../../helpers/useStorageState';
@@ -72,8 +74,14 @@ const Sidekick = ({ defaultTree }) => {
               color={highlight ? 'primary' : 'secondary'}
               onClick={() => setShow(!show)}
             />
+            <SpeedDialAction
+              icon={<AddIcon />}
+              tooltipTitle='Add Section from Template'
+              tooltipPlacement='right'
+              color={highlight ? 'primary' : 'secondary'}
+            />
           </SpeedDial>
-
+          <Templates />
           <Sidebar show={show} tree={tree} />
           {highlight ? <ElementHighlighter /> : null}
         </>

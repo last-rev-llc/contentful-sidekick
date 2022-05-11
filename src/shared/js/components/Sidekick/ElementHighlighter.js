@@ -75,6 +75,9 @@ const ElementHighlighter = () => {
       <a target="_blank" id="csk-blur-actions">
         Edit
       </a>
+      <a id="csk-template">
+        Template
+      </a>
     </>
   );
 };
