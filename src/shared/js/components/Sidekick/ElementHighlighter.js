@@ -11,8 +11,16 @@ import { resetSelectedOutline, setSelectedOutline } from '../../helpers/selected
 import { CSK_ENTRY_ID_NAME, CSK_ENTRY_SELECTOR, CSK_ENTRY_UUID_NAME } from '../../helpers/constants';
 import { TreeStateContext, useTreeUpdater } from './tree-context';
 import { Box, Button, Paper, styled, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import removeContentFromIndex from '../../helpers/removeContentFromIndex';
+import reorderContent from '../../helpers/reorderContent';
 
 const ElementHighlighter = ({ setAddToTemplate }) => {
+  const [pageId, setPageId] = React.useState('');
+  React.useLayoutEffect(() => {
+    // TODO read this from a meta tag. This assumes on preview route
+    const pageParams = new URLSearchParams(window.location.search);
+    setPageId(pageParams.get('id'));
+  }, []);
   const { tree, setSelected } = useTreeUpdater();
 
   const [sections, setSections] = React.useState([]);
@@ -56,7 +64,8 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
       // setBlur($(e.target), url);
 
       setSelected(uuid);
-      setSelectedOutline($(e.target), url);
+      // setSelectedOutline($(e.target), url);
+      resetBlur();
     }, 300);
 
     const handleCskEntryMouseleave = throttle((e) => {
@@ -168,14 +177,31 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
           }}
         />
       ))}
-      {/* {['top', 'bottom', 'left', 'right'].map((dir) => (
-        <div id={`csk-selected-${dir}`} key={dir} className={`csk-selected csk-selected-${dir}`} />
-      ))} */}
+      {['top', 'bottom', 'left', 'right'].map((dir) => (
+        <div
+          onClick={() => resetSelectedOutline()}
+          id={`csk-selected-${dir}`}
+          key={dir}
+          className={`csk-selected csk-selected-${dir}`}
+        />
+      ))}
 
       {sections.map((section, index) => (
-        <SectionUI active={index == active} section={section} index={index} setAddToTemplate={setAddToTemplate} />
+        <SectionUI
+          active={index == active}
+          section={section}
+          index={index}
+          setAddToTemplate={setAddToTemplate}
+          pageId={pageId}
+        />
       ))}
       <div id="csk-blur-actions">
+        <a id="csk-edit-link" target="_blank">
+          Edit
+        </a>
+        {/* <a id="csk-template">Template</a> */}
+      </div>
+      <div id="csk-selected-actions">
         <a id="csk-edit-link" target="_blank">
           Edit
         </a>
@@ -185,8 +211,15 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
   );
 };
 
-const SectionUI = ({ section, setAddToTemplate, index, active }) => {
+const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
   // const [active, setActive] = React.useState(false);
+  const handleDelete = async () => {
+    try {
+      await removeContentFromIndex({ pageId, index, field: 'contents' });
+    } catch (err) {
+      console.log('Delete error', err);
+    }
+  };
   return (
     <SectionUIContainer
       className="csk-section"
@@ -229,17 +262,21 @@ const SectionUI = ({ section, setAddToTemplate, index, active }) => {
                 <IconEdit />
               </Tooltip>
             </ToggleButton>
-            <ToggleButton sx={{ width: 40, height: 40 }}>
+            <ToggleButton sx={{ width: 40, height: 40 }} onClick={handleDelete}>
               <Tooltip title={`Delete`}>
                 <IconDelete sx={{ color: 'danger' }} />
               </Tooltip>
             </ToggleButton>
-            <ToggleButton sx={{ width: 40, height: 40 }}>
+            <ToggleButton
+              sx={{ width: 40, height: 40 }}
+              onClick={() => reorderContent({ pageId, from: index, to: index - 1 })}>
               <Tooltip title={`MoveUp`}>
                 <IconMoveUp />
               </Tooltip>
             </ToggleButton>
-            <ToggleButton sx={{ width: 40, height: 40 }}>
+            <ToggleButton
+              sx={{ width: 40, height: 40 }}
+              onClick={() => reorderContent({ pageId, from: index, to: index + 1 })}>
               <Tooltip title={`MoveDown`}>
                 <IconMoveDown />
               </Tooltip>

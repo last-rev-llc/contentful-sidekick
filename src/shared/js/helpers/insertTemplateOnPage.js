@@ -63,6 +63,11 @@ export default async (pageId, templateId, index) => {
 
   console.log('PAGE DATA', pageEntry);
   console.log('NewContentRoot', newItems[0].sys.id);
+  if (!pageEntry.fields.contents) {
+    pageEntry.fields.contents = {
+      ['en-US']: []
+    };
+  }
   if (typeof index !== 'undefined') {
     pageEntry.fields.contents['en-US'].splice(index, 0, {
       sys: {
@@ -83,8 +88,10 @@ export default async (pageId, templateId, index) => {
     });
   }
   console.log('UPDATED PAGE DATA', pageEntry);
-  pageEntry.update();
-
+  await pageEntry.update();
+  setTimeout(() => {
+    window.postMessage({ type: 'REFRESH_CONTENT' }, '*');
+  }, 1000);
   // const updatedPage = await updateEntry('4uogEyr2z3e8VqlFMn4VpX', {fields: pageData.fields}, SPACE_ID, ENV_ID, 'page', pageData.sys.version, cmaToken);
 
   // console.log('PAGE', updatedPage);

@@ -26,19 +26,24 @@ const getTemplates = async () => {
 
 const Templates = ({ open, handleClose, index }) => {
   const [templates, setTemplates] = useState([]);
-  const [pageId, setPageId] = useState('');
+
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState();
   const Contentful = useAuth();
+  const [pageId, setPageId] = useState('');
   useEffect(() => {
     // TODO read this from a meta tag. This assumes on preview route
     const pageParams = new URLSearchParams(window.location.search);
     setPageId(pageParams.get('id'));
 
     async function fetchTemplates() {
-      const response = await getTemplates();
-      console.log('templates', response.items);
-      setTemplates(response.items);
+      try {
+        const response = await getTemplates();
+        console.log('templates', response.items);
+        setTemplates(response.items);
+      } catch (err) {
+        console.log('error', err);
+      }
     }
     fetchTemplates();
   }, []);
