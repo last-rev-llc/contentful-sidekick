@@ -1,4 +1,4 @@
-import { each } from 'lodash';
+// import { each } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import {
   CSK_ENTRY_ID_NAME,
@@ -6,7 +6,7 @@ import {
   CSK_ENTRY_FIELD_NAME,
   CSK_ENTRY_DISPLAY_TEXT_NAME,
   CSK_ENTRY_UUID_NAME,
-  CSK_ENTRY_ERROR,
+  CSK_ENTRY_ERROR
 } from './constants';
 
 const parseErrors = ($el) => {
@@ -41,7 +41,7 @@ function traverseDomNode(jqObj, domEl, results) {
   }
 
   if (domEl.children) {
-    each(domEl.children, (child) => {
+    Array.from(domEl.children).forEach((child) => {
       traverseDomNode(jqObj, child, isEl ? children : results);
     });
   }

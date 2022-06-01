@@ -1,22 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import getIsSideKickEnabledFromStorage from '../../helpers/getIsSideKickEnabledFromStorage';
 import setSideKickEnabledInStorage from '../../helpers/setSideKickEnabled';
 import './Popup.css';
+import { Box } from '@mui/material';
+import useAuth from '../../helpers/useAuth';
 
 const { version } = require('../../../../../package.json');
 
 function Popup() {
-  const [sideKickEnabled, setSideKickEnabled] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    async function setVars() {
-      setSideKickEnabled(await getIsSideKickEnabledFromStorage());
-      setLoaded(true);
-    }
-    setVars();
-  }, []);
-
+  const [sideKickEnabled, setSideKickEnabled] = React.useState(false);
+  const [loaded, setLoaded] = React.useState(false);
+  const { handleLogin, isLoggedIn, loaded: loadedAuth } = useAuth();
   const handleChange = () => {
     const curSideKickEnabled = !sideKickEnabled;
     setSideKickEnabled(curSideKickEnabled);
@@ -24,20 +18,18 @@ function Popup() {
     window.close();
   };
 
-  const handleOauth = () => {
-    chrome.identity.launchWebAuthFlow(
-      {
-        interactive: true,
-        url: "https://be.contentful.com/oauth/authorize?response_type=token&client_id=WccRf7M_eDzfIgOrC1gFKBEi4Pae7w1lw_LbQZHiK4U&redirect_uri=https://cmheemjjmooepppggclooeejginffobo.chromiumapp.org&scope=content_management_manage"
-      },
-      (token) => {
-        let cma = token.split('=')[1];
-        cma = cma.substring(0,cma.indexOf('&'));
-        console.log(cma);
-        chrome.storage.sync.set({cma});
+  useEffect(() => {
+    async function setVars() {
+      try {
+        setSideKickEnabled(await getIsSideKickEnabledFromStorage());
+        // verifiyAuth();
+        setLoaded(true);
+      } catch (error) {
+        setLoaded(true);
       }
-    );
-  };
+    }
+    setVars();
+  }, []);
 
   if (!loaded) return <div>Loading...</div>;
 
@@ -54,9 +46,19 @@ function Popup() {
           {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
           <label htmlFor="sideKickEnabled" />
         </div>
-        <div>Is Enabled: {sideKickEnabled ? 'Yes' : 'No'}</div>
-        <div><button type="submit" className="oauth-button" onClick={handleOauth}>OAUTH</button></div>
-        
+        {/* <div>Is Enabled: {sideKickEnabled ? 'Yes' : 'No'}</div> */}
+        <Box sx={{ opacity: loadedAuth ? 1 : 0, transition: '.3s' }}>
+          {!isLoggedIn && loadedAuth ? (
+            <div>
+              <p>Connect content management</p>
+              <button type="submit" className="oauth-button" onClick={handleLogin}>
+                Sign In
+              </button>
+            </div>
+          ) : (
+            <div>Connected</div>
+          )}
+        </Box>
       </main>
       <footer>
         <small className="version">v{version}</small>

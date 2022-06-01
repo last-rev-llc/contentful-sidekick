@@ -9,7 +9,7 @@ export const setBlur = ($target, editUrl) => {
   const bodyHeight = $('body').height();
   const ctHeight = $el.outerHeight(true);
   const ctWidth = $el.outerWidth(true);
-
+  const ctType = $el.data('cskEntryType');
   const posTop = parseInt($el.offset().top, 10);
   const posBottom = docHeight - (posTop + ctHeight);
   const posLeft = parseInt($el.offset().left - $(document).scrollLeft(), 10);
@@ -21,7 +21,9 @@ export const setBlur = ($target, editUrl) => {
   $('#csk-blur-bottom').css({ bottom: bodyHeight - docHeight, height: posBottom });
 
   if (editUrl) {
-    $('#csk-blur-actions').removeClass('hidden').css({ top: posTop, left: posLeft }).attr('href', editUrl);
+    $('#csk-blur-actions').removeClass('hidden').css({ top: posTop, left: posLeft });
+    $('#csk-blur-actions #csk-edit-link').attr('href', editUrl);
+    $('#csk-blur-actions #csk-edit-link').text(`Edit ${ctType}`);
   }
 };
 

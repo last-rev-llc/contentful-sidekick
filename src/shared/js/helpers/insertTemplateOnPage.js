@@ -1,62 +1,92 @@
-import { get } from 'lodash';
+import get from 'lodash/get';
 import getContentfulClient from './getContentfulEnvironment';
 import getTemplateChildren from './getTemplateChilrdren';
 import getHashedIDFromString from './getHashedIDFromString';
 
-
-export default async (pageId, templateId) => {  
+export default async (pageId, templateId, index) => {
   const client = await getContentfulClient();
-  const pageData = await client.getEntries({
-    content_type: 'page',
+  const instanceId = new Date().getTime();
+  const {
+    items: [pageEntry]
+  } = await client.getEntries({
+    'content_type': 'page',
     'sys.id': pageId,
-    include: 6,
+    'include': 6
   });
 
   const locales = await client.getLocales();
 
-  const defaultLocale = get(locales.items.find((locale) => {
-    return get(locale, 'default') === true;
-  }), 'code', 'en-US');
+  const defaultLocale = get(
+    locales.items.find((locale) => {
+      return get(locale, 'default') === true;
+    }),
+    'code',
+    'en-US'
+  );
 
   const templateEntry = await client.getEntry(templateId);
   const templateContentId = get(templateEntry, `fields.content.${defaultLocale}.sys.id`);
 
-  const pageEntry = pageData.items[0];
+  const { allChildrenEntries, idsMap } = await getTemplateChildren(templateId, pageId, defaultLocale);
 
-  const allClonedComponents = await getTemplateChildren(templateId, pageId, defaultLocale);
+  console.log('ALL COMPS', { idsMap, allChildrenEntries });
 
-  // console.log('ALL COMPS', allClonedComponents);
-
-  const allEntryPromiseArray = allClonedComponents.map(async (entry) => {
+  const allEntryPromiseArray = allChildrenEntries.map(async (entry) => {
     const origId = entry.sys.id;
-    const newId = getHashedIDFromString(`${pageId}-${origId}`);
+    const newId = getHashedIDFromString(`${instanceId}-${pageId}-${origId}`);
     console.log('NEW ID', newId);
+    // Map fields, look for links and replace with new ids
     const newitem = await client.createEntryWithId(entry.sys.contentType.sys.id, newId, {
-      fields: entry.fields
+      fields: {
+        ...entry.fields
+      },
+      metadata: {
+        tags: [
+          {
+            sys: {
+              type: 'Link',
+              linkType: 'Tag',
+              id: 'templatedContent'
+            }
+          }
+        ]
+      }
     });
     return newitem;
   });
 
-  // console.log('ALL PROMISES' , allEntryPromiseArray);
+  console.log('ALL PROMISES', allEntryPromiseArray);
 
   const newItems = await Promise.all(allEntryPromiseArray);
-  
-  // console.log('New Items', newItems);
 
-  // console.log('PAGE DATA', pageEntry);
+  console.log('New Items', newItems);
 
-  pageEntry.fields.contents['en-US'].push({
-    sys: {
-      id: getHashedIDFromString(`${pageId}-${templateContentId}`),
-      linkType: 'Entry',
-      type: 'Link'
-    }
-  });
-
+  console.log('PAGE DATA', pageEntry);
+  console.log('NewContentRoot', newItems[0].sys.id);
+  if (typeof index !== 'undefined') {
+    pageEntry.fields.contents['en-US'].splice(index, 0, {
+      sys: {
+        // First Item is always the copy of the template
+        id: newItems[0].sys.id,
+        linkType: 'Entry',
+        type: 'Link'
+      }
+    });
+  } else {
+    pageEntry.fields.contents['en-US'].push({
+      sys: {
+        // First Item is always the copy of the template
+        id: newItems[0].sys.id,
+        linkType: 'Entry',
+        type: 'Link'
+      }
+    });
+  }
+  console.log('UPDATED PAGE DATA', pageEntry);
   pageEntry.update();
 
   // const updatedPage = await updateEntry('4uogEyr2z3e8VqlFMn4VpX', {fields: pageData.fields}, SPACE_ID, ENV_ID, 'page', pageData.sys.version, cmaToken);
 
   // console.log('PAGE', updatedPage);
   // console.log('ENTRY', newEntry);
-}; 
+};

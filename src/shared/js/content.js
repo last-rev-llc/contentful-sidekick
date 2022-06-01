@@ -6,6 +6,7 @@ import Sidekick from './components/Sidekick';
 import addSidekickEnabledListener from './helpers/addSidekickEnabledListener';
 import buildCskEntryTree from './helpers/buildCskEntryTree';
 import { CSK_ENTRY_SELECTOR } from './helpers/constants';
+import getContentfulVars from './helpers/getContentfulVars';
 
 const shrinkContent = () => {
   // $('body').css('padding-left', '20vw');
@@ -123,6 +124,10 @@ const init = async () => {
   const sideKickEnabled = await getIsSideKickEnabledFromStorage(); // extension not enabled
 
   if (sideKickEnabled) {
+    // TODO: Make contentfulVars return an object
+    const [spaceId, env] = getContentfulVars();
+    console.log('SetContentfulVars:', { spaceId, env });
+    chrome.storage.sync.set({ spaceId, env });
     loadSidekick();
   } else {
     resetDom();
@@ -130,6 +135,10 @@ const init = async () => {
 
   addSidekickEnabledListener((isEnabled) => {
     if (isEnabled) {
+      // TODO: Make contentfulVars return an object
+      const [spaceId, env] = getContentfulVars();
+      console.log('SetContentfulVars:', { spaceId, env });
+      chrome.storage.sync.set({ spaceId, env });
       loadSidekick();
     } else {
       resetDom();

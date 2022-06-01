@@ -191,3 +191,21 @@
   width: 170px;
   font-size: 12px;
 }
+
+.csk-section {
+  position: absolute;
+  padding: 0;
+  margin: 0;
+  border-bottom: 1px solid #7b00ff;
+  z-index: 999;
+}
+#csk-sidebar-container {
+  height: 100%;
+  position: absolute;
+  width: 100%;
+  display: block;
+  pointer-events: none;
+}
+#csk-sidebar-container > * {
+  pointer-events: auto;
+}

@@ -8,6 +8,7 @@ export default async ({ spaceId, env } = {}) => {
     accessToken: getCMAToken
   });
   const space = await client.getSpace(!!spaceId ? spaceId : SPACE_ID);
+
   const environment = await space.getEnvironment(!!env ? env : ENV);
-  return environment;
+  return { client, space, environment };
 };

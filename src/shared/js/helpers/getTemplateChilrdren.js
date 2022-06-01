@@ -1,67 +1,72 @@
-import { get, set, keys, isArray } from 'lodash';
+import get from 'lodash/get';
+import set from 'lodash/set';
 import getContentfulClient from './getContentfulEnvironment';
 import getHashedIDFromString from './getHashedIDFromString';
 
-
-
 export default async (templateId, pageId, defaultLocale) => {
+  const idsMap = {};
   const client = await getContentfulClient();
-  
+
   const template = await client.getEntry(templateId);
 
   const templateContentId = get(template, `fields.content.${defaultLocale}.sys.id`);
-  console.log('CONTENT', template);
+  console.log('Template', template);
 
   const allChildrenEntries = [];
 
   const getAllContent = async (id) => {
-    const entry = await client.getEntry(id);
+    try {
+      console.log('getAllContent', { id });
+      const entry = await client.getEntry(id);
 
-    const refEntryIds = [];
-    const getChildrenRefIds = (content, key) => {
-      if(isArray(content)){
-        const hashedEntrys = content.map((ref) => {
-          if(get(ref, 'sys.linkType') === 'Entry'){
-            refEntryIds.push(ref.sys.id);
-          }
-          return {
-            sys: {
-              id: getHashedIDFromString(`${pageId}-${ref.sys.id}`),
-              linkType: ref.sys.linkType,
-              type: ref.sys.type
+      const refEntryIds = [];
+      const getChildrenRefIds = (content, key) => {
+        if (Array.isArray(content)) {
+          const hashedEntrys = content.map((ref) => {
+            if (get(ref, 'sys.linkType') === 'Entry') {
+              refEntryIds.push(ref.sys.id);
             }
-          };
-        });
-        set(entry, `fields.${key}.${defaultLocale}`, hashedEntrys);
-      }
-  
-      if(get(content, 'sys.id')) {
-        refEntryIds.push(content.sys.id);
-      }
-    };
+            // if (get(content, 'sys.id')) {
+            //   refEntryIds.push(content.sys.id);
+            // }
+            idsMap[ref.sys.id] = getHashedIDFromString(`${pageId}-${ref.sys.id}`);
+            return {
+              sys: {
+                id: idsMap[ref.sys.id],
+                linkType: ref.sys.linkType,
+                type: ref.sys.type
+              }
+            };
+          });
+          set(entry, `fields.${key}.${defaultLocale}`, hashedEntrys);
+        }
+      };
 
-    keys(entry.fields).map((key) => {
-      const localizedField = get(entry, `fields.${key}.${defaultLocale}`);
-      // console.log('LOCALIZED', localizedField);
-      // console.log('KEY', `${key}.${defaultLocale}`);
-      // console.log('is array', localizedField);
-      getChildrenRefIds(localizedField, key);
-    });
+      Object.keys(entry.fields).map((key) => {
+        const localizedField = get(entry, `fields.${key}.${defaultLocale}`);
+        // console.log('LOCALIZED', localizedField);
+        // console.log('KEY', `${key}.${defaultLocale}`);
+        // console.log('is array', localizedField);
+        getChildrenRefIds(localizedField, key);
+      });
+      allChildrenEntries.push(entry);
 
-    allChildrenEntries.push(entry);
+      // console.log('REF ENTRY IDS', refEntryIds);
 
-    // console.log('REF ENTRY IDS', refEntryIds);
-
-    await Promise.all(refEntryIds.map(async (refId) => {
-      await getAllContent(refId);
-    }));
+      await Promise.all(
+        refEntryIds.map(async (refId) => {
+          await getAllContent(refId);
+        })
+      );
+    } catch (error) {
+      console.log('ERROR->getAllContent', { id, error });
+      throw error;
+    }
   };
 
   await getAllContent(templateContentId);
 
   console.log('ALL CHILDREN', allChildrenEntries);
 
-  return allChildrenEntries;
-
-  
+  return { allChildrenEntries, idsMap };
 };

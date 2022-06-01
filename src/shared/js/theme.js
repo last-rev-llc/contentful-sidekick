@@ -4,6 +4,9 @@ const theme = createTheme({
   palette: {
     primary: {
       main: '#9146ff'
+    },
+    danger: {
+      main: '#ff0000'
     }
   }
 });
