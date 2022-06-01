@@ -18,12 +18,13 @@
     "default_title": "Contentful Sidekick"
   },
   "background": {
-    "scripts": ["js/background.js"]
+    "scripts": ["js/background.js", "js/hot-reload.js"]
   },
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_idle",
+      "all_frames": true,
       "js": ["js/vendor.js", "js/content.js"],
       "css": ["css/content.css"]
     }
