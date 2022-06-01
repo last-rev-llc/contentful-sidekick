@@ -1,7 +1,5 @@
 import get from 'lodash/get';
 import getContentfulClient from './getContentfulEnvironment';
-import getTemplateChildren from './getTemplateChilrdren';
-import getHashedIDFromString from './getHashedIDFromString';
 
 export default async ({ pageId, field = 'contents', index }) => {
   const client = await getContentfulClient();
@@ -33,7 +31,7 @@ export default async ({ pageId, field = 'contents', index }) => {
 
   setTimeout(() => {
     window.postMessage({ type: 'REFRESH_CONTENT' }, '*');
-  }, 2000);
+  }, 100);
   // const updatedPage = await updateEntry('4uogEyr2z3e8VqlFMn4VpX', {fields: pageData.fields}, SPACE_ID, ENV_ID, 'page', pageData.sys.version, cmaToken);
 
   // console.log('PAGE', updatedPage);

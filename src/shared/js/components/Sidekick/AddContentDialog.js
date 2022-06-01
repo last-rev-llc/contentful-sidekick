@@ -48,10 +48,11 @@ const Templates = ({ open, handleClose, index }) => {
     fetchTemplates();
   }, []);
   const groupedTemplates = templates.reduce((acc, template) => {
-    if (!acc[template.fields.category]) {
-      acc[template.fields.category] = [];
+    if (!template.fields.category) return acc;
+    if (!acc[template.fields.category.toUpperCase()]) {
+      acc[template.fields.category.toUpperCase()] = [];
     }
-    acc[template.fields.category].push(template);
+    acc[template.fields.category.toUpperCase()].push(template);
     return acc;
   }, {});
   const handleClick = (template) => async () => {
@@ -89,7 +90,7 @@ const Templates = ({ open, handleClose, index }) => {
               // action={action}
             />
 
-            <Typography variant="overline">{category}</Typography>
+            <Typography variant="h6">{category}</Typography>
             <br />
             <Box display="grid" gridTemplateColumns={`repeat(${Math.min(templates.length, 2)}, 1fr)`} gap={2}>
               {groupTemplates.map((tmp) => {

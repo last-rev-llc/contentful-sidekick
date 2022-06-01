@@ -177,14 +177,14 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
           }}
         />
       ))}
-      {['top', 'bottom', 'left', 'right'].map((dir) => (
+      {/* {['top', 'bottom', 'left', 'right'].map((dir) => (
         <div
           onClick={() => resetSelectedOutline()}
           id={`csk-selected-${dir}`}
           key={dir}
           className={`csk-selected csk-selected-${dir}`}
         />
-      ))}
+      ))} */}
 
       {sections.map((section, index) => (
         <SectionUI
@@ -202,9 +202,9 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
         {/* <a id="csk-template">Template</a> */}
       </div>
       <div id="csk-selected-actions">
-        <a id="csk-edit-link" target="_blank">
+        {/* <a id="csk-edit-link" target="_blank">
           Edit
-        </a>
+        </a> */}
         {/* <a id="csk-template">Template</a> */}
       </div>
     </>
@@ -264,7 +264,7 @@ const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
             </ToggleButton>
             <ToggleButton sx={{ width: 40, height: 40 }} onClick={handleDelete}>
               <Tooltip title={`Delete`}>
-                <IconDelete sx={{ color: 'danger' }} />
+                <IconDelete sx={{ color: 'danger.main' }} />
               </Tooltip>
             </ToggleButton>
             <ToggleButton
@@ -300,7 +300,17 @@ const SectionUIContainer = styled('div')`
   }
 `;
 const SectionInner = styled('div')`
-  border: 3px solid ${({ theme }) => theme.palette.primary.main};
+  position: relative;
+  &::before {
+    content: '';
+    border: 3px solid ${({ theme }) => theme.palette.primary.main};
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
   pointer-events: none;
   * {
     pointer-events: auto;

@@ -15,6 +15,7 @@ export const setBlur = ($target, editUrl) => {
   const posLeft = parseInt($el.offset().left - $(document).scrollLeft(), 10);
   const posRight = docWidth - posLeft - ctWidth;
   $('.csk-blur').css('opacity', 1);
+  $('.csk-blur').css('display', 'block');
   $('#csk-blur-left').css({ width: posLeft, height: docHeight });
   $('#csk-blur-right').css({ width: posRight, height: docHeight });
   $('#csk-blur-top').css('height', posTop);
@@ -26,6 +27,7 @@ export const setBlur = ($target, editUrl) => {
     $('#csk-blur-actions #csk-edit-link').text(`Edit ${ctType}`);
   }
 };
+edi;
 
 export const resetBlur = () => {
   $('#csk-blur-top').css('height', 0);
@@ -34,4 +36,5 @@ export const resetBlur = () => {
   $('#csk-blur-right').css('width', 0);
   $('#csk-blur-actions').addClass('hidden').css({ left: 0, top: 0 }).attr('href', '#');
   $('.csk-blur').css('opacity', 0);
+  $('.csk-blur').css('display', 'none');
 };
