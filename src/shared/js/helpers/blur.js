@@ -27,7 +27,6 @@ export const setBlur = ($target, editUrl) => {
     $('#csk-blur-actions #csk-edit-link').text(`Edit ${ctType}`);
   }
 };
-edi;
 
 export const resetBlur = () => {
   $('#csk-blur-top').css('height', 0);
