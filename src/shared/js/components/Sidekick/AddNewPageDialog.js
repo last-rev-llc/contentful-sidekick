@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  TextField,
   Typography,
   LinearProgress,
   Snackbar
@@ -77,55 +78,20 @@ const Templates = ({ open, handleClose, index }) => {
   return (
     <Dialog onClose={handleClose} open={open} maxWidth="lg">
       <DialogTitle sx={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
-        Add new content
+        Add new page
         <Button sx={{ minWidth: 'auto' }} onClick={handleClose}>
           X
         </Button>
       </DialogTitle>
       <DialogContent>
-        {Object.entries(groupedTemplates).map(([category, groupTemplates]) => (
-          <>
-            <Snackbar
-              open={!!message}
-              autoHideDuration={6000}
-              // onClose={handleClose}
-              message={message}
-              // action={action}
-            />
-
-            <Typography variant="h6">{category}</Typography>
-            <br />
-            <Box display="grid" gridTemplateColumns={`repeat(${Math.min(templates.length, 2)}, 1fr)`} gap={2}>
-              {groupTemplates.map((tmp) => {
-                return (
-                  <Card
-                    key={tmp.sys.id}
-                    elevation={0}
-                    onClick={handleClick(tmp)}
-                    sx={{
-                      'cursor': 'pointer',
-                      'width': '100%',
-                      'transition': '.2s',
-                      '&:hover': { boxShadow: 5 }
-                    }}>
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      width="1440"
-                      sx={{ objectFit: 'contain', objectPosition: 'center' }}
-                      image={tmp.fields.image ? tmp.fields.image.fields.file.url : ''}
-                    />
-                    <CardContent>
-                      <Typography variant="body2">{tmp.fields.templateName.replace('TEMPLATE - ', '')}</Typography>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </Box>
-            <br />
-            <br />
-          </>
-        ))}
+        <Box sx={{ minWidth: 640, py: 2 }}>
+          <TextField label="Slug" variant="outlined" fullWidth />
+        </Box>
+        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+          <Button variant="filled" color="primary">
+            Create
+          </Button>
+        </Box>
         <Loading visible={loading} />
       </DialogContent>
     </Dialog>

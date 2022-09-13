@@ -121,7 +121,7 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
           bottom: window.scrollY + boundingRect.bottom
         };
       });
-      console.log('MappedSections', mappedSections);
+      // console.log('MappedSections', mappedSections);
       setSections(mappedSections);
     }, 300);
     onResize();
@@ -220,6 +220,25 @@ const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
       console.log('Delete error', err);
     }
   };
+
+  const handleOpen = () => {
+    console.log('HandleOpen', { self: window.self, top: window.top });
+    if (window.self !== window.top) {
+      window.parent.postMessage(
+        {
+          type: 'NAVIGATE_TO',
+          payload: {
+            url: getContentfulItemUrl(section.cskEntryId)
+          }
+        },
+        '*'
+      );
+      // window.location.href = getContentfulItemUrl(section.cskEntryId);
+      window.open(getContentfulItemUrl(section.cskEntryId));
+    } else {
+      window.open(getContentfulItemUrl(section.cskEntryId));
+    }
+  };
   return (
     <SectionUIContainer
       className="csk-section"
@@ -255,9 +274,7 @@ const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
 
         <Paper sx={{ right: 16, top: 16, left: 'auto', position: 'absolute' }} variant="contained">
           <ToggleButtonGroup size="small">
-            <ToggleButton
-              sx={{ width: 40, height: 40 }}
-              onClick={() => window.open(getContentfulItemUrl(section.cskEntryId))}>
+            <ToggleButton sx={{ width: 40, height: 40 }} onClick={handleOpen}>
               <Tooltip title={`Edit`}>
                 <IconEdit />
               </Tooltip>
@@ -318,7 +335,7 @@ const SectionInner = styled('div')`
   }
 `;
 const AddSectionButton = styled(Button)`
-  position: absolute;
+  position: absolute !important;
 
   font-size: 12px;
 `;

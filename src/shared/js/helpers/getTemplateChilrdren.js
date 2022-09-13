@@ -6,7 +6,7 @@ import getHashedIDFromString from './getHashedIDFromString';
 export default async (templateId, pageId, defaultLocale) => {
   const idsMap = {};
   const client = await getContentfulClient();
-
+  const hashId = new Date().getTime();
   const template = await client.getEntry(templateId);
 
   const templateContentId = get(template, `fields.content.${defaultLocale}.sys.id`);
@@ -29,7 +29,7 @@ export default async (templateId, pageId, defaultLocale) => {
             // if (get(content, 'sys.id')) {
             //   refEntryIds.push(content.sys.id);
             // }
-            idsMap[ref.sys.id] = getHashedIDFromString(`${pageId}-${ref.sys.id}`);
+            idsMap[ref.sys.id] = getHashedIDFromString(`${hashId}-${pageId}-${ref.sys.id}`);
             return {
               sys: {
                 id: idsMap[ref.sys.id],
@@ -49,6 +49,8 @@ export default async (templateId, pageId, defaultLocale) => {
         // console.log('is array', localizedField);
         getChildrenRefIds(localizedField, key);
       });
+
+      idsMap[entry.sys.id] = getHashedIDFromString(`${hashId}-${pageId}-${entry.sys.id}`);
       allChildrenEntries.push(entry);
 
       // console.log('REF ENTRY IDS', refEntryIds);

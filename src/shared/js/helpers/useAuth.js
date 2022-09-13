@@ -53,9 +53,9 @@ export const useAuth = () => {
         let cmaToken = token.split('=')[1];
         cmaToken = cmaToken.substring(0, cmaToken.indexOf('&'));
         console.log(cmaToken);
-        await chrome.storage.sync.set({ cma });
+        await chrome.storage.sync.set({ cma: cmaToken });
         await verifiyAuth();
-        const { client, space, environment } = await getContentfulClient({ spaceId, env, cmaToken });
+        // const { client, space, environment } = await getContentfulClient({ spaceId, env, cmaToken });
       }
     );
   };

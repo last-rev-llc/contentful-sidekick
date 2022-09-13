@@ -33,7 +33,7 @@ export default async (pageId, templateId, index) => {
 
   const allEntryPromiseArray = allChildrenEntries.map(async (entry) => {
     const origId = entry.sys.id;
-    const newId = getHashedIDFromString(`${instanceId}-${pageId}-${origId}`);
+    const newId = idsMap[origId];
     console.log('NEW ID', newId);
     // Map fields, look for links and replace with new ids
     const newitem = await client.createEntryWithId(entry.sys.contentType.sys.id, newId, {
