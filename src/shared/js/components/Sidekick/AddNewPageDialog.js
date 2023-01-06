@@ -1,80 +1,113 @@
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CardMedia,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Typography,
-  LinearProgress,
-  Snackbar
-} from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import getContentfulPreviewClient from '../../helpers/getContentfulPreviewClient';
-import useAuth from '../../helpers/useAuth';
-import insertTemplateOnPage from '../../helpers/insertTemplateOnPage';
+import { Box, Button, Dialog, DialogContent, DialogTitle, TextField, Tabs, Tab, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import axios from 'axios';
+import RSSFeedIcon from '@mui/icons-material/RssFeed';
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
 
-const getTemplates = async () => {
-  const client = await getContentfulPreviewClient();
-  const templates = await client.getEntries({
-    content_type: 'template'
-  });
-  return templates;
+const getPrompt = (
+  topic
+) => `Create a blog post in a json format that will be used on a website based on the topic below.
+
+Response should be in json format:
+- "title" 
+- "body" in Contentful Rich Text format
+- "tags" 
+- "quote"
+Topic:${topic}`;
+
+const TabPanel = (props) => {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}>
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
 };
 
-const Templates = ({ open, handleClose, index }) => {
-  const [templates, setTemplates] = useState([]);
+const a11yProps = (index) => {
+  return {
+    'id': `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`
+  };
+};
 
-  const [loading, setLoading] = React.useState(false);
-  const [message, setMessage] = React.useState();
-  const Contentful = useAuth();
-  const [pageId, setPageId] = useState('');
-  useEffect(() => {
-    // TODO read this from a meta tag. This assumes on preview route
-    const pageParams = new URLSearchParams(window.location.search);
-    setPageId(pageParams.get('id'));
-
-    async function fetchTemplates() {
-      try {
-        const response = await getTemplates();
-        console.log('templates', response.items);
-        setTemplates(response.items);
-      } catch (err) {
-        console.log('error', err);
+const getBlogPost = async (prompt, options) => {
+  try {
+    const response = await axios.post(
+      'https://63b7906fc3f9c25adaaeea51--last-rev-marketing-site-prod.netlify.app/api/ai',
+      {
+        prompt,
+        ...options
       }
-    }
-    fetchTemplates();
-  }, []);
-  const groupedTemplates = templates.reduce((acc, template) => {
-    if (!template.fields.category) return acc;
-    if (!acc[template.fields.category.toUpperCase()]) {
-      acc[template.fields.category.toUpperCase()] = [];
-    }
-    acc[template.fields.category.toUpperCase()].push(template);
-    return acc;
-  }, {});
-  const handleClick = (template) => async () => {
-    try {
-      setMessage();
-      setLoading(true);
-      await insertTemplateOnPage(pageId, template.sys.id, index);
-      setTimeout(() => {
-        window.postMessage({ type: 'REFRESH_CONTENT' }, '*');
-      }, 500);
+    );
+    console.log(response);
 
-      handleClose();
-      setMessage('Template inserted in ' + pageId);
-    } catch (err) {
-      console.log('InsertTemplateError', err);
-      setMessage('Error' + err.message);
-    }
-    setLoading(false);
+    const { data } = response;
+    return data.response;
+  } catch (error) {
+    console.error(error);
+    return `ERROR: ${error}`;
+  }
+};
+
+const updateBlogPostTitleField = async (id, title) => {
+  try {
+    const config = {
+      headers: { Authorization: `Bearer thisisthesuperrandomsecret` }
+    };
+    const response = await axios.post(
+      'https://63b7906fc3f9c25adaaeea51--last-rev-marketing-site-prod.netlify.app/api/management',
+      {
+        prompt,
+        ...options
+      },
+      config
+    );
+    console.log(response);
+
+    const { data } = response;
+    return data.response;
+  } catch (error) {
+    console.error(error);
+    return `ERROR: ${error}`;
+  }
+};
+thisisthesuperrandomsecret;
+const AddNewPageDialog = ({ open, handleClose }) => {
+  const [value, setValue] = useState(0);
+  const [textFieldValue, setTextFieldValue] = useState('');
+  const [answerText, setAnswerText] = useState('');
+
+  const handleChange = (_event, newValue) => {
+    setValue(newValue);
   };
 
-  // console.log('AddContentDialog', { index })
+  const handleSubmit = async () => {
+    const prompt = getPrompt(textFieldValue);
+
+    const answer = await getBlogPost(prompt, {
+      model: 'text-davinci-003',
+      temperature: 0.7,
+      max_tokens: 2048,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0
+    });
+    console.log({ answer });
+
+    setAnswerText(answer);
+  };
+
   return (
     <Dialog onClose={handleClose} open={open} maxWidth="lg">
       <DialogTitle sx={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
@@ -85,39 +118,51 @@ const Templates = ({ open, handleClose, index }) => {
       </DialogTitle>
       <DialogContent>
         <Box sx={{ minWidth: 640, py: 2 }}>
-          <TextField label="Slug" variant="outlined" fullWidth />
+          What type of page would you like to add?
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+              <Tab icon={<NoteAddIcon />} label="Basic" {...a11yProps(0)} />
+              <Tab icon={<RSSFeedIcon />} label="Blog Post" {...a11yProps(1)} />
+            </Tabs>
+          </Box>
+          <Box sx={{ py: 2 }}>
+            <TabPanel value={value} index={0}>
+              <TextField
+                rows={10}
+                multiline
+                label="What is your new basic page about?"
+                placeholder="Write a few sentences about the page."
+                variant="outlined"
+                fullWidth
+                value={textFieldValue}
+                onChange={(event) => setTextFieldValue(event.target.value)}
+              />
+            </TabPanel>
+            <TabPanel value={value} index={1}>
+              <TextField
+                rows={10}
+                multiline
+                label="What is your new blog post about?"
+                placeholder="Write a few sentences or bullet points about the topic and main focus of your blog post"
+                variant="outlined"
+                fullWidth
+                value={textFieldValue}
+                onChange={(event) => setTextFieldValue(event.target.value)}
+              />
+            </TabPanel>
+          </Box>
+          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+            <Button variant="filled" color="primary" onClick={handleSubmit}>
+              Create New Page
+            </Button>
+          </Box>
+          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+            <TextField rows={10} value={answerText} multiline label="Results" variant="outlined" fullWidth />
+          </Box>
         </Box>
-        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="filled" color="primary">
-            Create
-          </Button>
-        </Box>
-        <Loading visible={loading} />
       </DialogContent>
     </Dialog>
   );
 };
 
-const Loading = ({ visible }) => (
-  <Box
-    sx={{
-      cursor: 'progress',
-      ...(visible
-        ? {
-            opacity: 1
-          }
-        : {
-            opacity: 0,
-            visibility: 'hidden'
-          }),
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'rgba(255,255,255,0.1)'
-    }}>
-    <LinearProgress sx={{ width: '100%' }} />
-  </Box>
-);
-export default Templates;
+export default AddNewPageDialog;
