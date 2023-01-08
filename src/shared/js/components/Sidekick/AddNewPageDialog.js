@@ -6,8 +6,8 @@ import RSSFeedIcon from '@mui/icons-material/RssFeed';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import { richTextFromMarkdown } from '@contentful/rich-text-from-markdown';
 
-// const API_HOST = 'https://63b7906fc3f9c25adaaeea51--last-rev-marketing-site-prod.netlify.app/api';
-const API_HOST = 'http://localhost:3000/api'
+const API_HOST = 'https://feature-open-ai--last-rev-marketing-site-prod.netlify.app/api';
+// const API_HOST = 'http://localhost:3000/api'
 
 const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -247,7 +247,7 @@ const AddNewPageDialog = ({ open, handleClose }) => {
     
     console.log(newBlog);
 
-    location.replace(`https://last-rev-marketing-site-dev.netlify.app/live-preview?environment=master&id=${entryID}&locale="en-US"`);
+    location.replace(`${API_HOST}/live-preview?environment=master&id=${entryID}&locale="en-US"`);
 
     // setAnswerText(newBlog);
   };
