@@ -1,19 +1,13 @@
 import { Box, Button, Dialog, DialogContent, DialogTitle, TextField, Tabs, Tab, Typography } from '@mui/material';
 import React, { useState } from 'react';
+import _ from 'lodash';
 import axios from 'axios';
 import RSSFeedIcon from '@mui/icons-material/RssFeed';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
+import { richTextFromMarkdown } from '@contentful/rich-text-from-markdown';
 
-const getPrompt = (
-  topic
-) => `Create a blog post in a json format that will be used on a website based on the topic below.
-
-Response should be in json format:
-- "title" 
-- "body" in Contentful Rich Text format
-- "tags" 
-- "quote"
-Topic:${topic}`;
+// const API_HOST = 'https://63b7906fc3f9c25adaaeea51--last-rev-marketing-site-prod.netlify.app/api';
+const API_HOST = 'http://localhost:3000/api'
 
 const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -41,18 +35,20 @@ const a11yProps = (index) => {
   };
 };
 
-const getBlogPost = async (prompt, options) => {
+const getBlogContentFromOpenAI = async (text, action, headings) => {
   try {
     const response = await axios.post(
-      'https://63b7906fc3f9c25adaaeea51--last-rev-marketing-site-prod.netlify.app/api/ai',
+      `${API_HOST}/openai/blog`,
       {
-        prompt,
-        ...options
+        text,
+        textAction: action,
+        headings
       }
     );
-    console.log(response);
+    
 
     const { data } = response;
+    // console.log(data);
     return data.response;
   } catch (error) {
     console.error(error);
@@ -60,18 +56,31 @@ const getBlogPost = async (prompt, options) => {
   }
 };
 
-const updateBlogPostTitleField = async (id, title) => {
+
+const getImageFromOpenAI = async (prompt) => {
   try {
-    const config = {
-      headers: { Authorization: `Bearer thisisthesuperrandomsecret` }
-    };
     const response = await axios.post(
-      'https://63b7906fc3f9c25adaaeea51--last-rev-marketing-site-prod.netlify.app/api/management',
+      `${API_HOST}/openai/images`,
       {
         prompt,
-        ...options
-      },
-      config
+      }
+    );
+    
+
+    const { data } = response;
+    // console.log(data);
+    return data.response;
+  } catch (error) {
+    console.error(error);
+    return `ERROR: ${error}`;
+  }
+};
+
+const createEntry = async (options) => {
+  try {
+    const response = await axios.post(
+      `${API_HOST}/contentful/createEntry`,
+      options
     );
     console.log(response);
 
@@ -81,8 +90,138 @@ const updateBlogPostTitleField = async (id, title) => {
     console.error(error);
     return `ERROR: ${error}`;
   }
-};
-thisisthesuperrandomsecret;
+}
+
+const createContentfulAsset = async (options) => {
+  try {
+    const response = await axios.post(
+      `${API_HOST}/contentful/assets`,
+      options
+    );
+
+    const { data } = response;
+    return data;
+  } catch (error) {
+    console.error(error);
+    return
+  }
+}
+
+function createIDFromDate() {
+  let d = new Date().toISOString();
+  d = d.replace(/[^a-zA-Z0-9-_.]/g, "");
+  return d.slice(0, 64);
+}
+
+
+const getBlogFieldData = async (prompt, options) => {
+  // Get the Blog Headers
+  const headers = await getBlogContentFromOpenAI(prompt, 'blogHeaders');
+
+   // Get the Blog Markdown Content
+  const markdown = await getBlogContentFromOpenAI(prompt, 'blogMarkdown', headers);
+
+  const richtext = await richTextFromMarkdown(markdown);
+
+
+  // Get the Blog Title
+  const title = await getBlogContentFromOpenAI(markdown, 'blogTitle');
+
+  // Create the Slug
+  const slug = _.kebabCase(title).slice(0, 100);
+
+  // Get the Blog Tags
+  const tags = await getBlogContentFromOpenAI(markdown, 'blogTags');
+
+  // Get the blog image
+  const imageURLs = await getImageFromOpenAI(tags);
+
+  console.log('IMAGE URL', imageURLs[0].url);
+
+  // TEMP only getting first image now
+  const assetID = `asset-${createIDFromDate()}`;
+  const mediaEntryID = `media-entry-${createIDFromDate()}`;
+  // const imageID = '2233126893';
+
+  // Create the asset object
+  const imageRef = await createContentfulAsset({
+    id: assetID,
+    fieldData: {
+      fields: {
+        title: {
+          'en-US': assetID
+        },
+        file: {
+          'en-US': {
+            contentType: 'image/png',
+            fileName: tags,
+            upload: imageURLs[0].url
+          }
+        }
+      }
+    }
+  });
+
+  console.log('IMAGE REF', imageRef)
+
+  // Create the Media Entry
+  const newMediaEntry = await createEntry({
+    id: mediaEntryID,
+    contentType: 'media',
+    fieldData: {
+      fields: {
+        internalTitle: {
+          'en-US': mediaEntryID
+        },
+        asset: {
+          'en-US': {
+            sys: {
+              type: 'Link',
+              linkType: 'Asset',
+              id: assetID
+            }
+          }
+        }
+      }
+    }
+  });
+
+  console.log('NEW MEDIA ENTRY', newMediaEntry)
+
+  // console.log('IMAGE URL', imageURLs[0].url);
+  
+  return {
+    "fields": {
+        "internalTitle": {
+            "en-US": prompt
+        },
+        "body": {
+            "en-US": richtext
+        },
+        "title": {
+            "en-US": title
+        },
+        "slug": {
+          "en-US": slug
+        },
+        "tags": {
+          "en-US": tags.split(',')
+        },
+        "featuredMedia": {
+          "en-US": [
+            {
+              "sys": {
+                "type": "Link",
+                "linkType": "Entry",
+                "id": mediaEntryID
+              }
+            }
+          ]
+        }
+    }
+  }
+}
+
 const AddNewPageDialog = ({ open, handleClose }) => {
   const [value, setValue] = useState(0);
   const [textFieldValue, setTextFieldValue] = useState('');
@@ -92,20 +231,25 @@ const AddNewPageDialog = ({ open, handleClose }) => {
     setValue(newValue);
   };
 
+  
+
   const handleSubmit = async () => {
-    const prompt = getPrompt(textFieldValue);
+    const prompt = textFieldValue;
 
-    const answer = await getBlogPost(prompt, {
-      model: 'text-davinci-003',
-      temperature: 0.7,
-      max_tokens: 2048,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0
+    const fieldData = await getBlogFieldData(prompt);
+    console.log('FIELD DATA', fieldData);
+    const entryID = createIDFromDate();
+    const newBlog = await createEntry({
+      id: entryID,
+      contentType: 'pageBlog',
+      fieldData
     });
-    console.log({ answer });
+    
+    console.log(newBlog);
 
-    setAnswerText(answer);
+    location.replace(`https://last-rev-marketing-site-dev.netlify.app/live-preview?environment=master&id=${entryID}&locale="en-US"`);
+
+    // setAnswerText(newBlog);
   };
 
   return (

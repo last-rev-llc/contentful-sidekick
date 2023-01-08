@@ -29,6 +29,7 @@
   "homepage": "https://github.com/bradtaylorsf/contentful-sidekick#readme",
   "dependencies": {
     "@babel/runtime": "^7.17.9",
+    "@contentful/rich-text-from-markdown": "^15.16.2",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@mui/icons-material": "^5.2.1",
