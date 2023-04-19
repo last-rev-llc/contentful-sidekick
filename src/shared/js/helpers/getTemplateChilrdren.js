@@ -1,11 +1,10 @@
 import get from 'lodash/get';
 import set from 'lodash/set';
-import getContentfulClient from './getContentfulEnvironment';
+
 import getHashedIDFromString from './getHashedIDFromString';
 
-export default async (templateId, pageId, defaultLocale) => {
+export default async (templateId, pageId, defaultLocale, client) => {
   const idsMap = {};
-  const client = await getContentfulClient();
   const hashId = new Date().getTime();
   const template = await client.getEntry(templateId);
 

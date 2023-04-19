@@ -2,7 +2,7 @@ import getIsSideKickEnabledFromStorage from './helpers/getIsSideKickEnabledFromS
 
 const setExtensionIcon = (curEnabled = false) => {
   if (curEnabled) {
-    chrome.browserAction.setIcon({
+    chrome.action.setIcon({
       path: {
         16: '../img/icon16.png',
         32: '../img/icon32.png',
@@ -13,7 +13,7 @@ const setExtensionIcon = (curEnabled = false) => {
       }
     });
   } else {
-    chrome.browserAction.setIcon({
+    chrome.action.setIcon({
       path: {
         16: '../img/icon16Off.png',
         32: '../img/icon32Off.png',
@@ -26,27 +26,18 @@ const setExtensionIcon = (curEnabled = false) => {
   }
 };
 
-const toggleActive = async () => {
-  const curEnabled = await getIsSideKickEnabledFromStorage();
+chrome.tabs.onUpdated.addListener(async () => {
+  const opt = await getIsSideKickEnabledFromStorage();
+  setExtensionIcon(opt);
+});
 
-  chrome.storage.sync.set({ sideKickEnabled: curEnabled });
-  setExtensionIcon(curEnabled);
-};
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
-  getIsSideKickEnabledFromStorage().then((opt) => setExtensionIcon(opt));
-  if (changeInfo.url) {
-    chrome.tabs.sendMessage(tabId, { changedUrl: changeInfo.url });
+chrome.storage.sync.onChanged.addListener(async (changes) => {
+  if (changes.sideKickEnabled) {
+    setExtensionIcon(changes.sideKickEnabled.newValue);
   }
 });
 
-chrome.browserAction.onClicked.addListener(() => {
-  toggleActive();
-});
-
 chrome.commands.onCommand.addListener((shortcut) => {
-  console.log('lets reload');
-  console.log(shortcut);
   if (shortcut.includes('+M')) {
     chrome.runtime.reload();
   }

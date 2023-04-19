@@ -58,6 +58,7 @@
     "@babel/preset-env": "^7.11.5",
     "@babel/preset-react": "^7.10.4",
     "@last-rev/generator": "^1.0.8",
+    "@types/chrome": "^0.0.231",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.1.0",
     "copy-webpack-plugin": "^4.6.0",

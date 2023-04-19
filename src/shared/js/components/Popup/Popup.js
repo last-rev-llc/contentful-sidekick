@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react';
+import { Box } from '@mui/material';
 import getIsSideKickEnabledFromStorage from '../../helpers/getIsSideKickEnabledFromStorage';
 import setSideKickEnabledInStorage from '../../helpers/setSideKickEnabled';
 import './Popup.css';
-import { Box } from '@mui/material';
-import useAuth from '../../helpers/useAuth';
+import useContentful from '../../helpers/useContentful';
 
 const { version } = require('../../../../../package.json');
 
 function Popup() {
   const [sideKickEnabled, setSideKickEnabled] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
-  const { handleLogin, isLoggedIn, loaded: loadedAuth } = useAuth();
+  const { handleLogin, user, loaded: loadedAuth, handleLogout } = useContentful();
   const handleChange = () => {
     const curSideKickEnabled = !sideKickEnabled;
     setSideKickEnabled(curSideKickEnabled);
@@ -48,7 +48,7 @@ function Popup() {
         </div>
         {/* <div>Is Enabled: {sideKickEnabled ? 'Yes' : 'No'}</div> */}
         <Box sx={{ opacity: loadedAuth ? 1 : 0, transition: '.3s' }}>
-          {!isLoggedIn && loadedAuth ? (
+          {!user ? (
             <div>
               <p>Connect content management</p>
               <button type="submit" className="oauth-button" onClick={handleLogin}>
@@ -56,7 +56,12 @@ function Popup() {
               </button>
             </div>
           ) : (
-            <div>Connected</div>
+            <div>
+              <p>User {user} Connected</p>
+              <button type="submit" className="oauth-button" onClick={handleLogout}>
+                Sign Out
+              </button>
+            </div>
           )}
         </Box>
       </main>

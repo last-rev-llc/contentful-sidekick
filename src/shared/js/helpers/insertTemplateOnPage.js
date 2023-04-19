@@ -1,10 +1,10 @@
 import get from 'lodash/get';
-import getContentfulClient from './getContentfulEnvironment';
+
 import getTemplateChildren from './getTemplateChilrdren';
 import getHashedIDFromString from './getHashedIDFromString';
+import useContentful from './useContentful';
 
-export default async (pageId, templateId, index) => {
-  const client = await getContentfulClient();
+export default async (pageId, templateId, index, client) => {
   const instanceId = new Date().getTime();
   const {
     items: [pageEntry]
@@ -27,7 +27,7 @@ export default async (pageId, templateId, index) => {
   const templateEntry = await client.getEntry(templateId);
   const templateContentId = get(templateEntry, `fields.content.${defaultLocale}.sys.id`);
 
-  const { allChildrenEntries, idsMap } = await getTemplateChildren(templateId, pageId, defaultLocale);
+  const { allChildrenEntries, idsMap } = await getTemplateChildren(templateId, pageId, defaultLocale, client);
 
   console.log('ALL COMPS', { idsMap, allChildrenEntries });
 

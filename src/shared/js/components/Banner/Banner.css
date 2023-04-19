@@ -1,0 +1,29 @@
+.banner {
+  position: fixed;
+  top: -50px;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background-color: #9146ff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  transition: top 0.5s ease;
+  z-index: 10000;
+}
+
+.banner.show {
+  top: 0;
+}
+
+.banner button {
+  background-color: transparent;
+  color: white;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}

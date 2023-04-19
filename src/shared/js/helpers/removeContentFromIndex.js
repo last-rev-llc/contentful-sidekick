@@ -1,8 +1,6 @@
 import get from 'lodash/get';
-import getContentfulClient from './getContentfulEnvironment';
 
-export default async ({ pageId, field = 'contents', index }) => {
-  const client = await getContentfulClient();
+export default async ({ pageId, field = 'contents', index, client }) => {
   console.log('RemoveContent', { pageId, field, index });
 
   const {

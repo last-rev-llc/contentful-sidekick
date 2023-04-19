@@ -12,24 +12,15 @@ import {
   Snackbar
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import getContentfulPreviewClient from '../../helpers/getContentfulPreviewClient';
-import useAuth from '../../helpers/useAuth';
-import insertTemplateOnPage from '../../helpers/insertTemplateOnPage';
 
-const getTemplates = async () => {
-  const client = await getContentfulPreviewClient();
-  const templates = await client.getEntries({
-    content_type: 'template'
-  });
-  return templates;
-};
+import insertTemplateOnPage from '../../helpers/insertTemplateOnPage';
+import useContentful from '../../helpers/useContentful';
 
 const Templates = ({ open, handleClose, index }) => {
+  const { previewClient: client } = useContentful();
   const [templates, setTemplates] = useState([]);
-
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState();
-  const Contentful = useAuth();
   const [pageId, setPageId] = useState('');
   useEffect(() => {
     // TODO read this from a meta tag. This assumes on preview route
@@ -37,16 +28,19 @@ const Templates = ({ open, handleClose, index }) => {
     setPageId(pageParams.get('id'));
 
     async function fetchTemplates() {
+      if (!client) return;
       try {
-        const response = await getTemplates();
-        console.log('templates', response.items);
+        const response = await client.getEntries({
+          content_type: 'template'
+        });
+        // console.log('templates', response.items);
         setTemplates(response.items);
       } catch (err) {
         console.log('error', err);
       }
     }
     fetchTemplates();
-  }, []);
+  }, [client]);
   const groupedTemplates = templates.reduce((acc, template) => {
     if (!template.fields.category) return acc;
     if (!acc[template.fields.category.toUpperCase()]) {
@@ -59,16 +53,15 @@ const Templates = ({ open, handleClose, index }) => {
     try {
       setMessage();
       setLoading(true);
-      await insertTemplateOnPage(pageId, template.sys.id, index);
+      await insertTemplateOnPage(pageId, template.sys.id, index, client);
       setTimeout(() => {
         window.postMessage({ type: 'REFRESH_CONTENT' }, '*');
       }, 500);
 
       handleClose();
-      setMessage('Template inserted in ' + pageId);
+      setMessage(`Template inserted in ${pageId}`);
     } catch (err) {
-      console.log('InsertTemplateError', err);
-      setMessage('Error' + err.message);
+      setMessage(`Error: ${err.message}`);
     }
     setLoading(false);
   };
@@ -84,7 +77,7 @@ const Templates = ({ open, handleClose, index }) => {
       </DialogTitle>
       <DialogContent>
         {Object.entries(groupedTemplates).map(([category, groupTemplates]) => (
-          <>
+          <div key={category}>
             <Snackbar
               open={!!message}
               autoHideDuration={6000}
@@ -124,7 +117,7 @@ const Templates = ({ open, handleClose, index }) => {
             </Box>
             <br />
             <br />
-          </>
+          </div>
         ))}
         <Loading visible={loading} />
       </DialogContent>

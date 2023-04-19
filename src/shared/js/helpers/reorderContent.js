@@ -1,10 +1,8 @@
 import get from 'lodash/get';
-import getContentfulClient from './getContentfulEnvironment';
-import getTemplateChildren from './getTemplateChilrdren';
-import getHashedIDFromString from './getHashedIDFromString';
+// import getTemplateChildren from './getTemplateChilrdren';
+// import getHashedIDFromString from './getHashedIDFromString';
 
-export default async ({ pageId, field = 'contents', from, to }) => {
-  const client = await getContentfulClient();
+export default async ({ pageId, field = 'contents', from, to, client }) => {
   console.log('ReorderContent', { pageId, field, from, to });
 
   const {

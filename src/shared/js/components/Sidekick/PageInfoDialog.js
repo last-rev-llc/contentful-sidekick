@@ -14,16 +14,15 @@ import {
   styled
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import getContentfulPreviewClient from '../../helpers/getContentfulPreviewClient';
-import useAuth from '../../helpers/useAuth';
-import insertTemplateOnPage from '../../helpers/insertTemplateOnPage';
+
+// import insertTemplateOnPage from '../../helpers/insertTemplateOnPage';
 
 const PageInfoDialog = ({ open, handleClose, index }) => {
   const [templates, setTemplates] = useState([]);
 
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState();
-  const Contentful = useAuth();
+
   const [pageId, setPageId] = useState('');
   useEffect(() => {
     // TODO read this from a meta tag. This assumes on preview route

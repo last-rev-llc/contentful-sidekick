@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import React from 'react';
 import throttle from 'lodash/throttle';
 import { useContextSelector } from 'use-context-selector';
@@ -13,6 +15,7 @@ import { TreeStateContext, useTreeUpdater } from './tree-context';
 import { Box, Button, Paper, styled, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import removeContentFromIndex from '../../helpers/removeContentFromIndex';
 import reorderContent from '../../helpers/reorderContent';
+import useContentful from '../../helpers/useContentful';
 
 const ElementHighlighter = ({ setAddToTemplate }) => {
   const [pageId, setPageId] = React.useState('');
@@ -149,10 +152,10 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
         if (evt.clientY >= section.top && evt.clientY <= section.bottom && idx !== active) {
           setActive(idx);
         }
-        if (evt.clientY < section.top && idx == active) {
+        if (evt.clientY < section.top && idx === active) {
           setActive();
         }
-        if (evt.clientY >= section.bottom && idx == active) {
+        if (evt.clientY >= section.bottom && idx === active) {
           setActive();
         }
       });
@@ -188,7 +191,8 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
 
       {sections.map((section, index) => (
         <SectionUI
-          active={index == active}
+          key={section.cskEntryId}
+          active={index === active}
           section={section}
           index={index}
           setAddToTemplate={setAddToTemplate}
@@ -213,9 +217,10 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
 
 const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
   // const [active, setActive] = React.useState(false);
+  const { environment: client } = useContentful();
   const handleDelete = async () => {
     try {
-      await removeContentFromIndex({ pageId, index, field: 'contents' });
+      await removeContentFromIndex({ pageId, index, field: 'contents', client });
     } catch (err) {
       console.log('Delete error', err);
     }
@@ -242,7 +247,7 @@ const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
   return (
     <SectionUIContainer
       className="csk-section"
-      active={active}
+      $active={active}
       // onMouseLeave={() => setActive(false)}
       // onMouseEnter={() => setActive(true)}
       sx={{

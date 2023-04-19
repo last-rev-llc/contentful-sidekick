@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import { SpeedDial, SpeedDialAction } from '@mui/material';
 import HighlightIcon from '@mui/icons-material/HighlightAlt';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';

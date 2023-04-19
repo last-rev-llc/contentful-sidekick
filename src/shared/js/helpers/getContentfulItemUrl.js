@@ -1,7 +1,7 @@
-import getContentfulVars from './getContentfulVars';
+import getContentfulVarsFromPage from './getContentfulVarsFromPgae';
 
 export default (contentId, selectedPath = []) => {
-  const [CONTENTFUL_CURRENT_SPACE_ID, CONTENTFUL_ENVIRONMENT] = getContentfulVars();
+  const { spaceId: SPACE_ID, env: ENV } = getContentfulVarsFromPage();
   const reversed = [...selectedPath].reverse();
   const previousEntries = selectedPath
     ? `?previousEntries=${reversed
@@ -9,5 +9,5 @@ export default (contentId, selectedPath = []) => {
         .map((node) => node.id)
         .join(',')}`
     : '';
-  return `https://app.contentful.com/spaces/${CONTENTFUL_CURRENT_SPACE_ID}/environments/${CONTENTFUL_ENVIRONMENT}/entries/${contentId}${previousEntries}`;
+  return `https://app.contentful.com/spaces/${SPACE_ID}/environments/${ENV}/entries/${contentId}${previousEntries}`;
 };

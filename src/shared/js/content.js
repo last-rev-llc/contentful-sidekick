@@ -6,7 +6,8 @@ import Sidekick from './components/Sidekick';
 import addSidekickEnabledListener from './helpers/addSidekickEnabledListener';
 import buildCskEntryTree from './helpers/buildCskEntryTree';
 import { CSK_ENTRY_SELECTOR } from './helpers/constants';
-import getContentfulVars from './helpers/getContentfulVars';
+import Banner from './components/Banner/Banner';
+import getContentfulVarsFromPage from './helpers/getContentfulVarsFromPgae';
 
 const shrinkContent = () => {
   // $('body').css('padding-left', '20vw');
@@ -34,6 +35,15 @@ const loadSidebar = () => {
   $('body').prepend('<div id="csk-sidebar-container"></div>');
   shrinkContent();
   ReactDOM.render(<Sidekick defaultTree={buildCskEntryTree()} />, document.getElementById('csk-sidebar-container'));
+};
+
+const loadBanner = () => {
+  $('body').prepend('<div id="csk-banner-container"></div>');
+  ReactDOM.render(<Banner />, document.getElementById('csk-banner-container'));
+};
+
+const removeBanner = () => {
+  $('#csk-banner-container').remove();
 };
 
 const removeSidebar = () => {
@@ -109,12 +119,14 @@ const removeBgColorVar = () => {
 const resetDom = () => {
   removeInitAttribute();
   removeSidebar();
+  removeBanner();
   removeBgColorVar();
 };
 
 const loadSidekick = async () => {
   addInitAttribute();
   loadSidebar();
+  loadBanner();
   applyBgColorVar();
 };
 
@@ -124,9 +136,7 @@ const init = async () => {
   const sideKickEnabled = await getIsSideKickEnabledFromStorage(); // extension not enabled
 
   if (sideKickEnabled) {
-    // TODO: Make contentfulVars return an object
-    const [spaceId, env] = getContentfulVars();
-    console.log('SetContentfulVars:', { spaceId, env });
+    const { spaceId, env } = getContentfulVarsFromPage();
     chrome.storage.sync.set({ spaceId, env });
     loadSidekick();
   } else {
@@ -135,27 +145,17 @@ const init = async () => {
 
   addSidekickEnabledListener((isEnabled) => {
     if (isEnabled) {
-      // TODO: Make contentfulVars return an object
-      const [spaceId, env] = getContentfulVars();
-      console.log('SetContentfulVars:', { spaceId, env });
+      const { spaceId, env } = getContentfulVarsFromPage();
       chrome.storage.sync.set({ spaceId, env });
       loadSidekick();
     } else {
       resetDom();
     }
   });
-
-  chrome.runtime.onMessage.addListener((request) => {
-    const { changedUrl } = request;
-    getIsSideKickEnabledFromStorage().then((enabled) => {
-      if (changedUrl && enabled) {
-        // resetDom();
-        // loadSidekick();
-      }
-    });
-  });
 };
 
 $(() => {
   setTimeout(init, 2000);
 });
+
+chrome.runtime.connect().onDisconnect.addListener({});

@@ -19,6 +19,7 @@ const distDir = path.join(__dirname, '../dist/chrome');
  * webpack.entries.js
  */
 module.exports = {
+  devtool: 'cheap-module-source-map',
   // This will split the code into seperate files
   // https://webpack.js.org/plugins/split-chunks-plugin/
   optimization: {
@@ -66,10 +67,10 @@ module.exports = {
   // This is where you specify the files that will be the input
   // https://webpack.js.org/configuration/entry-context/
   entry: {
-    'popup': `${sharedDir}/js/popup.js`,
-    'background': `${sharedDir}/js/background.js`,
-    'content': `${sharedDir}/js/content.js`,
-    'hot-reload': `${sharedDir}/js/hot-reload.js`
+    popup: `${sharedDir}/js/popup.js`,
+    service_worker: `${sharedDir}/js/service_worker.js`,
+    content: `${sharedDir}/js/content.js`,
+    oauth_redirect: `${sharedDir}/js/oauth_redirect.js`
   },
   // This specifys where you want the files to be out put to
   // and the name of the source maps, if your environment outputs them.
