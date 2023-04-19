@@ -247,7 +247,7 @@ const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
   return (
     <SectionUIContainer
       className="csk-section"
-      $active={active}
+      active={active}
       // onMouseLeave={() => setActive(false)}
       // onMouseEnter={() => setActive(true)}
       sx={{

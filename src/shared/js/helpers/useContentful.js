@@ -10,7 +10,7 @@ const getAuthUrl = (redirectUri) =>
 
 function useContentful() {
   const [spaceId, setSpaceId] = useState(null);
-  const [env, setEnv] = useState(null);
+  const [envId, setEnvId] = useState(null);
   const [cmaToken, setCmaToken] = useState(null);
   const [user, setUser] = useState(null);
   const [environment, setEnvironment] = useState(null);
@@ -50,14 +50,14 @@ function useContentful() {
         });
         const [newSpace, newUser] = await Promise.all([client.getSpace(spaceId), client.getCurrentUser()]);
         setUser(newUser.email);
-        const [newEnv, keys] = await Promise.all([newSpace.getEnvironment(env), newSpace.getPreviewApiKeys()]);
+        const [newEnv, keys] = await Promise.all([newSpace.getEnvironment(envId), newSpace.getPreviewApiKeys()]);
         const previewToken = keys.items[0].accessToken;
         setEnvironment(newEnv);
         setPreviewClient(
           createCdnClient({
             accessToken: previewToken,
             space: spaceId,
-            environment: env,
+            environment: envId,
             host: 'preview.contentful.com',
             resolveLinks: true
           })
@@ -89,7 +89,7 @@ function useContentful() {
       }
 
       setSpaceId(s);
-      setEnv(e);
+      setEnvId(e);
 
       if (!s || !e) {
         return;
@@ -112,7 +112,7 @@ function useContentful() {
     };
   }, []);
 
-  return { user, environment, previewClient, loaded, handleLogin, handleLogout };
+  return { user, environment, previewClient, loaded, envId, handleLogin, handleLogout };
 }
 
 export default useContentful;
