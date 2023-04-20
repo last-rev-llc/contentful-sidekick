@@ -17,11 +17,12 @@ import insertTemplateOnPage from '../../helpers/insertTemplateOnPage';
 import useContentful from '../../helpers/useContentful';
 
 const Templates = ({ open, handleClose, index }) => {
-  const { previewClient: client } = useContentful();
+  const { previewClient: client, envId } = useContentful();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState();
   const [pageId, setPageId] = useState('');
+
   useEffect(() => {
     // TODO read this from a meta tag. This assumes on preview route
     const pageParams = new URLSearchParams(window.location.search);
@@ -67,10 +68,10 @@ const Templates = ({ open, handleClose, index }) => {
   };
 
   // console.log('AddContentDialog', { index })
-  return (
+  return client ? (
     <Dialog onClose={handleClose} open={open} maxWidth="lg">
       <DialogTitle sx={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
-        Add new content
+        Add new content in environment {envId}
         <Button sx={{ minWidth: 'auto' }} onClick={handleClose}>
           X
         </Button>
@@ -122,7 +123,7 @@ const Templates = ({ open, handleClose, index }) => {
         <Loading visible={loading} />
       </DialogContent>
     </Dialog>
-  );
+  ) : null;
 };
 
 const Loading = ({ visible }) => (

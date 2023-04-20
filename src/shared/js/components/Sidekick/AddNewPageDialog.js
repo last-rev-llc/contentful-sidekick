@@ -13,9 +13,11 @@ import {
   Snackbar
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import useContentful from '../../helpers/useContentful';
 // import insertTemplateOnPage from '../../helpers/insertTemplateOnPage';
 
 const Templates = ({ open, handleClose, index }) => {
+  const { envId } = useContentful();
   // const { previewClient: client } = useContentful();
   // const [templates, setTemplates] = useState([]);
 
@@ -73,7 +75,7 @@ const Templates = ({ open, handleClose, index }) => {
   return (
     <Dialog onClose={handleClose} open={open} maxWidth="lg">
       <DialogTitle sx={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
-        Add new page
+        Add new page in environment {envId}
         <Button sx={{ minWidth: 'auto' }} onClick={handleClose}>
           X
         </Button>
