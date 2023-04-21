@@ -54,9 +54,6 @@ const Templates = ({ open, handleClose, index }) => {
       setMessage();
       setLoading(true);
       await insertTemplateIntoPage(pageId, template.sys.id, index);
-      setTimeout(() => {
-        window.postMessage({ type: 'REFRESH_CONTENT' }, '*');
-      }, 500);
 
       handleClose();
       setMessage(`Template inserted in ${pageId}`);

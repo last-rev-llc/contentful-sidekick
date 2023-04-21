@@ -267,13 +267,13 @@ const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
           sx={{ top: 0, left: '50%', transform: 'translateX(-50%) translateY(-50%)' }}
           variant="contained"
           onClick={() => setAddToTemplate({ index })}>
-          Add section {index}
+          Add section
         </AddSectionButton>
         <AddSectionButton
           sx={{ bottom: 0, left: '50%', transform: 'translateX(-50%) translateY(50%)' }}
           variant="contained"
           onClick={() => setAddToTemplate({ index: index + 1 })}>
-          Add section {index}
+          Add section
         </AddSectionButton>
 
         <Paper sx={{ right: 16, top: 16, left: 'auto', position: 'absolute' }} variant="contained">
