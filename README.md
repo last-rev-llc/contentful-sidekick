@@ -88,8 +88,8 @@ In the example above, you would see the following structure in your sidebar:
 ## Development Env Setup
 
 - Clone Repo
-- npm install
-- npm start
+- yarn install
+- yarn dev
 
 _This will then create a watch process that will rebuild all files to /dist/chrome anytime a file changes._
 

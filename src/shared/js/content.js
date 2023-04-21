@@ -6,6 +6,7 @@ import Sidekick from './components/Sidekick';
 import addSidekickEnabledListener from './helpers/addSidekickEnabledListener';
 import buildCskEntryTree from './helpers/buildCskEntryTree';
 import { CSK_ENTRY_SELECTOR } from './helpers/constants';
+import getContentfulVarsFromPage from './helpers/getContentfulVarsFromPgae';
 
 const shrinkContent = () => {
   // $('body').css('padding-left', '20vw');
@@ -123,6 +124,8 @@ const init = async () => {
   const sideKickEnabled = await getIsSideKickEnabledFromStorage(); // extension not enabled
 
   if (sideKickEnabled) {
+    const { spaceId, env } = getContentfulVarsFromPage();
+    chrome.storage.sync.set({ spaceId, env });
     loadSidekick();
   } else {
     resetDom();
@@ -130,23 +133,17 @@ const init = async () => {
 
   addSidekickEnabledListener((isEnabled) => {
     if (isEnabled) {
+      const { spaceId, env } = getContentfulVarsFromPage();
+      chrome.storage.sync.set({ spaceId, env });
       loadSidekick();
     } else {
       resetDom();
     }
-  });
-
-  chrome.runtime.onMessage.addListener((request) => {
-    const { changedUrl } = request;
-    getIsSideKickEnabledFromStorage().then((enabled) => {
-      if (changedUrl && enabled) {
-        // resetDom();
-        // loadSidekick();
-      }
-    });
   });
 };
 
 $(() => {
   setTimeout(init, 2000);
 });
+
+chrome.runtime.connect().onDisconnect.addListener({});

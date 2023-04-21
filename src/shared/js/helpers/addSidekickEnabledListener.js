@@ -1,6 +1,7 @@
-export default (listener) => {
-  chrome.storage.onChanged.addListener((changes) => {
-    const { sideKickEnabled: enabled } = changes;
-    listener(enabled && enabled.newValue === true);
+export default (handler) => {
+  chrome.storage.onChanged.addListener(({ sideKickEnabled }) => {
+    if (sideKickEnabled) {
+      handler(sideKickEnabled.newValue === true);
+    }
   });
 };

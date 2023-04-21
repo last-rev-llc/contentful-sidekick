@@ -1,10 +1,12 @@
 {
-  "manifest_version": 2,
+  "minimum_chrome_version": "93",
+  "manifest_version": 3,
   "name": "Contentful Sidekick",
-  "short_name": "Contentful Sidekick",
+  "short_name": "sidekick",
   "description": "Chrome Extension that enables inline editing for websites created in Contentful",
-  "version": "0.1.1",
-  "permissions": ["activeTab", "storage", "tabs", "http://*/*", "https://*/*", "*://*/*"],
+  "version": "2.0.0",
+  "permissions": ["activeTab", "storage", "tabs", "identity"],
+  "host_permissions": ["http://*/*", "https://*/*", "*://*/*", "*://*.contentful.com/"],
   "icons": {
     "16": "img/icon16.png",
     "32": "img/icon32.png",
@@ -13,21 +15,44 @@
     "128": "img/icon128.png",
     "256": "img/icon256.png"
   },
-  "browser_action": {
+  "action": {
     "default_popup": "html/popup.html",
     "default_title": "Contentful Sidekick"
   },
   "background": {
-    "scripts": ["js/background.js"]
+    "service_worker": "js/service_worker.js",
+    "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_idle",
+      "all_frames": true,
       "js": ["js/vendor.js", "js/content.js"],
       "css": ["css/content.css"]
     }
   ],
-  "web_accessible_resources": ["js/content.js"],
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+  "web_accessible_resources": [
+    {
+      "resources": ["js/content.js"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["html/oauth_redirect.html", "js/oauth_redirect.js"],
+      "matches": ["*://*/*"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1aXO0rFwc1hDoM2lgHWIVjv6+UpmjLrEWS5fOouR78uF7YzMb8P8PtnSu1EDu7IudsXOF+pBVW/45vS/TaiJW8br3waO13ltYZY7MALEB6qTvtTPmLojS97FCA6xxlQjFubPx5VNCjZLUDfGLNRnFTLuyyCPJaYg0/K+Otxvy8eeFSPolbemMHwGrAewDTOdOb9Gmbkh65jww4Cdi/E1TUaPNVgnebQAagZtFk7LIQedgZ7HmNrUzQwfVLplxOz1jEMg/u21/uu4ihuT3bpW+0TASUgqL3ljCaNr7fYIqaKdyXX7MC/PrBASP7gWSAofI8V8ey6uLba/KN83gVhrtwIDAQAB",
+  "commands": {
+    "Ctrl+M": {
+      "suggested_key": {
+        "default": "Ctrl+M",
+        "mac": "Command+M"
+      },
+      "description": "Ctrl+M."
+    }
+  }
 }

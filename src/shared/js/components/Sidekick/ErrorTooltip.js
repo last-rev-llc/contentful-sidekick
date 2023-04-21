@@ -1,11 +1,11 @@
-import { capitalize } from 'lodash';
+// import { capitalize } from 'lodash';
 import React from 'react';
 
 const ErrorTooltip = ({ field, errors }) => {
   const msg = errors[field]
     ? `This field is missing. Click EDIT and enter a value.`
     : `This block has missing fields. Click EDIT and fill: <strong>${Object.keys(errors)
-        .map((x) => capitalize(x))
+        // .map((x) => capitalize(x))
         .join(',')}
     </strong>`;
 

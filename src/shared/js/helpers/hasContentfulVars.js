@@ -1,6 +1,6 @@
-import getContentfulVars from './getContentfulVars';
+import getContentfulVarsFromPage from './getContentfulVarsFromPgae';
 
 export default () => {
-  const [a, b] = getContentfulVars();
-  return !!(a && b);
+  const { spaceId, env } = getContentfulVarsFromPage();
+  return !!(spaceId && env);
 };

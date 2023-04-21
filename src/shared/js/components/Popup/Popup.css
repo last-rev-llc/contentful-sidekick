@@ -81,7 +81,7 @@ label:after {
 }
 
 input:checked + label {
-  background: #00a7f7;
+  background: #9146ff;
 }
 
 input:checked + label:after {

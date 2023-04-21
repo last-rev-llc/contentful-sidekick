@@ -22,7 +22,7 @@ const TreeNode = ({ id, field, type, displayText, uuid, childNodes, errors }) =>
   const handleExpandCollapseClick = React.useCallback(() => {
     setIsExpanded(uuid, !isExpanded);
     setTimeout(() => {
-      $('body').css('padding-left', $('.csk-element-sidebar').outerWidth(true));
+      // $('body').css('padding-left', $('.csk-element-sidebar').outerWidth(true));
     }, 0);
   }, [setIsExpanded, isExpanded]);
   const children = React.useMemo(

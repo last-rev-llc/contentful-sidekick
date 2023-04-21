@@ -46,7 +46,7 @@ function TreeProvider({ tree, children }) {
   );
 
   return (
-    <TreeStateContext.Provider value={{ selected, selectedPath, expandedState }}>
+    <TreeStateContext.Provider value={{ tree, selected, selectedPath, expandedState }}>
       <TreeUpdaterContext.Provider value={{ setSelected, setIsExpanded, setExpandedState }}>
         {children}
       </TreeUpdaterContext.Provider>
@@ -55,6 +55,7 @@ function TreeProvider({ tree, children }) {
 }
 
 const useTreeUpdater = () => {
+  const tree = useContextSelector(TreeStateContext, (context) => context.tree);
   const setSelected = useContextSelector(TreeUpdaterContext, (context) => context.setSelected);
   const setIsExpanded = useContextSelector(TreeUpdaterContext, (context) => context.setIsExpanded);
   if (typeof setSelected === 'undefined') {
@@ -62,6 +63,7 @@ const useTreeUpdater = () => {
   }
 
   return {
+    tree,
     setSelected,
     setIsExpanded
   };
