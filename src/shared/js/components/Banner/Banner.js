@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import './Banner.css';
-import useContentful from '../../helpers/useContentful';
+import { useContentfulContext } from '../../helpers/ContentfulContext';
 
 const Banner = () => {
   const [show, setShow] = useState(false);
-  const { user } = useContentful();
+  const { user } = useContentfulContext();
 
   useEffect(() => {
     const listener = (changes) => {

@@ -6,7 +6,6 @@ import Sidekick from './components/Sidekick';
 import addSidekickEnabledListener from './helpers/addSidekickEnabledListener';
 import buildCskEntryTree from './helpers/buildCskEntryTree';
 import { CSK_ENTRY_SELECTOR } from './helpers/constants';
-import Banner from './components/Banner/Banner';
 import getContentfulVarsFromPage from './helpers/getContentfulVarsFromPgae';
 
 const shrinkContent = () => {
@@ -35,15 +34,6 @@ const loadSidebar = () => {
   $('body').prepend('<div id="csk-sidebar-container"></div>');
   shrinkContent();
   ReactDOM.render(<Sidekick defaultTree={buildCskEntryTree()} />, document.getElementById('csk-sidebar-container'));
-};
-
-const loadBanner = () => {
-  $('body').prepend('<div id="csk-banner-container"></div>');
-  ReactDOM.render(<Banner />, document.getElementById('csk-banner-container'));
-};
-
-const removeBanner = () => {
-  $('#csk-banner-container').remove();
 };
 
 const removeSidebar = () => {
@@ -119,14 +109,12 @@ const removeBgColorVar = () => {
 const resetDom = () => {
   removeInitAttribute();
   removeSidebar();
-  removeBanner();
   removeBgColorVar();
 };
 
 const loadSidekick = async () => {
   addInitAttribute();
   loadSidebar();
-  loadBanner();
   applyBgColorVar();
 };
 

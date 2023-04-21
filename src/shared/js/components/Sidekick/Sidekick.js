@@ -3,8 +3,6 @@ import { SpeedDial, SpeedDialAction } from '@mui/material';
 import HighlightIcon from '@mui/icons-material/HighlightAlt';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import AddIcon from '@mui/icons-material/Add';
-import InfoIcon from '@mui/icons-material/Info';
-import NoteAddIcon from '@mui/icons-material/NoteAdd';
 
 import { ThemeProvider } from '@mui/system';
 import debounce from 'lodash/debounce';
@@ -15,18 +13,16 @@ import { TreeProvider } from './tree-context';
 import ElementHighlighter from './ElementHighlighter';
 import Sidebar from './Sidebar';
 import AddContentDialog from './AddContentDialog';
-import AddNewPageDialog from './AddNewPageDialog';
-import PageInfoDialog from './PageInfoDialog';
 import './Sidekick.css';
 import theme from '../../theme';
 import useStorageState from '../../helpers/useStorageState';
+import Banner from '../Banner';
+import { ContentfulProvider } from '../../helpers/ContentfulContext';
 
 const Sidekick = ({ defaultTree }) => {
   const [tree, setTree] = useState(defaultTree);
   const [show, setShow] = useStorageState(false, 'sidebarEnabled');
   const [highlight, setHighlight] = useStorageState(true, 'highlightEnabled');
-  const [showInfo, setShowInfo] = React.useState(false);
-  const [addNewPage, setAddNewPage] = React.useState(false);
   const [addToTemplate, setAddToTemplate] = useState(null);
 
   useEffect(() => {
@@ -55,7 +51,8 @@ const Sidekick = ({ defaultTree }) => {
   return (
     <ThemeProvider theme={theme}>
       <TreeProvider tree={tree}>
-        <>
+        <ContentfulProvider>
+          <Banner />
           <SpeedDial
             size="medium"
             color="black"
@@ -94,20 +91,6 @@ const Sidekick = ({ defaultTree }) => {
               onClick={() => setAddToTemplate({})}
               color={highlight ? 'primary' : 'secondary'}
             />
-            <SpeedDialAction
-              icon={<NoteAddIcon />}
-              tooltipTitle="Add new page"
-              tooltipPlacement="right"
-              onClick={() => setAddNewPage(true)}
-              color={highlight ? 'primary' : 'secondary'}
-            />
-            <SpeedDialAction
-              icon={<InfoIcon />}
-              tooltipTitle="View page info"
-              tooltipPlacement="right"
-              onClick={() => setShowInfo(true)}
-              color={highlight ? 'primary' : 'secondary'}
-            />
           </SpeedDial>
           <Sidebar show={show} tree={tree} />
           {highlight ? <ElementHighlighter setAddToTemplate={setAddToTemplate} /> : null}
@@ -117,9 +100,7 @@ const Sidekick = ({ defaultTree }) => {
             addToTemplate={addToTemplate}
             handleClose={() => setAddToTemplate()}
           />
-          <PageInfoDialog open={!!showInfo} handleClose={() => setShowInfo(false)} />
-          <AddNewPageDialog open={!!addNewPage} handleClose={() => setAddNewPage(false)} />
-        </>
+        </ContentfulProvider>
       </TreeProvider>
     </ThemeProvider>
   );

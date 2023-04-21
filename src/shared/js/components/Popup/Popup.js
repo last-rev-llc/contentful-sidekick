@@ -2,15 +2,16 @@ import React, { useEffect } from 'react';
 import { Box } from '@mui/material';
 import getIsSideKickEnabledFromStorage from '../../helpers/getIsSideKickEnabledFromStorage';
 import setSideKickEnabledInStorage from '../../helpers/setSideKickEnabled';
+import { ContentfulProvider, useContentfulContext } from '../../helpers/ContentfulContext';
+
 import './Popup.css';
-import useContentful from '../../helpers/useContentful';
 
 const { version } = require('../../../../../package.json');
 
-function Popup() {
+function InnerPopup() {
   const [sideKickEnabled, setSideKickEnabled] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
-  const { handleLogin, user, loaded: loadedAuth, handleLogout } = useContentful();
+  const { handleLogin, user, loaded: loadedAuth, handleLogout } = useContentfulContext();
   const handleChange = () => {
     const curSideKickEnabled = !sideKickEnabled;
     setSideKickEnabled(curSideKickEnabled);
@@ -71,5 +72,13 @@ function Popup() {
     </>
   );
 }
+
+const Popup = () => {
+  return (
+    <ContentfulProvider>
+      <InnerPopup />
+    </ContentfulProvider>
+  );
+};
 
 export default Popup;

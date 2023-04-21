@@ -13,11 +13,10 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
-import insertTemplateOnPage from '../../helpers/insertTemplateOnPage';
-import useContentful from '../../helpers/useContentful';
+import { useContentfulContext } from '../../helpers/ContentfulContext';
 
 const Templates = ({ open, handleClose, index }) => {
-  const { previewClient: client, envId } = useContentful();
+  const { insertTemplateIntoPage, envId, previewClient } = useContentfulContext();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState();
@@ -29,9 +28,9 @@ const Templates = ({ open, handleClose, index }) => {
     setPageId(pageParams.get('id'));
 
     async function fetchTemplates() {
-      if (!client) return;
+      if (!previewClient) return;
       try {
-        const response = await client.getEntries({
+        const response = await previewClient.getEntries({
           content_type: 'template'
         });
         // console.log('templates', response.items);
@@ -41,7 +40,7 @@ const Templates = ({ open, handleClose, index }) => {
       }
     }
     fetchTemplates();
-  }, [client]);
+  }, [previewClient]);
   const groupedTemplates = templates.reduce((acc, template) => {
     if (!template.fields.category) return acc;
     if (!acc[template.fields.category.toUpperCase()]) {
@@ -54,7 +53,7 @@ const Templates = ({ open, handleClose, index }) => {
     try {
       setMessage();
       setLoading(true);
-      await insertTemplateOnPage(pageId, template.sys.id, index, client);
+      await insertTemplateIntoPage(pageId, template.sys.id, index);
       setTimeout(() => {
         window.postMessage({ type: 'REFRESH_CONTENT' }, '*');
       }, 500);
@@ -68,7 +67,7 @@ const Templates = ({ open, handleClose, index }) => {
   };
 
   // console.log('AddContentDialog', { index })
-  return client ? (
+  return previewClient ? (
     <Dialog onClose={handleClose} open={open} maxWidth="lg">
       <DialogTitle sx={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
         Add new content in environment {envId}
