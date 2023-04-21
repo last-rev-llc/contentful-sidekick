@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import React from 'react';
 import throttle from 'lodash/throttle';
 import { useContextSelector } from 'use-context-selector';
@@ -5,14 +7,14 @@ import IconEdit from '@mui/icons-material/Edit';
 import IconMoveUp from '@mui/icons-material/ArrowUpward';
 import IconMoveDown from '@mui/icons-material/ArrowDownward';
 import IconDelete from '@mui/icons-material/Delete';
+import { Button, Paper, styled, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+
 import getContentfulItemUrl from '../../helpers/getContentfulItemUrl';
 import { resetBlur, setBlur } from '../../helpers/blur';
-import { resetSelectedOutline, setSelectedOutline } from '../../helpers/selected';
+import { resetSelectedOutline } from '../../helpers/selected';
 import { CSK_ENTRY_ID_NAME, CSK_ENTRY_SELECTOR, CSK_ENTRY_UUID_NAME } from '../../helpers/constants';
 import { TreeStateContext, useTreeUpdater } from './tree-context';
-import { Box, Button, Paper, styled, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
-import removeContentFromIndex from '../../helpers/removeContentFromIndex';
-import reorderContent from '../../helpers/reorderContent';
+import { useContentfulContext } from '../../helpers/ContentfulContext';
 
 const ElementHighlighter = ({ setAddToTemplate }) => {
   const [pageId, setPageId] = React.useState('');
@@ -49,17 +51,17 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
       if (!e.target) return;
       e.stopPropagation();
       e.preventDefault();
-      const $ct = $(e.target);
-      let id = $ct.data(CSK_ENTRY_ID_NAME);
-      let url = id ? getContentfulItemUrl(id, selectedPath) : null;
+      // const $ct = $(e.target);
+      // let id = $ct.data(CSK_ENTRY_ID_NAME);
+      // let url = id ? getContentfulItemUrl(id, selectedPath) : null;
       let uuid = $(e.target).data(CSK_ENTRY_UUID_NAME);
       if (!uuid) {
         // The mouse enter target might not be the element with sidekick props
         // So we look for it on the parents
         const $parentEl = $(e.target).parents(`[data-${CSK_ENTRY_UUID_NAME}]`);
         uuid = $($parentEl[0]).data(CSK_ENTRY_UUID_NAME);
-        id = $($parentEl[0]).data(CSK_ENTRY_ID_NAME);
-        url = id ? getContentfulItemUrl(id, selectedPath) : null;
+        // id = $($parentEl[0]).data(CSK_ENTRY_ID_NAME);
+        // url = id ? getContentfulItemUrl(id, selectedPath) : null;
       }
       // setBlur($(e.target), url);
 
@@ -133,7 +135,7 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
   }, [tree]);
   React.useLayoutEffect(() => {
     const onMouseMove = throttle((evt) => {
-      //Iterate over sections and set the correct section to active depending on the mouse y position
+      // Iterate over sections and set the correct section to active depending on the mouse y position
       const elSections = document.querySelectorAll('section');
       const mappedSections = Array.from(elSections).map((section) => {
         const boundingRect = section.getBoundingClientRect();
@@ -149,10 +151,10 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
         if (evt.clientY >= section.top && evt.clientY <= section.bottom && idx !== active) {
           setActive(idx);
         }
-        if (evt.clientY < section.top && idx == active) {
+        if (evt.clientY < section.top && idx === active) {
           setActive();
         }
-        if (evt.clientY >= section.bottom && idx == active) {
+        if (evt.clientY >= section.bottom && idx === active) {
           setActive();
         }
       });
@@ -188,7 +190,8 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
 
       {sections.map((section, index) => (
         <SectionUI
-          active={index == active}
+          key={section.cskEntryId}
+          active={index === active ? 1 : 0}
           section={section}
           index={index}
           setAddToTemplate={setAddToTemplate}
@@ -213,16 +216,17 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
 
 const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
   // const [active, setActive] = React.useState(false);
+  const { reorderContent, removeContentFromIndex } = useContentfulContext();
   const handleDelete = async () => {
     try {
       await removeContentFromIndex({ pageId, index, field: 'contents' });
     } catch (err) {
-      console.log('Delete error', err);
+      // console.log('Delete error', err);
     }
   };
 
   const handleOpen = () => {
-    console.log('HandleOpen', { self: window.self, top: window.top });
+    // console.log('HandleOpen', { self: window.self, top: window.top });
     if (window.self !== window.top) {
       window.parent.postMessage(
         {
@@ -242,7 +246,7 @@ const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
   return (
     <SectionUIContainer
       className="csk-section"
-      active={active}
+      active={active ? 1 : 0}
       // onMouseLeave={() => setActive(false)}
       // onMouseEnter={() => setActive(true)}
       sx={{
@@ -274,27 +278,29 @@ const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
 
         <Paper sx={{ right: 16, top: 16, left: 'auto', position: 'absolute' }} variant="contained">
           <ToggleButtonGroup size="small">
-            <ToggleButton sx={{ width: 40, height: 40 }} onClick={handleOpen}>
-              <Tooltip title={`Edit`}>
+            <ToggleButton value="Edit" sx={{ width: 40, height: 40 }} onClick={handleOpen}>
+              <Tooltip title="Edit">
                 <IconEdit />
               </Tooltip>
             </ToggleButton>
-            <ToggleButton sx={{ width: 40, height: 40 }} onClick={handleDelete}>
-              <Tooltip title={`Delete`}>
+            <ToggleButton value="Delete" sx={{ width: 40, height: 40 }} onClick={handleDelete}>
+              <Tooltip title="Delete">
                 <IconDelete sx={{ color: 'danger.main' }} />
               </Tooltip>
             </ToggleButton>
             <ToggleButton
+              value="MoveUp"
               sx={{ width: 40, height: 40 }}
               onClick={() => reorderContent({ pageId, from: index, to: index - 1 })}>
-              <Tooltip title={`MoveUp`}>
+              <Tooltip title="MoveUp">
                 <IconMoveUp />
               </Tooltip>
             </ToggleButton>
             <ToggleButton
+              value="MoveDown"
               sx={{ width: 40, height: 40 }}
               onClick={() => reorderContent({ pageId, from: index, to: index + 1 })}>
-              <Tooltip title={`MoveDown`}>
+              <Tooltip title="MoveDown">
                 <IconMoveDown />
               </Tooltip>
             </ToggleButton>
