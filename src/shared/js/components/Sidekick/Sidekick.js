@@ -28,6 +28,7 @@ const Sidekick = ({ defaultTree }) => {
   useEffect(() => {
     const callback = debounce(() => {
       const newTree = buildCskEntryTree();
+
       if (JSON.stringify(tree) !== JSON.stringify(newTree)) {
         setTree(newTree);
       }

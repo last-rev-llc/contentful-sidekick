@@ -23,9 +23,13 @@ const Templates = ({ open, handleClose, index }) => {
   const [pageId, setPageId] = useState('');
 
   useEffect(() => {
-    // TODO read this from a meta tag. This assumes on preview route
-    const pageParams = new URLSearchParams(window.location.search);
-    setPageId(pageParams.get('id'));
+    let metaPageId = document.querySelector('meta[name="pageId"]').content;
+    if (!metaPageId) {
+      const pageParams = new URLSearchParams(window.location.search);
+      metaPageId = pageParams.get('id');
+    }
+
+    setPageId(metaPageId);
 
     async function fetchTemplates() {
       if (!previewClient) return;

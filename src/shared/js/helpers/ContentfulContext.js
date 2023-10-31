@@ -25,22 +25,22 @@ function ContentfulProvider({ children }) {
 
   const getTemplateChildren = useCallback(
     async (templateId, pageId) => {
-      console.log('getTempalteChildren', { templateId, pageId });
+      // console.log('getTempalteChildren', { templateId, pageId });
       const idsMap = {};
       const hashId = new Date().getTime();
       const template = await environment.getEntry(templateId);
 
-      console.log('templateId 1', templateId);
-      console.log('template 2', template);
+      // console.log('templateId 1', templateId);
+      // console.log('template 2', template);
 
       const templateContentId = get(template, `fields.content.${defaultLocale}.sys.id`);
-      console.log('templateContentId 3', templateContentId);
+      // console.log('templateContentId 3', templateContentId);
 
       const allChildrenEntries = [];
 
       const getAllContent = async (id) => {
         try {
-          console.log('getAllContent', { id });
+          // console.log('getAllContent', { id });
           const entry = await environment.getEntry(id);
 
           const refEntryIds = [];
@@ -77,7 +77,7 @@ function ContentfulProvider({ children }) {
           idsMap[entry.sys.id] = getHashedIDFromString(`${hashId}-${pageId}-${entry.sys.id}`);
           allChildrenEntries.push(entry);
 
-          console.log('REF ENTRY IDS', refEntryIds);
+          // console.log('REF ENTRY IDS', refEntryIds);
 
           await Promise.all(
             refEntryIds.map(async (refId) => {
@@ -92,7 +92,7 @@ function ContentfulProvider({ children }) {
 
       await getAllContent(templateContentId);
 
-      console.log('ALL CHILDREN', allChildrenEntries);
+      // console.log('ALL CHILDREN', allChildrenEntries);
 
       return { allChildrenEntries, idsMap };
     },
@@ -101,7 +101,7 @@ function ContentfulProvider({ children }) {
 
   const insertTemplateIntoPage = useCallback(
     async (pageId, templateId, index) => {
-      console.log('insertTemplateIntoPage', { pageId, templateId, index });
+      // console.log('insertTemplateIntoPage', { pageId, templateId, index });
       const pageEntry = await environment.getEntry(pageId);
 
       // const templateEntry = await client.getEntry(templateId);
@@ -109,12 +109,12 @@ function ContentfulProvider({ children }) {
 
       const { allChildrenEntries, idsMap } = await getTemplateChildren(templateId, pageId);
 
-      console.log('ALL COMPS', { idsMap, allChildrenEntries });
+      // console.log('ALL COMPS', { idsMap, allChildrenEntries });
 
       const allEntryPromiseArray = allChildrenEntries.map(async (entry) => {
         const origId = entry.sys.id;
         const newId = idsMap[origId];
-        console.log('NEW ID', newId);
+        // console.log('NEW ID', newId);
         // Map fields, look for links and replace with new ids
         const newitem = await environment.createEntryWithId(entry.sys.contentType.sys.id, newId, {
           fields: {
@@ -135,14 +135,14 @@ function ContentfulProvider({ children }) {
         return newitem;
       });
 
-      console.log('ALL PROMISES', allEntryPromiseArray);
+      // console.log('ALL PROMISES', allEntryPromiseArray);
 
       const newItems = await Promise.all(allEntryPromiseArray);
 
-      console.log('New Items', newItems);
+      // console.log('New Items', newItems);
 
-      console.log('PAGE DATA', pageEntry);
-      console.log('NewContentRoot', newItems[0].sys.id);
+      // console.log('PAGE DATA', pageEntry);
+      // console.log('NewContentRoot', newItems[0].sys.id);
       if (!pageEntry.fields.contents) {
         pageEntry.fields.contents = {
           'en-US': []
@@ -167,7 +167,7 @@ function ContentfulProvider({ children }) {
           }
         });
       }
-      console.log('UPDATED PAGE DATA', pageEntry);
+      // console.log('UPDATED PAGE DATA', pageEntry);
       await pageEntry.update();
       setTimeout(() => {
         window.postMessage({ type: 'REFRESH_CONTENT' }, '*');
@@ -182,7 +182,7 @@ function ContentfulProvider({ children }) {
 
   const reorderContent = useCallback(
     async ({ pageId, field = 'contents', from, to }) => {
-      console.log('ReorderContent', { pageId, field, from, to });
+      // console.log('ReorderContent', { pageId, field, from, to });
 
       const pageEntry = await environment.getEntry(pageId);
 
@@ -190,7 +190,7 @@ function ContentfulProvider({ children }) {
         const aux = pageEntry.fields[field][defaultLocale][from];
         pageEntry.fields[field][defaultLocale][from] = pageEntry.fields[field][defaultLocale][to];
         pageEntry.fields[field][defaultLocale][to] = aux;
-        console.log('UPDATED PAGE DATA', pageEntry);
+        // console.log('UPDATED PAGE DATA', pageEntry);
         await pageEntry.update();
       }
 
@@ -207,17 +207,17 @@ function ContentfulProvider({ children }) {
 
   const removeContentFromIndex = useCallback(
     async ({ pageId, field = 'contents', index }) => {
-      console.log('RemoveContent', { pageId, field, index });
+      // console.log('RemoveContent', { pageId, field, index });
 
       const pageEntry = await environment.getEntry(pageId);
 
-      console.log('BEFORE UPDATE', pageEntry.fields[field][defaultLocale]);
+      // console.log('BEFORE UPDATE', pageEntry.fields[field][defaultLocale]);
 
       if (typeof index !== 'undefined') {
-        console.log('splicing here', index, 1);
+        // console.log('splicing here', index, 1);
         pageEntry.fields[field][defaultLocale].splice(index, 1);
       }
-      console.log('UPDATED PAGE DATA', pageEntry.fields[field][defaultLocale]);
+      // console.log('UPDATED PAGE DATA', pageEntry.fields[field][defaultLocale]);
       await pageEntry.update();
 
       setTimeout(() => {
