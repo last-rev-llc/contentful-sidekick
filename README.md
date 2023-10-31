@@ -15,6 +15,7 @@ The Contentful Sidekick uses a data attribute on the element you want to enable 
 
 ```html
 <meta name="contentful_space" content="<space-id>" /> <meta name="contentful_environment" content="<environment>" />
+<meta name="pageId" content="<pageId>" />
 ```
 
 ### Add this to your HTML element
