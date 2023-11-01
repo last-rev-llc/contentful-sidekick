@@ -23,7 +23,8 @@ const Templates = ({ open, handleClose, index }) => {
   const [pageId, setPageId] = useState('');
 
   useEffect(() => {
-    let metaPageId = document.querySelector('meta[name="pageId"]').content;
+    const metaPageIdEl = document.querySelector('meta[name="pageId"]');
+    let metaPageId = metaPageIdEl ? metaPageIdEl.content : null;
     if (!metaPageId) {
       const pageParams = new URLSearchParams(window.location.search);
       metaPageId = pageParams.get('id');

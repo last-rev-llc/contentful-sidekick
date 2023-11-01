@@ -4,7 +4,7 @@
   "name": "Contentful Sidekick",
   "short_name": "sidekick",
   "description": "Chrome Extension that enables inline editing for websites created in Contentful",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "permissions": ["activeTab", "storage", "tabs", "identity"],
   "host_permissions": ["http://*/*", "https://*/*", "*://*/*", "*://*.contentful.com/"],
   "icons": {
