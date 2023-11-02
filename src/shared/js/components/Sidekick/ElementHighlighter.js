@@ -43,12 +43,23 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
         id = $($parentEl[0]).data(CSK_ENTRY_ID_NAME);
         url = id ? getContentfulItemUrl(id, selectedPath) : null;
       }
-      setBlur($(e.target), url);
 
-      // setSelected(uuid);
+      const computedFontSize = window.getComputedStyle($ct[0]).fontSize;
+      const numericFontSize = parseFloat(computedFontSize) * 0.5;
+      let overlayFontSize = `${numericFontSize}px`;
+
+      if (numericFontSize < 11) {
+        overlayFontSize = '11px';
+      } else if (numericFontSize > 16) {
+        overlayFontSize = '16px';
+      }
+
+      $('#csk-blur-actions').css('font-size', overlayFontSize);
+
+      setBlur($(e.target), url);
     }, 300);
     const handleCskEntryClick = throttle((e) => {
-      if (!e.target) return;
+      if (e.target !== e.currentTarget) return;
       e.stopPropagation();
       e.preventDefault();
       // const $ct = $(e.target);
