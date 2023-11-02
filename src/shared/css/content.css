@@ -145,18 +145,17 @@ body {
   position: absolute;
   z-index: 10000000;
   /* transform: translate(0%, -100%); */
-  padding: 2px 6px 1px;
-  background-color: #9146ff;
-  border-radius: 0;
+  padding: 0.125em 0.5em 0.25em;
+  background-color: rgba(145, 70, 255, 0.8);
+  border-bottom-right-radius: 0.5em;
   color: #fff;
   font-size: 12px;
   font-weight: bold;
   letter-spacing: 1px;
-  line-height: 1.7;
+  line-height: 1.5;
   text-transform: uppercase;
   transition: all 0.25s ease-out;
   transition-delay: 0.05s;
-  padding-bottom: 2px;
 }
 
 [data-init-csk] #csk-blur-actions a {
