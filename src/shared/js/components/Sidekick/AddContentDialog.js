@@ -54,6 +54,13 @@ const Templates = ({ open, handleClose, index }) => {
     }
   }, [uniqueId]);
 
+  useEffect(() => {
+    if (!open) {
+      setUniqueId('');
+      setReady(false);
+    }
+  }, [open]);
+
   const groupedTemplates = templates.reduce((acc, template) => {
     if (!template.fields.category) return acc;
     if (!acc[template.fields.category.toUpperCase()]) {
