@@ -17,10 +17,12 @@ import { useContentfulContext } from '../../helpers/ContentfulContext';
 
 const Templates = ({ open, handleClose, index }) => {
   const { insertTemplateIntoPage, envId, previewClient } = useContentfulContext();
+  console.log('Templates', { insertTemplateIntoPage, envId, previewClient });
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState();
   const [pageId, setPageId] = useState('');
+  const [uniqueId, setUniqueId] = useState('TEMPLATE');
 
   useEffect(() => {
     const metaPageIdEl = document.querySelector('meta[name="pageId"]');
@@ -58,7 +60,7 @@ const Templates = ({ open, handleClose, index }) => {
     try {
       setMessage();
       setLoading(true);
-      await insertTemplateIntoPage(pageId, template.sys.id, index);
+      await insertTemplateIntoPage(pageId, template.sys.id, index, uniqueId);
 
       handleClose();
       setMessage(`Template inserted in ${pageId}`);
@@ -66,6 +68,10 @@ const Templates = ({ open, handleClose, index }) => {
       setMessage(`Error: ${err.message}`);
     }
     setLoading(false);
+  };
+
+  const updateUniqueId = (e) => {
+    setUniqueId(e.currentTarget.value);
   };
 
   // console.log('AddContentDialog', { index })
@@ -78,6 +84,7 @@ const Templates = ({ open, handleClose, index }) => {
         </Button>
       </DialogTitle>
       <DialogContent>
+        <input type="text" id="templateUniqueId" onChange={updateUniqueId} />
         {Object.entries(groupedTemplates).map(([category, groupTemplates]) => (
           <div key={category}>
             <Snackbar
