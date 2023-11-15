@@ -9,7 +9,9 @@ import {
   DialogTitle,
   Typography,
   LinearProgress,
-  Snackbar
+  Snackbar,
+  TextField,
+  InputLabel
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useContentfulContext } from '../../helpers/ContentfulContext';
@@ -92,7 +94,7 @@ const Templates = ({ open, handleClose, index }) => {
   };
 
   return previewClient ? (
-    <Dialog onClose={handleClose} open={open} maxWidth="lg">
+    <Dialog onClose={handleClose} open={open} maxWidth="lg" sx={{ zIndex: 999999999999 }}>
       <DialogTitle sx={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
         Add new content in environment {envId}
         <Button sx={{ minWidth: 'auto' }} onClick={handleClose}>
@@ -100,52 +102,32 @@ const Templates = ({ open, handleClose, index }) => {
         </Button>
       </DialogTitle>
       <DialogContent sx={{ position: 'relative' }}>
-        <div style={{ position: 'sticky', top: 0, margin: '0 -10px', backgroundColor: '#fff' }}>
-          <div style={{ margin: '0 10px' }}>
-            <Typography sx={{ margin: '10px 0' }} variant="h6">
-              Insert Unique ID
-            </Typography>
-            <input
-              style={{
-                outline: 'none',
-                boxShadow: 'rgba(225, 228, 232, 0.2) 0px 2px 0px inset',
-                boxSizing: 'border-box',
-                backgroundColor: 'rgb(255, 255, 255)',
-                border: '1px solid rgb(207, 217, 224)',
-                borderRadius: '6px',
-                color: 'rgb(65, 77, 99)',
-                fontFamily:
-                  '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-                fontSize: '0.875rem',
-                lineHeight: '1.25rem',
-                padding: '10px 0.75rem',
-                margin: '0 0 10px 0',
-                cursor: 'auto',
-                width: '100%',
-                zIndex: 1,
-                height: '40px',
-                maxHeight: '40px'
-              }}
-              required
-              type="text"
-              placeholder="Unique ID (required)"
-              id="templateUniqueId"
-              onChange={updateUniqueId}
-            />
-            {!uniqueId && ready && (
-              <Typography sx={{ color: 'red' }} variant="body2">
-                Unique ID is required to distinguish between template names
-              </Typography>
-            )}
-            <hr />
-            <Typography sx={{ margin: '10px 0' }} variant="h6">
-              TEMPLATES
-            </Typography>
-            <hr />
-          </div>
+        <div
+          style={{
+            position: 'sticky',
+            top: 0,
+            margin: '0 -8px',
+            padding: '0px 8px',
+            backgroundColor: '#fff',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            paddingBottom: 16
+          }}>
+          <InputLabel htmlFor="templateUniqueId">Enter template info</InputLabel>
+
+          <TextField
+            required
+            id="templateUniqueId"
+            label="Prefix"
+            fullBleed
+            helperText="This will be used to prefix the title of each new content."
+            onChange={updateUniqueId}
+          />
+          <InputLabel>Select your template</InputLabel>
         </div>
         {Object.entries(groupedTemplates).map(([category, groupTemplates]) => (
-          <div key={category}>
+          <Box key={category} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Snackbar
               open={!!message}
               autoHideDuration={6000}
@@ -154,8 +136,8 @@ const Templates = ({ open, handleClose, index }) => {
               // action={action}
             />
 
-            <Typography variant="h6">{category}</Typography>
-            <br />
+            <Typography variant="body">{category}</Typography>
+
             <Box display="grid" gridTemplateColumns={`repeat(${Math.min(templates.length, 2)}, 1fr)`} gap={2}>
               {groupTemplates.map((tmp) => {
                 return (
@@ -185,7 +167,7 @@ const Templates = ({ open, handleClose, index }) => {
             </Box>
             <br />
             <br />
-          </div>
+          </Box>
         ))}
         <Loading visible={loading} />
       </DialogContent>
