@@ -7,7 +7,7 @@ import set from 'lodash/set';
 import getContentfulVarsFromPage from './getContentfulVarsFromPgae';
 import getHashedIDFromString from './getHashedIDFromString';
 
-const CLIENT_ID = 'MAxWQWzejdnoIVRa0VO6ZX0c-DIOBfws9VC51xySmLQ';
+const CLIENT_ID = 'N0sUte_UZ7vaCjSEcP8n11Ta2VOZY3yYqD67ZQWHCT4';
 const getAuthUrl = (redirectUri) =>
   `https://be.contentful.com/oauth/authorize?response_type=token&client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&scope=content_management_manage`;
 
