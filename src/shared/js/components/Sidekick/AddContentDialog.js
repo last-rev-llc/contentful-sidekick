@@ -58,6 +58,7 @@ const Templates = ({ open, handleClose, index }) => {
 
   useEffect(() => {
     if (!open) {
+      // reset state on close
       setUniqueId('');
       setReady(false);
     }
