@@ -118,10 +118,15 @@ const Templates = ({ open, handleClose, index }) => {
 
           <TextField
             required
+            error={ready && !uniqueId}
             id="templateUniqueId"
             label="Prefix"
             fullBleed
-            helperText="This will be used to prefix the title of each new content."
+            helperText={
+              ready && !uniqueId
+                ? 'Please enter prefix to create content.'
+                : 'This will be used to prefix the title of each new content.'
+            }
             onChange={updateUniqueId}
           />
           <InputLabel>Select your template</InputLabel>
