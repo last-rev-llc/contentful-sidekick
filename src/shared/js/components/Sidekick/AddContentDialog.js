@@ -121,7 +121,7 @@ const Templates = ({ open, handleClose, index }) => {
             error={ready && !uniqueId}
             id="templateUniqueId"
             label="Prefix"
-            fullBleed
+            fullWidth
             helperText={
               ready && !uniqueId
                 ? 'Please enter prefix to create content.'
