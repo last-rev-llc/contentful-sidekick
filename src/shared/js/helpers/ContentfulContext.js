@@ -99,11 +99,16 @@ function ContentfulProvider({ children }) {
         const origId = entry.sys.id;
         const newId = idsMap[origId];
         // Map fields, look for links and replace with new ids
+        let internalTitle = entry.fields.internalTitle['en-US'];
+        internalTitle =
+          internalTitle.indexOf('TEMPLATE - ') === 0
+            ? internalTitle.replace('TEMPLATE - ', `${uniqueId} - `)
+            : `${uniqueId} - ${internalTitle}`;
         const newitem = await environment.createEntryWithId(entry.sys.contentType.sys.id, newId, {
           fields: {
             ...entry.fields,
             internalTitle: {
-              'en-US': entry.fields.internalTitle['en-US'].replace('TEMPLATE - ', `${uniqueId} - `)
+              'en-US': internalTitle
             }
           },
           metadata: {
