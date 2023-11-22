@@ -23,7 +23,7 @@ const Sidekick = ({ defaultTree }) => {
   const [tree, setTree] = useState(defaultTree);
   const [show, setShow] = useStorageState(false, 'sidebarEnabled');
   const [highlight, setHighlight] = useStorageState(true, 'highlightEnabled');
-  const [addToTemplate, setAddToTemplate] = useState(null);
+  const [addToTemplate, setAddToTemplate] = useState(false);
 
   useEffect(() => {
     const callback = debounce(() => {
