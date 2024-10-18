@@ -28,7 +28,7 @@
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_idle",
       "all_frames": true,
-      "js": ["js/vendor.js", "js/content.js"],
+      "js": ["js/content.js"],
       "css": ["css/content.css"]
     }
   ],

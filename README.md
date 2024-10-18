@@ -14,7 +14,10 @@ The Contentful Sidekick uses a data attribute on the element you want to enable 
 ### Add this to your top meta tags
 
 ```html
-<meta name="contentful_space" content="<space-id>" /> <meta name="contentful_environment" content="<environment>" />
+<meta name="contentful_space" content="<space-id>" />
+
+<meta name="contentful_environment" content="<environment>" />
+
 <meta name="pageId" content="<pageId>" />
 ```
 
@@ -23,10 +26,12 @@ The Contentful Sidekick uses a data attribute on the element you want to enable 
 **Tip**: A good practice is to only add these tags on a staging or preview environment
 
 ```
+
 data-csk-entry-id={entry.sys.id}
 data-csk-entry-field="yourFieldApiName"
 data-csk-entry-type={entry.sys.contentType.sys.id}
 data-csk-entry-display-text={entry.fields.internalTitle}
+
 ```
 
 **Note** It is highly recommended to use `data-csk-entry-display-text` for all entries. If you purely want to visually group items, you can omit the other tags. Otherwise, for best future functionality, it is best to use all the tags.
@@ -52,6 +57,7 @@ Example:
     >
       ...
     </div>
+
     <div
       class="module-text"
       data-csk-entry-id="ihsdougu33342jutnt2334"
@@ -89,8 +95,8 @@ In the example above, you would see the following structure in your sidebar:
 ## Development Env Setup
 
 - Clone Repo
-- yarn install
-- yarn dev
+- pnpm install
+- pnpm dev
 
 _This will then create a watch process that will rebuild all files to /dist/chrome anytime a file changes._
 

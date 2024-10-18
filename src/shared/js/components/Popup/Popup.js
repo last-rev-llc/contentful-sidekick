@@ -48,23 +48,6 @@ function InnerPopup() {
           <label htmlFor="sideKickEnabled" />
         </div>
         {/* <div>Is Enabled: {sideKickEnabled ? 'Yes' : 'No'}</div> */}
-        <Box sx={{ opacity: loadedAuth ? 1 : 0, transition: '.3s' }}>
-          {!user ? (
-            <div>
-              <p>Connect content management</p>
-              <button type="submit" className="oauth-button" onClick={handleLogin}>
-                Sign In
-              </button>
-            </div>
-          ) : (
-            <div>
-              <p>User {user} Connected</p>
-              <button type="submit" className="oauth-button" onClick={handleLogout}>
-                Sign Out
-              </button>
-            </div>
-          )}
-        </Box>
       </main>
       <footer>
         <small className="version">v{version}</small>

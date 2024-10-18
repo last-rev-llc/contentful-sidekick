@@ -1,15 +1,13 @@
 /* eslint-disable no-console */
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { createClient as createMgmtClient } from 'contentful-management';
 import { createClient as createCdnClient } from 'contentful';
 import get from 'lodash/get';
 import set from 'lodash/set';
 import getContentfulVarsFromPage from './getContentfulVarsFromPgae';
 import getHashedIDFromString from './getHashedIDFromString';
-
-const CLIENT_ID = 'N0sUte_UZ7vaCjSEcP8n11Ta2VOZY3yYqD67ZQWHCT4';
-const getAuthUrl = (redirectUri) =>
-  `https://be.contentful.com/oauth/authorize?response_type=token&client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&scope=content_management_manage`;
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
+import LoginLinks from '../components/LoginLinks';
 
 const ContentfulContext = createContext();
 
@@ -22,72 +20,89 @@ function ContentfulProvider({ children }) {
   const [previewClient, setPreviewClient] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [defaultLocale, setDefaultLocale] = useState('en-US');
+  const [openDialog, setOpenDialog] = useState(false);
+
+  function withUserCheck(fn) {
+    return function (...args) {
+      if (!user) {
+        setOpenDialog(true);
+        return; // Stop execution if dialog is opened
+      }
+      return fn(...args); // Call the original function if user exists
+    };
+  }
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
 
   const getTemplateChildren = useCallback(
-    async (templateId, pageId) => {
-      const idsMap = {};
-      const hashId = new Date().getTime();
-      const template = await environment.getEntry(templateId);
+    withUserCheck(
+      async (templateId, pageId) => {
+        const idsMap = {};
+        const hashId = new Date().getTime();
+        const template = await environment.getEntry(templateId);
 
-      const templateContentId = get(template, `fields.content.${defaultLocale}.sys.id`);
+        const templateContentId = get(template, `fields.content.${defaultLocale}.sys.id`);
 
-      const allChildrenEntries = [];
+        const allChildrenEntries = [];
 
-      const getAllContent = async (id) => {
-        try {
-          const entry = await environment.getEntry(id);
+        const getAllContent = async (id) => {
+          try {
+            const entry = await environment.getEntry(id);
 
-          const refEntryIds = [];
-          const getChildrenRefIds = (content, key) => {
-            if (Array.isArray(content)) {
-              const hashedEntrys = content.map((ref) => {
-                if (get(ref, 'sys.linkType') === 'Entry') {
-                  refEntryIds.push(ref.sys.id);
-                }
-                // if (get(content, 'sys.id')) {
-                //   refEntryIds.push(content.sys.id);
-                // }
-                idsMap[ref.sys.id] = getHashedIDFromString(`${hashId}-${pageId}-${ref.sys.id}`);
-                return {
-                  sys: {
-                    id: idsMap[ref.sys.id],
-                    linkType: ref.sys.linkType,
-                    type: ref.sys.type
+            const refEntryIds = [];
+            const getChildrenRefIds = (content, key) => {
+              if (Array.isArray(content)) {
+                const hashedEntrys = content.map((ref) => {
+                  if (get(ref, 'sys.linkType') === 'Entry') {
+                    refEntryIds.push(ref.sys.id);
                   }
-                };
-              });
-              set(entry, `fields.${key}.${defaultLocale}`, hashedEntrys);
-            }
-          };
+                  // if (get(content, 'sys.id')) {
+                  //   refEntryIds.push(content.sys.id);
+                  // }
+                  idsMap[ref.sys.id] = getHashedIDFromString(`${hashId}-${pageId}-${ref.sys.id}`);
+                  return {
+                    sys: {
+                      id: idsMap[ref.sys.id],
+                      linkType: ref.sys.linkType,
+                      type: ref.sys.type
+                    }
+                  };
+                });
+                set(entry, `fields.${key}.${defaultLocale}`, hashedEntrys);
+              }
+            };
 
-          Object.keys(entry.fields).map((key) => {
-            const localizedField = get(entry, `fields.${key}.${defaultLocale}`);
-            getChildrenRefIds(localizedField, key);
-          });
+            Object.keys(entry.fields).map((key) => {
+              const localizedField = get(entry, `fields.${key}.${defaultLocale}`);
+              getChildrenRefIds(localizedField, key);
+            });
 
-          idsMap[entry.sys.id] = getHashedIDFromString(`${hashId}-${pageId}-${entry.sys.id}`);
-          allChildrenEntries.push(entry);
+            idsMap[entry.sys.id] = getHashedIDFromString(`${hashId}-${pageId}-${entry.sys.id}`);
+            allChildrenEntries.push(entry);
 
-          await Promise.all(
-            refEntryIds.map(async (refId) => {
-              await getAllContent(refId);
-            })
-          );
-        } catch (error) {
-          console.log('ERROR->getAllContent', { id, error });
-          throw error;
-        }
-      };
+            await Promise.all(
+              refEntryIds.map(async (refId) => {
+                await getAllContent(refId);
+              })
+            );
+          } catch (error) {
+            console.log('ERROR->getAllContent', { id, error });
+            throw error;
+          }
+        };
 
-      await getAllContent(templateContentId);
+        await getAllContent(templateContentId);
 
-      return { allChildrenEntries, idsMap };
-    },
-    [defaultLocale, environment]
+        return { allChildrenEntries, idsMap };
+      },
+      [defaultLocale, environment, user]
+    )
   );
 
   const insertTemplateIntoPage = useCallback(
-    async (pageId, templateId, index, uniqueId) => {
+    withUserCheck(async (pageId, templateId, index, uniqueId) => {
       const pageEntry = await environment.getEntry(pageId);
 
       // const templateEntry = await client.getEntry(templateId);
@@ -157,62 +172,52 @@ function ContentfulProvider({ children }) {
         window.postMessage({ type: 'REFRESH_CONTENT' }, '*');
       }, 1000);
       // const updatedPage = await updateEntry('4uogEyr2z3e8VqlFMn4VpX', {fields: pageData.fields}, SPACE_ID, ENV_ID, 'page', pageData.sys.version, cmaToken);
-    },
-    [environment, defaultLocale, getTemplateChildren]
+    }),
+    [environment, defaultLocale, getTemplateChildren, user]
   );
 
   const reorderContent = useCallback(
-    async ({ pageId, field = 'contents', from, to }) => {
-      const pageEntry = await environment.getEntry(pageId);
+    withUserCheck(
+      async ({ pageId, field = 'contents', from, to }) => {
+        const pageEntry = await environment.getEntry(pageId);
 
-      if (typeof from !== 'undefined' && typeof to !== 'undefined') {
-        const aux = pageEntry.fields[field][defaultLocale][from];
-        pageEntry.fields[field][defaultLocale][from] = pageEntry.fields[field][defaultLocale][to];
-        pageEntry.fields[field][defaultLocale][to] = aux;
-        await pageEntry.update();
-      }
+        if (typeof from !== 'undefined' && typeof to !== 'undefined') {
+          const aux = pageEntry.fields[field][defaultLocale][from];
+          pageEntry.fields[field][defaultLocale][from] = pageEntry.fields[field][defaultLocale][to];
+          pageEntry.fields[field][defaultLocale][to] = aux;
+          await pageEntry.update();
+        }
 
-      setTimeout(() => {
         window.postMessage({ type: 'REFRESH_CONTENT' }, '*');
-      }, 100);
-      // const updatedPage = await updateEntry('4uogEyr2z3e8VqlFMn4VpX', {fields: pageData.fields}, SPACE_ID, ENV_ID, 'page', pageData.sys.version, cmaToken);
-    },
-    [environment, defaultLocale]
+      },
+      [environment, defaultLocale, user]
+    )
   );
 
   const removeContentFromIndex = useCallback(
-    async ({ pageId, field = 'contents', index }) => {
-      const pageEntry = await environment.getEntry(pageId);
+    withUserCheck(
+      async ({ pageId, field = 'contents', index }) => {
+        const pageEntry = await environment.getEntry(pageId);
 
-      if (typeof index !== 'undefined') {
-        pageEntry.fields[field][defaultLocale].splice(index, 1);
-      }
-      await pageEntry.update();
+        if (typeof index !== 'undefined') {
+          pageEntry.fields[field][defaultLocale].splice(index, 1);
+        }
+        await pageEntry.update();
 
-      setTimeout(() => {
         window.postMessage({ type: 'REFRESH_CONTENT' }, '*');
-      }, 100);
-      // const updatedPage = await updateEntry('4uogEyr2z3e8VqlFMn4VpX', {fields: pageData.fields}, SPACE_ID, ENV_ID, 'page', pageData.sys.version, cmaToken);
-    },
-    [environment, defaultLocale]
+      },
+      [environment, defaultLocale, user]
+    )
   );
 
   const handleLogin = () => {
-    const redirectUri = chrome.runtime.getURL('html/oauth_redirect.html');
-
-    const authUrl = getAuthUrl(redirectUri);
-
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const currentTab = tabs[0];
-      const newTabIndex = currentTab.index + 1;
-      chrome.tabs.create({ url: authUrl, index: newTabIndex, openerTabId: currentTab.id });
+    chrome.runtime.sendMessage('login', (response) => {
+      setOpenDialog(false);
     });
   };
 
   const handleLogout = () => {
-    chrome.storage.sync.set({ cma: '' }, () => {
-      // token cleared
-    });
+    chrome.runtime.sendMessage('logout');
   };
 
   useEffect(() => {
@@ -247,13 +252,13 @@ function ContentfulProvider({ children }) {
 
         const previewToken = keys.items[0].accessToken;
         setEnvironment(newEnv);
+        // this is a comment
         setPreviewClient(
           createCdnClient({
             accessToken: previewToken,
             space: spaceId,
             environment: envId,
-            host: 'preview.contentful.com',
-            resolveLinks: true
+            host: 'preview.contentful.com'
           })
         );
       } catch (err) {
@@ -317,10 +322,29 @@ function ContentfulProvider({ children }) {
     handleLogout,
     insertTemplateIntoPage,
     reorderContent,
-    removeContentFromIndex
+    removeContentFromIndex,
+    withUserCheck
   };
 
-  return <ContentfulContext.Provider value={contentful}>{children}</ContentfulContext.Provider>;
+  return (
+    <>
+      <ContentfulContext.Provider value={contentful}>{children}</ContentfulContext.Provider>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Log in to Contentful to use this feature</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            You need to log in to Contentful to use this feature. Please log in and try again.
+          </DialogContentText>
+          <LoginLinks user={user} handleLogin={handleLogin} handleLogout={handleLogout} loadedAuth={loaded} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
 }
 
 function useContentfulContext() {

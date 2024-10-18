@@ -42,3 +42,30 @@ chrome.commands.onCommand.addListener((shortcut) => {
     chrome.runtime.reload();
   }
 });
+
+const CLIENT_ID = 'N0sUte_UZ7vaCjSEcP8n11Ta2VOZY3yYqD67ZQWHCT4';
+const getAuthUrl = (redirectUri) =>
+  `https://be.contentful.com/oauth/authorize?response_type=token&client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&scope=content_management_manage`;
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message === 'login') {
+    const redirectUri = chrome.runtime.getURL('html/oauth_redirect.html');
+
+    const authUrl = getAuthUrl(redirectUri);
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const currentTab = tabs[0];
+      const newTabIndex = currentTab.index + 1;
+      chrome.tabs.create({ url: authUrl, index: newTabIndex, openerTabId: currentTab.id }, () => {
+        sendResponse();
+      });
+    });
+
+    return true;
+  } else if (message === 'logout') {
+    chrome.storage.sync.set({ cma: '' }, () => {
+      sendResponse();
+    });
+    return true;
+  }
+});
