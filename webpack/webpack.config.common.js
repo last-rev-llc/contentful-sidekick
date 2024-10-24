@@ -22,30 +22,26 @@ module.exports = {
   devtool: 'cheap-module-source-map',
   // This will split the code into seperate files
   // https://webpack.js.org/plugins/split-chunks-plugin/
-  optimization: {
-    splitChunks: {
-      chunks: 'all',
-      minSize: 30000,
-      maxSize: 0,
-      minChunks: 1,
-      maxAsyncRequests: 5,
-      maxInitialRequests: 3,
-      automaticNameDelimiter: '-',
-      name: true,
-      cacheGroups: {
-        // This will take any imports from your JS files
-        // And if they are located in node_modules, it will
-        // added them to a vendor js file.
-        // https://webpack.js.org/plugins/split-chunks-plugin/#splitchunks-cachegroups
-        commons: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
-          chunks: 'all'
-        }
-      }
-    }
-  },
-  // User Modern JS and transpile
+  // optimization: {
+  //   splitChunks: {
+  //     chunks: 'all',
+  //     cacheGroups: {
+  //       vendor: {
+  //         test: /[\\/]node_modules[\\/]/,
+  //         name: 'vendor',
+  //         chunks: 'all',
+  //         enforce: true, // Force creation of this chunk
+  //         priority: 1 // Ensure this has a higher priority than other cache groups
+  //       },
+  //       default: {
+  //         minChunks: 2,
+  //         priority: -20,
+  //         reuseExistingChunk: true
+  //       }
+  //     }
+  //   }
+  // },
+  // Use Modern JS and transpile
   module: {
     rules: [
       {
@@ -95,23 +91,25 @@ module.exports = {
     }),
     // This plugin will copy all files
     // to the dist directoy
-    new CopyWebpackPlugin([
-      {
-        from: `${sharedDir}/html`,
-        to: `${distDir}/html`
-      },
-      {
-        from: `${sharedDir}/css`,
-        to: `${distDir}/css`
-      },
-      {
-        from: `${sharedDir}/img`,
-        to: `${distDir}/img`
-      },
-      {
-        from: `${chromeDir}/manifest.json`,
-        to: `${distDir}/manifest.json`
-      }
-    ])
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: `${sharedDir}/html`,
+          to: `${distDir}/html`
+        },
+        {
+          from: `${sharedDir}/css`,
+          to: `${distDir}/css`
+        },
+        {
+          from: `${sharedDir}/img`,
+          to: `${distDir}/img`
+        },
+        {
+          from: `${chromeDir}/manifest.json`,
+          to: `${distDir}/manifest.json`
+        }
+      ]
+    })
   ]
 };

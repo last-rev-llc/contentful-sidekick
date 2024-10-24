@@ -12,16 +12,21 @@ import { Button, Paper, styled, ToggleButton, ToggleButtonGroup, Tooltip } from 
 import getContentfulItemUrl from '../../helpers/getContentfulItemUrl';
 import { resetBlur, setBlur } from '../../helpers/blur';
 import { resetSelectedOutline } from '../../helpers/selected';
-import { CSK_ENTRY_ID_NAME, CSK_ENTRY_SELECTOR, CSK_ENTRY_UUID_NAME } from '../../helpers/constants';
+import {
+  CSK_ENTRY_FIELD_NAME,
+  CSK_ENTRY_ID_NAME,
+  CSK_ENTRY_SELECTOR,
+  CSK_ENTRY_UUID_NAME
+} from '../../helpers/constants';
 import { TreeStateContext, useTreeUpdater } from './tree-context';
 import { useContentfulContext } from '../../helpers/ContentfulContext';
+import { getPageId } from '../../helpers/getPageId';
+import { EditableComponent } from './EditableComponent';
 
 const ElementHighlighter = ({ setAddToTemplate }) => {
   const [pageId, setPageId] = React.useState('');
   React.useLayoutEffect(() => {
-    // TODO read this from a meta tag. This assumes on preview route
-    const pageParams = new URLSearchParams(window.location.search);
-    setPageId(pageParams.get('id'));
+    setPageId(getPageId());
   }, []);
   const { tree, setSelected } = useTreeUpdater();
 
@@ -33,7 +38,8 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
       if (!e.target) return;
       const $ct = $(e.target);
       let id = $ct.data(CSK_ENTRY_ID_NAME);
-      let url = id ? getContentfulItemUrl(id, selectedPath) : null;
+      let field = $ct.data(CSK_ENTRY_FIELD_NAME);
+      let url = id ? getContentfulItemUrl(id, field, selectedPath) : null;
       let uuid = $(e.target).data(CSK_ENTRY_UUID_NAME);
       if (!uuid) {
         // The mouse enter target might not be the element with sidekick props
@@ -41,7 +47,8 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
         const $parentEl = $(e.target).parents(`[data-${CSK_ENTRY_UUID_NAME}]`);
         uuid = $($parentEl[0]).data(CSK_ENTRY_UUID_NAME);
         id = $($parentEl[0]).data(CSK_ENTRY_ID_NAME);
-        url = id ? getContentfulItemUrl(id, selectedPath) : null;
+        field = $($parentEl[0]).data(CSK_ENTRY_FIELD_NAME);
+        url = id ? getContentfulItemUrl(id, field, selectedPath) : null;
       }
 
       const computedFontSize = window.getComputedStyle($ct[0]).fontSize;
@@ -274,18 +281,20 @@ const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
           height: section.boundingRect.height,
           width: section.boundingRect.width
         }}>
-        <AddSectionButton
-          sx={{ top: 0, left: '50%', transform: 'translateX(-50%) translateY(-50%)' }}
-          variant="contained"
-          onClick={() => setAddToTemplate({ index })}>
-          Add section
-        </AddSectionButton>
-        <AddSectionButton
-          sx={{ bottom: 0, left: '50%', transform: 'translateX(-50%) translateY(50%)' }}
-          variant="contained"
-          onClick={() => setAddToTemplate({ index: index + 1 })}>
-          Add section
-        </AddSectionButton>
+        <EditableComponent>
+          <AddSectionButton
+            sx={{ top: 0, left: '50%', transform: 'translateX(-50%) translateY(-50%)' }}
+            variant="contained"
+            onClick={() => setAddToTemplate({ index })}>
+            Add section
+          </AddSectionButton>
+          <AddSectionButton
+            sx={{ bottom: 0, left: '50%', transform: 'translateX(-50%) translateY(50%)' }}
+            variant="contained"
+            onClick={() => setAddToTemplate({ index: index + 1 })}>
+            Add section
+          </AddSectionButton>
+        </EditableComponent>
 
         <Paper sx={{ right: 16, top: 16, left: 'auto', position: 'absolute' }} variant="contained">
           <ToggleButtonGroup size="small">
@@ -294,27 +303,32 @@ const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
                 <IconEdit />
               </Tooltip>
             </ToggleButton>
-            <ToggleButton value="Delete" sx={{ width: 40, height: 40 }} onClick={handleDelete}>
-              <Tooltip title="Delete">
-                <IconDelete sx={{ color: 'danger.main' }} />
-              </Tooltip>
-            </ToggleButton>
-            <ToggleButton
-              value="MoveUp"
-              sx={{ width: 40, height: 40 }}
-              onClick={() => reorderContent({ pageId, from: index, to: index - 1 })}>
-              <Tooltip title="MoveUp">
-                <IconMoveUp />
-              </Tooltip>
-            </ToggleButton>
-            <ToggleButton
-              value="MoveDown"
-              sx={{ width: 40, height: 40 }}
-              onClick={() => reorderContent({ pageId, from: index, to: index + 1 })}>
-              <Tooltip title="MoveDown">
-                <IconMoveDown />
-              </Tooltip>
-            </ToggleButton>
+            <EditableComponent>
+              <ToggleButton value="Delete" sx={{ width: 40, height: 40 }} onClick={handleDelete}>
+                <Tooltip title="Delete">
+                  <IconDelete sx={{ color: 'danger.main' }} />
+                </Tooltip>
+              </ToggleButton>
+              <ToggleButton
+                value="MoveUp"
+                sx={{ width: 40, height: 40 }}
+                onClick={() => reorderContent({ pageId, from: index, to: index - 1 })}>
+                <Tooltip title="MoveUp">
+                  <IconMoveUp />
+                </Tooltip>
+              </ToggleButton>
+              <ToggleButton
+                value="MoveDown"
+                sx={{ width: 40, height: 40 }}
+                onClick={(e) => {
+                  e.currentTarget.style.backgroundColor = 'red';
+                  reorderContent({ pageId, from: index, to: index + 1 });
+                }}>
+                <Tooltip title="MoveDown">
+                  <IconMoveDown />
+                </Tooltip>
+              </ToggleButton>
+            </EditableComponent>
           </ToggleButtonGroup>
         </Paper>
       </SectionInner>

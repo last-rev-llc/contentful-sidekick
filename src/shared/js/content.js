@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import getIsSideKickEnabledFromStorage from './helpers/getIsSideKickEnabledFromStorage';
 import hasContentfulVars from './helpers/hasContentfulVars';
 import Sidekick from './components/Sidekick';
@@ -7,6 +7,7 @@ import addSidekickEnabledListener from './helpers/addSidekickEnabledListener';
 import buildCskEntryTree from './helpers/buildCskEntryTree';
 import { CSK_ENTRY_SELECTOR } from './helpers/constants';
 import getContentfulVarsFromPage from './helpers/getContentfulVarsFromPgae';
+import { ContentfulProvider } from './helpers/ContentfulContext';
 
 const shrinkContent = () => {
   // $('body').css('padding-left', '20vw');
@@ -33,7 +34,12 @@ const expandContent = () => {
 const loadSidebar = () => {
   $('body').prepend('<div id="csk-sidebar-container"></div>');
   shrinkContent();
-  ReactDOM.render(<Sidekick defaultTree={buildCskEntryTree()} />, document.getElementById('csk-sidebar-container'));
+  const root = createRoot(document.getElementById('csk-sidebar-container'));
+  root.render(
+    <ContentfulProvider>
+      <Sidekick defaultTree={buildCskEntryTree()} />
+    </ContentfulProvider>
+  );
 };
 
 const removeSidebar = () => {

@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useContentfulContext } from '../../helpers/ContentfulContext';
+import { getPageId } from '../../helpers/getPageId';
 
 const Templates = ({ open, handleClose, index }) => {
   const { insertTemplateIntoPage, envId, previewClient } = useContentfulContext();
@@ -26,13 +27,7 @@ const Templates = ({ open, handleClose, index }) => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const metaPageIdEl = document.querySelector('meta[name="pageId"]');
-    let metaPageId = metaPageIdEl ? metaPageIdEl.content : null;
-    if (!metaPageId) {
-      const pageParams = new URLSearchParams(window.location.search);
-      metaPageId = pageParams.get('id');
-    }
-
+    const metaPageId = getPageId();
     setPageId(metaPageId);
 
     async function fetchTemplates() {
