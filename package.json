@@ -8,9 +8,9 @@
   ],
   "scripts": {
     "test": "jest tests/*.test.js",
-    "build:clean": "rimraf dist",
-    "build:chrome": "npm run build:clean && webpack --progress --config webpack/webpack.config.chrome.js",
-    "dev": "npm run build:clean && webpack --watch --progress --config webpack/webpack.config.chrome.js"
+    "build:clean": "npx rimraf dist",
+    "build:chrome": "pnpm run build:clean && webpack --progress --config webpack/webpack.config.chrome.js",
+    "dev": "pnpm run build:clean && webpack --watch --progress --config webpack/webpack.config.chrome.js"
   },
   "repository": {
     "type": "git",
@@ -75,6 +75,7 @@
     "eslint-plugin-react": "^7.20.6",
     "eslint-plugin-react-hooks": "^4.0.0",
     "jest": "^24.5.0",
+    "rimraf": "^6.0.1",
     "sinon-chrome": "^2.3.2",
     "style-loader": "^1.2.1",
     "webpack": "^4.44.1",
