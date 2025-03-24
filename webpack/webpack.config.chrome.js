@@ -1,5 +1,6 @@
 const merge = require('webpack-merge');
 const common = require('./webpack.config.common.js');
+const ExtensionReloadPlugin = require('./plugins/ExtensionReloadPlugin');
 
 /**
  * DEVELOPMENT ONLY
@@ -11,4 +12,5 @@ const common = require('./webpack.config.common.js');
 
 module.exports = merge(common, {
   mode: 'development',
+  plugins: [new ExtensionReloadPlugin()]
 });

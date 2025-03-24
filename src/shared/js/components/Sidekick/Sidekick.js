@@ -25,29 +25,74 @@ const Sidekick = ({ defaultTree }) => {
   const [highlight, setHighlight] = useStorageState(true, 'highlightEnabled');
   const [addToTemplate, setAddToTemplate] = useState(false);
 
+  // Keep a reference to the latest tree for comparison
+  const treeRef = React.useRef(tree);
+
+  useEffect(() => {
+    treeRef.current = tree;
+  }, [tree]);
+
   useEffect(() => {
     const callback = debounce(() => {
       const newTree = buildCskEntryTree();
 
-      if (JSON.stringify(tree) !== JSON.stringify(newTree)) {
+      // Compare trees more efficiently by checking length and top-level changes first
+      const hasChanged =
+        treeRef.current.length !== newTree.length ||
+        newTree.some((node, index) => {
+          const currentNode = treeRef.current[index];
+          return (
+            !currentNode ||
+            currentNode.id !== node.id ||
+            currentNode.uuid !== node.uuid ||
+            currentNode.type !== node.type ||
+            currentNode.field !== node.field ||
+            JSON.stringify(currentNode.children) !== JSON.stringify(node.children)
+          );
+        });
+
+      if (hasChanged) {
         setTree(newTree);
       }
-    }, 300);
+    }, 100); // Reduced debounce time for more responsive updates
+
     const MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
     let interval;
     let mutationObserver;
+
     if (MutationObserver) {
-      mutationObserver = new MutationObserver(callback);
-      mutationObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
+      mutationObserver = new MutationObserver((mutations) => {
+        // Only trigger update if relevant attributes changed
+        const shouldUpdate = mutations.some((mutation) => {
+          return (
+            (mutation.type === 'attributes' &&
+              ((mutation.attributeName && mutation.attributeName.startsWith('data-csk-')) ||
+                mutation.target.querySelector('[data-csk-entry-uuid]'))) ||
+            mutation.type === 'childList'
+          );
+        });
+
+        if (shouldUpdate) {
+          callback();
+        }
+      });
+
+      mutationObserver.observe(document.documentElement || document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['data-csk-entry-id', 'data-csk-entry-type', 'data-csk-entry-field', 'data-csk-entry-uuid']
+      });
     } else {
-      interval = setInterval(callback, 3000);
+      interval = setInterval(callback, 1000); // Reduced interval time
       callback();
     }
+
     return () => {
       if (interval) clearInterval(interval);
       if (mutationObserver) mutationObserver.disconnect();
     };
-  }, []);
+  }, []); // Keep empty dependency array since we use treeRef
 
   return (
     <ThemeProvider theme={theme}>

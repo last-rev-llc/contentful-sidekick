@@ -42,3 +42,30 @@ chrome.commands.onCommand.addListener((shortcut) => {
     chrome.runtime.reload();
   }
 });
+
+// Setup WebSocket connection for hot reload
+const setupHotReload = () => {
+  const ws = new WebSocket('ws://localhost:8082');
+
+  ws.onmessage = (event) => {
+    try {
+      const message = JSON.parse(event.data);
+      if (message.type === 'reload') {
+        console.log('[HMR] Reloading extension...');
+        chrome.runtime.reload();
+      }
+    } catch (error) {
+      console.error('[HMR] Error processing message:', error);
+    }
+  };
+
+  ws.onclose = () => {
+    // Try to reconnect every 2 seconds
+    setTimeout(setupHotReload, 2000);
+  };
+};
+
+// Only setup hot reload in development
+if (process.env.NODE_ENV === 'development') {
+  setupHotReload();
+}
