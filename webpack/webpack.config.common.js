@@ -2,6 +2,7 @@ require('dotenv');
 const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 const sharedDir = path.join(__dirname, '../src/shared');
 const chromeDir = path.join(__dirname, '../src/chrome');
@@ -26,12 +27,9 @@ module.exports = {
     splitChunks: {
       chunks: 'all',
       minSize: 30000,
-      maxSize: 0,
       minChunks: 1,
       maxAsyncRequests: 5,
       maxInitialRequests: 3,
-      automaticNameDelimiter: '-',
-      name: true,
       cacheGroups: {
         // This will take any imports from your JS files
         // And if they are located in node_modules, it will
@@ -87,6 +85,12 @@ module.exports = {
   },
   // https://webpack.js.org/plugins/
   plugins: [
+    // Temporarily disable ESLint until we fix the configuration
+    // new ESLintPlugin({
+    //   extensions: ['js', 'jsx'],
+    //   fix: true,
+    //   eslintPath: 'eslint/use-at-your-own-risk'
+    // }),
     // Use modules without having to use import/require
     // https://webpack.js.org/plugins/provide-plugin
     new webpack.ProvidePlugin({
@@ -95,23 +99,25 @@ module.exports = {
     }),
     // This plugin will copy all files
     // to the dist directoy
-    new CopyWebpackPlugin([
-      {
-        from: `${sharedDir}/html`,
-        to: `${distDir}/html`
-      },
-      {
-        from: `${sharedDir}/css`,
-        to: `${distDir}/css`
-      },
-      {
-        from: `${sharedDir}/img`,
-        to: `${distDir}/img`
-      },
-      {
-        from: `${chromeDir}/manifest.json`,
-        to: `${distDir}/manifest.json`
-      }
-    ])
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: `${sharedDir}/html`,
+          to: `${distDir}/html`
+        },
+        {
+          from: `${sharedDir}/css`,
+          to: `${distDir}/css`
+        },
+        {
+          from: `${sharedDir}/img`,
+          to: `${distDir}/img`
+        },
+        {
+          from: `${chromeDir}/manifest.json`,
+          to: `${distDir}/manifest.json`
+        }
+      ]
+    })
   ]
 };
