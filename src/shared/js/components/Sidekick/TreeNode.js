@@ -1,107 +1,103 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import { ChevronRight, ChevronDown } from '@mui/icons-material';
 import { useContextSelector } from 'use-context-selector';
-import getContentfulItemUrl from '../../helpers/getContentfulItemUrl';
-import { CSK_ENTRY_UUID_NAME } from '../../helpers/constants';
-import { resetBlur, setBlur } from '../../helpers/blur';
-import ErrorTooltip from './ErrorTooltip';
-import { TreeStateContext, useNode, useTreeUpdater } from './tree-context';
+import { useNode, TreeStateContext } from './tree-context';
 
-const calcElScrollTop = (el) => {
-  if (el && el.offset()) {
-    const elOffset = el.offset().top;
-    const elHeight = el.height();
-    const windowHeight = $(window).height();
-    return elHeight < windowHeight ? elOffset - (windowHeight / 2 - elHeight / 2) : elOffset;
-  }
-};
+const TreeNode = memo(({ node, level }) => {
+  const { isExpanded, isSelected } = useNode(node.uuid);
+  const hasChildren = node.children && node.children.length > 0;
+  const setIsExpanded = useContextSelector(TreeStateContext, state => state.setIsExpanded);
+  const setSelected = useContextSelector(TreeStateContext, state => state.setSelected);
 
-const TreeNode = ({ id, field, type, displayText, uuid, childNodes, errors }) => {
-  const { isExpanded, isSelected } = useNode(uuid);
-  const selectedPath = useContextSelector(TreeStateContext, (context) => context.selectedPath);
-  const { setIsExpanded } = useTreeUpdater();
-  const handleExpandCollapseClick = React.useCallback(() => {
-    setIsExpanded(uuid, !isExpanded);
-    setTimeout(() => {
-      // $('body').css('padding-left', $('.csk-element-sidebar').outerWidth(true));
-    }, 0);
-  }, [setIsExpanded, isExpanded]);
-  const children = React.useMemo(
-    () =>
-      childNodes && childNodes.length ? (
-        <ul>
-          {childNodes.map((childNode) => (
-            <TreeNode
-              key={childNode.uuid}
-              id={childNode.id}
-              field={childNode.field}
-              type={childNode.type}
-              displayText={childNode.displayText}
-              uuid={childNode.uuid}
-              childNodes={childNode.children}
-              errors={{
-                ...(errors && errors[childNode.field] ? { [childNode.field]: errors[childNode.field] } : {}),
-                ...childNode.errors
-              }}
-            />
-          ))}
-        </ul>
-      ) : null,
-    [childNodes, selectedPath]
+  const handleToggle = useCallback(
+    e => {
+      e.stopPropagation();
+      if (hasChildren) {
+        setIsExpanded(node.uuid, !isExpanded);
+      }
+    },
+    [hasChildren, isExpanded, node, setIsExpanded]
   );
-  const el = React.useMemo(() => $(`[data-${CSK_ENTRY_UUID_NAME}='${uuid}']`), [uuid]);
 
-  const scrollToElement = React.useCallback(() => {
-    const scrollTop = calcElScrollTop(el);
-    $('html, body').stop().animate({ scrollTop }, 300);
-  }, [el]);
+  const handleSelect = useCallback(
+    e => {
+      e.stopPropagation();
+      setSelected(node.uuid);
+    },
+    [node.uuid, setSelected]
+  );
 
-  const url = id ? getContentfulItemUrl(id, selectedPath) : null;
-  const text = `${displayText || field || type || id}`;
-  const handleMouseEnter = () => {
-    setBlur(el);
-    scrollToElement();
-  };
+  const handleKeyDown = useCallback(
+    e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setSelected(node.uuid);
+      }
+    },
+    [node.uuid, setSelected]
+  );
 
-  const handleMouseLeave = () => {
-    resetBlur();
-    el.removeClass('csk-entry-unblur');
-  };
+  const handleToggleKeyDown = useCallback(
+    e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (hasChildren) {
+          setIsExpanded(node.uuid, !isExpanded);
+        }
+      }
+    },
+    [hasChildren, isExpanded, node.uuid, setIsExpanded]
+  );
 
   return (
-    <li className={`csk-sidebar-node ${isExpanded ? 'expanded' : 'collapsed'}`} onMouseEnter={handleMouseEnter}>
-      <div className={`csk-item-group ${isSelected ? 'selected' : ''}`}>
-        {childNodes && childNodes.length ? (
-          <span
-            className="csk-icon-expand"
-            onClick={handleExpandCollapseClick}
-            onKeyDown={handleExpandCollapseClick}
-            role="menuitem"
-            tabIndex={0}
-          />
-        ) : null}
-        <span
-          className="csk-item"
-          onMouseEnter={scrollToElement}
-          onMouseLeave={handleMouseLeave}
-          onClick={handleExpandCollapseClick}
-          onKeyDown={handleExpandCollapseClick}
-          role="menuitem"
-          tabIndex={0}>
-          {text}
-        </span>
-        {errors && Object.keys(errors).length ? <ErrorTooltip field={field} errors={errors} /> : null}
-        {url && (
-          <a href={url} target="_blank" rel="noreferrer" className="edit">
-            Edit
-          </a>
+    <div className="tree-node">
+      <div
+        className={`tree-node-content ${isSelected ? 'selected' : ''}`}
+        style={{ paddingLeft: `${level * 20}px` }}
+        onClick={handleSelect}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}>
+        {hasChildren && (
+          <div
+            className="toggle"
+            onClick={handleToggle}
+            onKeyDown={handleToggleKeyDown}
+            role="button"
+            tabIndex={0}>
+            {isExpanded ? <ChevronDown /> : <ChevronRight />}
+          </div>
         )}
-        {/* <a href={url} target="_blank" rel="noreferrer" className="view" onMouseEnter={handleMouseEnter}>
-              View
-            </a> */}
+        <div className="label">{node.label || node.name}</div>
       </div>
-      {children}
-    </li>
+      {hasChildren && isExpanded && (
+        <div className="children">
+          {node.children.map(child => (
+            <TreeNode key={child.uuid} node={child} level={level + 1} />
+          ))}
+        </div>
+      )}
+    </div>
   );
+});
+
+TreeNode.propTypes = {
+  node: PropTypes.shape({
+    uuid: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    name: PropTypes.string,
+    children: PropTypes.arrayOf(
+      PropTypes.shape({
+        uuid: PropTypes.string.isRequired,
+        label: PropTypes.string,
+        name: PropTypes.string
+      })
+    )
+  }).isRequired,
+  level: PropTypes.number.isRequired
 };
 
-export default React.memo(TreeNode);
+TreeNode.displayName = 'TreeNode';
+
+export default TreeNode;

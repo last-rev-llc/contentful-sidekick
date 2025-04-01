@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import './Banner.css';
 import { useContentfulContext } from '../../helpers/ContentfulContext';
 
-const Banner = () => {
+function Banner() {
   const [show, setShow] = useState(false);
   const { user } = useContentfulContext();
 
   useEffect(() => {
-    const listener = (changes) => {
+    const listener = changes => {
       if (changes.cma && changes.cma.newValue) {
         setShow(true);
       }
@@ -19,15 +19,13 @@ const Banner = () => {
   }, []);
 
   return (
-    <>
-      <div className={`banner ${show && user && 'show'}`}>
-        <p>You are now logged in as {user}</p>
-        <button type="button" onClick={() => setShow(false)}>
-          X
-        </button>
-      </div>
-    </>
+    <div className={`banner ${show && user && 'show'}`}>
+      <p>You are now logged in as {user?.email}</p>
+      <button type="button" onClick={() => setShow(false)}>
+        X
+      </button>
+    </div>
   );
-};
+}
 
 export default Banner;

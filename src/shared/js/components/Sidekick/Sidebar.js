@@ -1,24 +1,9 @@
 import React from 'react';
 import TreeNode from './TreeNode';
 
-const Sidebar = ({ tree, show }) => {
+function Sidebar({ tree, show }) {
   const nodes = React.useMemo(
-    () =>
-      tree &&
-      tree.map((node) => {
-        return (
-          <TreeNode
-            key={node.uuid}
-            id={node.id}
-            field={node.field}
-            type={node.type}
-            displayText={node.displayText}
-            uuid={node.uuid}
-            childNodes={node.children}
-            errors={node.errors}
-          />
-        );
-      }),
+    () => tree && tree.map(node => <TreeNode key={node.uuid} node={node} level={0} />),
     [tree]
   );
   return (
@@ -34,6 +19,6 @@ const Sidebar = ({ tree, show }) => {
       <ul>{nodes}</ul>
     </div>
   );
-};
+}
 
 export default React.memo(Sidebar);

@@ -146,7 +146,7 @@ body {
   z-index: 10000000;
   /* transform: translate(0%, -100%); */
   padding: 0.125em 0.5em 0.25em;
-  background-color: rgba(145, 70, 255, 0.8);
+  /* background-color: rgba(145, 70, 255, 0.8); */
   border-bottom-right-radius: 0.5em;
   color: #fff;
   font-size: 12px;

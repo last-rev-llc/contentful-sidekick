@@ -1,90 +1,70 @@
-import React from 'react';
-import { createContext, useContextSelector } from 'use-context-selector';
+import React, { useMemo, useCallback } from 'react';
+import { createContext as createContextSelector, useContextSelector } from 'use-context-selector';
 
-export const TreeStateContext = createContext({
-  selected: null,
-  expandedState: {},
-  selectedPath: []
+const TreeStateContext = createContextSelector({
+  tree: [],
+  selectedPath: [],
+  expandedNodes: new Set(),
+  selectedNode: null,
+  setIsExpanded: () => {},
+  setSelected: () => {}
 });
 
-const TreeUpdaterContext = createContext({
-  setSelected: () => {},
-  setExpandedState: () => {}
-});
+export const useNode = uuid => {
+  const expandedNodes = useContextSelector(TreeStateContext, state => state.expandedNodes);
+  const selectedNode = useContextSelector(TreeStateContext, state => state.selectedNode);
 
-const getPath = ({ node, uuid }) => {
-  if (node.uuid == uuid) {
-    return [node];
-  }
-  if (node.children && node.children.length) {
-    for (const child of node.children) {
-      const path = getPath({ node: child, uuid });
-      if (path.length) {
-        return [...path, node];
-      }
-    }
-  }
-  return [];
+  return {
+    isExpanded: expandedNodes.has(uuid),
+    isSelected: selectedNode === uuid
+  };
 };
 
-function TreeProvider({ tree, children }) {
-  const [selected, setSelected] = React.useState();
-  const [expandedState, setExpandedState] = React.useState({});
-  const selectedPath = React.useMemo(() => {
-    const path = getPath({ uuid: selected, node: { children: tree } });
-    return path;
-  }, [selected, JSON.stringify(tree)]);
+export const useTreeUpdater = () => {
+  const [state, setState] = React.useState({
+    selectedPath: [],
+    expandedNodes: new Set(),
+    selectedNode: null
+  });
 
-  const setIsExpanded = React.useCallback(
-    (uuid, expanded) => {
-      setExpandedState({
-        ...expandedState,
-        [uuid]: expanded
-      });
-    },
-    [expandedState, setExpandedState]
+  const setIsExpanded = useCallback((uuid, isExpanded) => {
+    if (!uuid) return;
+    setState(prevState => ({
+      ...prevState,
+      expandedNodes: isExpanded
+        ? new Set([...prevState.expandedNodes, uuid])
+        : new Set([...prevState.expandedNodes].filter(id => id !== uuid))
+    }));
+  }, []);
+
+  const setSelected = useCallback(uuid => {
+    setState(prevState => ({
+      ...prevState,
+      selectedNode: uuid || null
+    }));
+  }, []);
+
+  return {
+    ...state,
+    setIsExpanded,
+    setSelected
+  };
+};
+
+export function TreeProvider({ children, tree = [] }) {
+  const { setIsExpanded, setSelected, ...state } = useTreeUpdater();
+
+  const contextValue = useMemo(
+    () => ({
+      ...state,
+      tree,
+      setIsExpanded,
+      setSelected
+    }),
+    [state, tree, setIsExpanded, setSelected]
   );
 
-  return (
-    <TreeStateContext.Provider value={{ tree, selected, selectedPath, expandedState }}>
-      <TreeUpdaterContext.Provider value={{ setSelected, setIsExpanded, setExpandedState }}>
-        {children}
-      </TreeUpdaterContext.Provider>
-    </TreeStateContext.Provider>
-  );
+  return <TreeStateContext.Provider value={contextValue}>{children}</TreeStateContext.Provider>;
 }
 
-const useTreeUpdater = () => {
-  const tree = useContextSelector(TreeStateContext, (context) => context.tree);
-  const setSelected = useContextSelector(TreeUpdaterContext, (context) => context.setSelected);
-  const setIsExpanded = useContextSelector(TreeUpdaterContext, (context) => context.setIsExpanded);
-  if (typeof setSelected === 'undefined') {
-    throw new Error('useTreeUpdater must be used within a TreeProvider');
-  }
-
-  return {
-    tree,
-    setSelected,
-    setIsExpanded
-  };
-};
-
-const useNode = (uuid) => {
-  const expanded = useContextSelector(TreeStateContext, (context) => context.expandedState[uuid]);
-  const selectedPath = useContextSelector(TreeStateContext, (context) => context.selectedPath);
-  const selected = useContextSelector(TreeStateContext, (context) => context.selected);
-
-  const isExpanded = React.useMemo(() => expanded || (selected && selectedPath.find((n) => n.uuid === uuid)), [
-    uuid,
-    expanded,
-    selected,
-    selectedPath
-  ]);
-  const isSelected = React.useMemo(() => uuid === selected, [uuid, selected]);
-  return {
-    isExpanded,
-    isSelected
-  };
-};
-
-export { TreeProvider, useNode, useTreeUpdater };
+export { TreeStateContext };

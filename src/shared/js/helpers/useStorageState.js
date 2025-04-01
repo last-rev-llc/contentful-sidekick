@@ -1,26 +1,39 @@
 import React from 'react';
+
 export default (defaultValue, key) => {
-  const [value, setValuestate] = React.useState(localStorage.getItem(key) ? JSON.parse(localStorage.getItem(key)) : defaultValue);
-  // React.useEffect(() => {
-  // chrome.storage.sync.get([key], (storageValue) => {
-  //   if (typeof storageValue[key] !== 'undefined') {
-  //     setValuestate(storageValue[key]);
-  //   }
-  // });
+  const [value, setValuestate] = React.useState(() => {
+    try {
+      const storedValue = localStorage.getItem(key);
+      return storedValue ? JSON.parse(storedValue) : defaultValue;
+    } catch (error) {
+      console.warn('Error accessing localStorage:', error);
+      return defaultValue;
+    }
+  });
 
-  // chrome.storage.onChanged.addListener((changes) => {
-  //   if (changes[key] && changes[key].newValue !== changes[key].oldValue) {
-  //     setValuestate(changes[key].newValue);
-  //   }
-  // });
-  // }, [defaultValue]);
+  // Keep track of mounted state to prevent updates after unmount
+  const isMounted = React.useRef(true);
+  React.useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
-  const setValue = newValue => {
-    setValuestate(newValue);
-    localStorage.setItem(key, newValue);
-    // TODO: The next line makes the extension disappear without error
-    // chrome.storage.sync.set({ [key]: newValue });
+  const setValue = React.useCallback(
+    newValue => {
+      if (!isMounted.current) return;
 
-  };
+      const valueToStore = typeof newValue === 'function' ? newValue(value) : newValue;
+      setValuestate(valueToStore);
+
+      try {
+        localStorage.setItem(key, JSON.stringify(valueToStore));
+      } catch (error) {
+        console.warn('Error setting localStorage:', error);
+      }
+    },
+    [key, value]
+  );
+
   return [value, setValue];
 };

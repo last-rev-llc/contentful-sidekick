@@ -20,8 +20,8 @@ const distDir = path.join(__dirname, '../dist/chrome');
  * webpack.entries.js
  */
 module.exports = {
-  devtool: 'cheap-module-source-map',
-  // This will split the code into seperate files
+  devtool: 'source-map',
+  // This will split the code into separate files
   // https://webpack.js.org/plugins/split-chunks-plugin/
   optimization: {
     splitChunks: {
@@ -35,30 +35,58 @@ module.exports = {
         // And if they are located in node_modules, it will
         // added them to a vendor js file.
         // https://webpack.js.org/plugins/split-chunks-plugin/#splitchunks-cachegroups
-        commons: {
+        vendors: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendor',
-          chunks: 'all'
+          chunks: 'all',
+          priority: -10
+        },
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true
         }
       }
     }
   },
-  // User Modern JS and transpile
+  // Use Modern JS and transpile
   module: {
     rules: [
       {
-        test: /\.m?js$/,
-        // exclude: /(node_modules|bower_components)/,
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env', '@babel/preset-react']
+            presets: [
+              ['@babel/preset-env', { targets: { chrome: '93' } }],
+              ['@babel/preset-react', { runtime: 'automatic' }]
+            ],
+            plugins: [
+              '@babel/plugin-transform-runtime',
+              '@babel/plugin-transform-private-property-in-object'
+            ]
           }
         }
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: true
+            }
+          }
+        ]
+      },
+      {
+        test: /\.js$/,
+        type: 'javascript/auto',
+        resolve: {
+          fullySpecified: false
+        }
       }
     ]
   },
@@ -70,27 +98,33 @@ module.exports = {
     content: `${sharedDir}/js/content.js`,
     oauth_redirect: `${sharedDir}/js/oauth_redirect.js`
   },
-  // This specifys where you want the files to be out put to
+  // This specifies where you want the files to be output to
   // and the name of the source maps, if your environment outputs them.
   // https://webpack.js.org/configuration/output/
   output: {
     filename: 'js/[name].js',
     path: distDir,
+    clean: true,
     sourceMapFilename: 'js/[name].js.map'
   },
   // Tell webpack what directories should be searched when resolving modules.
   // https://webpack.js.org/configuration/resolve/#resolve-modules
   resolve: {
-    modules: ['node_modules']
+    modules: ['node_modules'],
+    extensions: ['.js', '.jsx'],
+    fallback: {
+      path: false,
+      fs: false
+    }
   },
   // https://webpack.js.org/plugins/
   plugins: [
-    // Temporarily disable ESLint until we fix the configuration
-    // new ESLintPlugin({
-    //   extensions: ['js', 'jsx'],
-    //   fix: true,
-    //   eslintPath: 'eslint/use-at-your-own-risk'
-    // }),
+    new ESLintPlugin({
+      extensions: ['js', 'jsx'],
+      fix: true,
+      emitWarning: true,
+      failOnError: false
+    }),
     // Use modules without having to use import/require
     // https://webpack.js.org/plugins/provide-plugin
     new webpack.ProvidePlugin({
@@ -98,7 +132,7 @@ module.exports = {
       jQuery: 'jquery'
     }),
     // This plugin will copy all files
-    // to the dist directoy
+    // to the dist directory
     new CopyWebpackPlugin({
       patterns: [
         {

@@ -3,9 +3,10 @@ module.exports = {
   env: {
     browser: true,
     es2021: true,
-    node: true
+    webextensions: true,
+    jquery: true
   },
-  extends: ['eslint:recommended', 'plugin:react/recommended', 'plugin:react-hooks/recommended', 'airbnb', 'prettier'],
+  extends: ['plugin:react/recommended', 'airbnb', 'plugin:prettier/recommended'],
   parserOptions: {
     ecmaFeatures: {
       jsx: true
@@ -13,16 +14,31 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module'
   },
-  plugins: ['react', 'react-hooks', 'prettier'],
+  plugins: ['react', 'prettier'],
   settings: {
     react: {
       version: 'detect'
     }
   },
   rules: {
-    'prettier/prettier': 'error',
-    'react/react-in-jsx-scope': 'off',
+    'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
     'react/prop-types': 'off',
-    'no-console': ['warn', { allow: ['warn', 'error'] }]
+    'no-undef': 'error',
+    'react/react-in-jsx-scope': 'off',
+    'react/jsx-no-constructed-context-values': 'warn',
+    'jsx-a11y/control-has-associated-label': 'warn',
+    'jsx-a11y/anchor-is-valid': 'warn',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'ForInStatement',
+        message:
+          'for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.'
+      }
+    ],
+    'array-callback-return': 'warn',
+    'consistent-return': 'warn',
+    'no-loss-of-precision': 'warn',
+    'eqeqeq': ['error', 'always']
   }
 };

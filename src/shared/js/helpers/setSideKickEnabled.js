@@ -1,1 +1,1 @@
-export default (sideKickEnabled) => chrome.storage.sync.set({ sideKickEnabled });
+export default sideKickEnabled => chrome.storage.sync.set({ sideKickEnabled });

@@ -1,6 +1,8 @@
 import 'regenerator-runtime/runtime';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import React from 'react';
 import Popup from './components/Popup';
 
-ReactDOM.render(<Popup />, document.getElementById('popup'));
+const container = document.getElementById('popup');
+const root = createRoot(container);
+root.render(<Popup />);

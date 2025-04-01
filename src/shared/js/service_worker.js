@@ -31,13 +31,13 @@ chrome.tabs.onUpdated.addListener(async () => {
   setExtensionIcon(opt);
 });
 
-chrome.storage.sync.onChanged.addListener(async (changes) => {
+chrome.storage.sync.onChanged.addListener(async changes => {
   if (changes.sideKickEnabled) {
     setExtensionIcon(changes.sideKickEnabled.newValue);
   }
 });
 
-chrome.commands.onCommand.addListener((shortcut) => {
+chrome.commands.onCommand.addListener(shortcut => {
   if (shortcut.includes('+M')) {
     chrome.runtime.reload();
   }
@@ -47,15 +47,14 @@ chrome.commands.onCommand.addListener((shortcut) => {
 const setupHotReload = () => {
   const ws = new WebSocket('ws://localhost:8082');
 
-  ws.onmessage = (event) => {
+  ws.onmessage = event => {
     try {
       const message = JSON.parse(event.data);
       if (message.type === 'reload') {
-        console.log('[HMR] Reloading extension...');
         chrome.runtime.reload();
       }
     } catch (error) {
-      console.error('[HMR] Error processing message:', error);
+      // Ignore error silently in production
     }
   };
 
@@ -69,3 +68,72 @@ const setupHotReload = () => {
 if (process.env.NODE_ENV === 'development') {
   setupHotReload();
 }
+
+async function handleBugReport(payload) {
+  // console.log('here', {
+  //   method: 'POST',
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //     'Accept': 'application/json'
+  //   },
+  //   body: JSON.stringify({
+  //     question: payload.data.question,
+  //     elementData: payload.data.elementData,
+  //     overrideConfig: payload.data.overrideConfig
+  //   })
+  // });
+  try {
+    // Using the chatflow API endpoint
+    const API_BASE_URL =
+      'https://staging.theanswer.ai/lr-staging.studio.theanswer.ai/api/v1/prediction'; // Replace with your actual API base URL
+    const response = await fetch(`${API_BASE_URL}/b98e2d5b-00ac-4ee0-bbd9-e18eae3f9670`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        question: payload.data.question,
+        elementData: payload.data.elementData,
+        overrideConfig: payload.data.overrideConfig
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.error || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Bug report submitted successfully:', data);
+    return data;
+  } catch (error) {
+    console.error({ payload });
+    console.error('Error submitting bug report:', error);
+    throw new Error(`Failed to submit bug report: ${error.message}`);
+  }
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === 'OPEN_OPTIONS_PAGE') {
+    // Open options page
+    chrome.runtime.openOptionsPage();
+  } else if (request.type === 'OPEN_OAUTH_WINDOW') {
+    // Handle OAuth window opening
+  } else if (request.type === 'SUBMIT_BUG_REPORT') {
+    // Handle bug report submission
+    handleBugReport(request.payload)
+      .then(result => {
+        sendResponse({ success: true, data: result });
+      })
+      .catch(error => {
+        sendResponse({ success: false, error: error.message });
+      });
+    return true; // Will respond asynchronously
+  }
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+  // Extension installed or updated
+  // Initialize any required settings
+});

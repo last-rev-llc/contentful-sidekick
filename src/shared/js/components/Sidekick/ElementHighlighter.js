@@ -7,186 +7,343 @@ import IconEdit from '@mui/icons-material/Edit';
 import IconMoveUp from '@mui/icons-material/ArrowUpward';
 import IconMoveDown from '@mui/icons-material/ArrowDownward';
 import IconDelete from '@mui/icons-material/Delete';
-import { Button, Paper, styled, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import BugReportIcon from '@mui/icons-material/BugReport';
+import {
+  Button,
+  Paper,
+  styled,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  IconButton
+} from '@mui/material';
 
-import getContentfulItemUrl from '../../helpers/getContentfulItemUrl';
 import { resetBlur, setBlur } from '../../helpers/blur';
 import { resetSelectedOutline } from '../../helpers/selected';
-import { CSK_ENTRY_ID_NAME, CSK_ENTRY_SELECTOR, CSK_ENTRY_UUID_NAME } from '../../helpers/constants';
+import {
+  CSK_ENTRY_ID_NAME,
+  CSK_ENTRY_SELECTOR,
+  CSK_ENTRY_UUID_NAME
+} from '../../helpers/constants';
 import { TreeStateContext, useTreeUpdater } from './tree-context';
 import { useContentfulContext } from '../../helpers/ContentfulContext';
+import getContentfulItemUrl from '../../helpers/getContentfulItemUrl';
+import BugReporter from '../BugReporter/BugReporter';
 
-const ElementHighlighter = ({ setAddToTemplate }) => {
+function ElementHighlighter({ setAddToTemplate }) {
   const [pageId, setPageId] = React.useState('');
+  const [selectedBugElement, setSelectedBugElement] = React.useState(null);
+  const [selectedBugInfo, setSelectedBugInfo] = React.useState(null);
+  const [sections, setSections] = React.useState([]);
+  const [active, setActive] = React.useState(0);
+
+  const { setSelected } = useTreeUpdater();
+  const selectedPath = useContextSelector(TreeStateContext, context => context.selectedPath);
+
+  // Memoize event handlers
+  const handleCskEntryMouseenter = React.useMemo(
+    () =>
+      throttle(e => {
+        if (!e.target) return;
+        const $ct = $(e.target);
+        let id = $ct.data(CSK_ENTRY_ID_NAME);
+        let url = id ? getContentfulItemUrl(id, selectedPath) : null;
+        let uuid = $(e.target).data(CSK_ENTRY_UUID_NAME);
+        if (!uuid) {
+          const $parentEl = $(e.target).parents(`[data-${CSK_ENTRY_UUID_NAME}]`);
+          uuid = $($parentEl[0]).data(CSK_ENTRY_UUID_NAME);
+          id = $($parentEl[0]).data(CSK_ENTRY_ID_NAME);
+          url = id ? getContentfulItemUrl(id, selectedPath) : null;
+        }
+
+        const computedFontSize = window.getComputedStyle($ct[0]).fontSize;
+        const numericFontSize = parseFloat(computedFontSize) * 0.5;
+        let overlayFontSize = `${numericFontSize}px`;
+
+        if (numericFontSize < 11) {
+          overlayFontSize = '11px';
+        } else if (numericFontSize > 16) {
+          overlayFontSize = '16px';
+        }
+
+        $('#csk-blur-actions').css('font-size', overlayFontSize);
+        setBlur($(e.target), url);
+      }, 300),
+    [selectedPath]
+  );
+
+  const handleCskEntryClick = React.useMemo(
+    () =>
+      throttle(e => {
+        if (e.target !== e.currentTarget) return;
+        e.stopPropagation();
+        e.preventDefault();
+        let uuid = $(e.target).data(CSK_ENTRY_UUID_NAME);
+        if (!uuid) {
+          const $parentEl = $(e.target).parents(`[data-${CSK_ENTRY_UUID_NAME}]`);
+          uuid = $($parentEl[0]).data(CSK_ENTRY_UUID_NAME);
+        }
+        setSelected(uuid);
+        resetBlur();
+      }, 300),
+    [setSelected]
+  );
+
+  const handleCskEntryMouseleave = React.useMemo(
+    () =>
+      throttle(e => {
+        if (e.toElement && e.toElement.getAttribute('id') === 'csk-blur-actions') {
+          return;
+        }
+        if (!e.target) {
+          return;
+        }
+        resetBlur();
+      }, 300),
+    []
+  );
+
+  const handleActionsMouseleave = React.useMemo(
+    () =>
+      throttle(e => {
+        if (e.toElement && $(CSK_ENTRY_SELECTOR).is(e.toElement)) {
+          return;
+        }
+        resetBlur();
+      }, 300),
+    []
+  );
+
+  // Setup event listeners once
+  React.useEffect(() => {
+    if (!setSelected) return;
+
+    const body = $('body');
+    const blurActions = $('#csk-blur-actions');
+
+    // Add event listeners
+    body
+      .on('click', CSK_ENTRY_SELECTOR, handleCskEntryClick)
+      .on('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
+      .on('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave)
+      .on('mouseover', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter);
+
+    blurActions.on('mouseleave', handleActionsMouseleave);
+
+    // Cleanup
+    return () => {
+      // Cancel all throttled functions
+      handleCskEntryClick.cancel();
+      handleCskEntryMouseenter.cancel();
+      handleCskEntryMouseleave.cancel();
+      handleActionsMouseleave.cancel();
+
+      // Remove event listeners
+      body
+        .off('click', CSK_ENTRY_SELECTOR, handleCskEntryClick)
+        .off('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
+        .off('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave)
+        .off('mouseover', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter);
+
+      blurActions.off('mouseleave', handleActionsMouseleave);
+    };
+  }, [
+    setSelected,
+    handleCskEntryClick,
+    handleCskEntryMouseenter,
+    handleCskEntryMouseleave,
+    handleActionsMouseleave
+  ]);
+
+  // Create stable throttled functions
+  const throttledSetActive = React.useMemo(
+    () =>
+      throttle(newActive => {
+        setActive(newActive);
+      }, 300),
+    []
+  );
+
+  const throttledSetSections = React.useMemo(
+    () =>
+      throttle(newSections => {
+        setSections(newSections);
+      }, 300),
+    []
+  );
+
+  // Memoize sections mapping function
+  const mapSections = React.useCallback((elSections, includeScroll = true) => {
+    return Array.from(elSections).map(section => {
+      const boundingRect = section.getBoundingClientRect();
+      return {
+        ...section,
+        cskEntryId: section.getAttribute('data-csk-entry-id'),
+        boundingRect,
+        top: includeScroll ? window.scrollY + boundingRect.top : boundingRect.top,
+        bottom: includeScroll ? window.scrollY + boundingRect.bottom : boundingRect.bottom
+      };
+    });
+  }, []);
+
+  // Handle resize
+  const handleResize = React.useCallback(() => {
+    const elSections = document.querySelectorAll('section');
+    const mappedSections = mapSections(elSections, true);
+    throttledSetSections(mappedSections);
+  }, [mapSections, throttledSetSections]);
+
+  // Handle mouse move
+  const handleMouseMove = React.useCallback(
+    evt => {
+      const elSections = document.querySelectorAll('section');
+      const mappedSections = mapSections(elSections, false);
+
+      let newActive;
+      for (let i = 0; i < mappedSections.length; i += 1) {
+        const section = mappedSections[i];
+        if (evt.clientY >= section.top && evt.clientY <= section.bottom) {
+          newActive = i;
+          break;
+        }
+      }
+
+      if (newActive !== active) {
+        throttledSetActive(newActive);
+      }
+    },
+    [mapSections, active, throttledSetActive]
+  );
+
+  // Setup resize listener
+  React.useEffect(() => {
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      throttledSetSections.cancel();
+    };
+  }, [handleResize, throttledSetSections]);
+
+  // Setup mouse move listener
+  React.useEffect(() => {
+    const throttledMouseMove = throttle(handleMouseMove, 300);
+    window.addEventListener('mousemove', throttledMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', throttledMouseMove);
+      throttledMouseMove.cancel();
+      throttledSetActive.cancel();
+    };
+  }, [handleMouseMove, throttledSetActive]);
+
+  // Initial page ID setup
   React.useLayoutEffect(() => {
-    // TODO read this from a meta tag. This assumes on preview route
     const pageParams = new URLSearchParams(window.location.search);
     setPageId(pageParams.get('id'));
   }, []);
-  const { tree, setSelected } = useTreeUpdater();
 
-  const [sections, setSections] = React.useState([]);
-  const selectedPath = useContextSelector(TreeStateContext, (context) => context.selectedPath);
-  const [active, setActive] = React.useState(0);
-  React.useLayoutEffect(() => {
-    const handleCskEntryMouseenter = throttle((e) => {
-      if (!e.target) return;
-      const $ct = $(e.target);
-      let id = $ct.data(CSK_ENTRY_ID_NAME);
-      let url = id ? getContentfulItemUrl(id, selectedPath) : null;
-      let uuid = $(e.target).data(CSK_ENTRY_UUID_NAME);
-      if (!uuid) {
-        // The mouse enter target might not be the element with sidekick props
-        // So we look for it on the parents
-        const $parentEl = $(e.target).parents(`[data-${CSK_ENTRY_UUID_NAME}]`);
-        uuid = $($parentEl[0]).data(CSK_ENTRY_UUID_NAME);
-        id = $($parentEl[0]).data(CSK_ENTRY_ID_NAME);
-        url = id ? getContentfulItemUrl(id, selectedPath) : null;
-      }
-
-      const computedFontSize = window.getComputedStyle($ct[0]).fontSize;
-      const numericFontSize = parseFloat(computedFontSize) * 0.5;
-      let overlayFontSize = `${numericFontSize}px`;
-
-      if (numericFontSize < 11) {
-        overlayFontSize = '11px';
-      } else if (numericFontSize > 16) {
-        overlayFontSize = '16px';
-      }
-
-      $('#csk-blur-actions').css('font-size', overlayFontSize);
-
-      setBlur($(e.target), url);
-    }, 300);
-    const handleCskEntryClick = throttle((e) => {
-      if (e.target !== e.currentTarget) return;
-      e.stopPropagation();
+  const handleOpen = React.useCallback(
+    e => {
       e.preventDefault();
-      // const $ct = $(e.target);
-      // let id = $ct.data(CSK_ENTRY_ID_NAME);
-      // let url = id ? getContentfulItemUrl(id, selectedPath) : null;
-      let uuid = $(e.target).data(CSK_ENTRY_UUID_NAME);
-      if (!uuid) {
-        // The mouse enter target might not be the element with sidekick props
-        // So we look for it on the parents
-        const $parentEl = $(e.target).parents(`[data-${CSK_ENTRY_UUID_NAME}]`);
-        uuid = $($parentEl[0]).data(CSK_ENTRY_UUID_NAME);
-        // id = $($parentEl[0]).data(CSK_ENTRY_ID_NAME);
-        // url = id ? getContentfulItemUrl(id, selectedPath) : null;
-      }
-      // setBlur($(e.target), url);
-
-      setSelected(uuid);
-      // setSelectedOutline($(e.target), url);
-      resetBlur();
-    }, 300);
-
-    const handleCskEntryMouseleave = throttle((e) => {
-      if (e.toElement && e.toElement.getAttribute('id') === 'csk-blur-actions') {
-        return;
-      }
-      if (!e.target) {
-        return;
-      }
-      // setSelected();
-      resetBlur();
-    }, 300);
-
-    const handleActionsMouseleave = throttle((e) => {
-      if (e.toElement && $(CSK_ENTRY_SELECTOR).is(e.toElement)) {
-        return;
-      }
-      resetBlur();
-      // setSelected();
-    }, 300);
-    if (setSelected) {
-      $('body')
-        .on('click', CSK_ENTRY_SELECTOR, handleCskEntryClick)
-        .on('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
-        .on('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave)
-        .on('mouseover', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter);
-
-      $('#csk-blur-actions').on('mouseleave', handleActionsMouseleave);
-    }
-    // debugger;
-
-    return () => {
-      if (setSelected) {
-        $('body')
-          .off('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
-          .off('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave)
-          .off('mouseover', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter);
-
-        $('#csk-blur-actions').on('mouseleave', handleActionsMouseleave);
-      }
-    };
-  }, [setSelected, selectedPath]);
-  React.useLayoutEffect(() => {
-    const onResize = throttle(() => {
-      const elSections = document.querySelectorAll('section');
-      const mappedSections = Array.from(elSections).map((section) => {
-        const boundingRect = section.getBoundingClientRect();
-        return {
-          ...section,
-          cskEntryId: section.getAttribute('data-csk-entry-id'),
-          boundingRect,
-          top: window.scrollY + boundingRect.top,
-          bottom: window.scrollY + boundingRect.bottom
-        };
-      });
-      // console.log('MappedSections', mappedSections);
-      setSections(mappedSections);
-    }, 300);
-    onResize();
-    window.addEventListener('resize', onResize);
-
-    return () => {
-      window.removeEventListener('resize', onResize);
-    };
-  }, [tree]);
-  React.useLayoutEffect(() => {
-    const onMouseMove = throttle((evt) => {
-      // Iterate over sections and set the correct section to active depending on the mouse y position
-      const elSections = document.querySelectorAll('section');
-      const mappedSections = Array.from(elSections).map((section) => {
-        const boundingRect = section.getBoundingClientRect();
-        return {
-          ...section,
-          boundingRect,
-          top: boundingRect.top,
-          bottom: boundingRect.bottom
-        };
+      const $selectedEl = $(CSK_ENTRY_SELECTOR).filter((_, el) => {
+        const uuid = $(el).data(CSK_ENTRY_UUID_NAME);
+        return uuid === selectedPath[selectedPath.length - 1]?.uuid;
       });
 
-      mappedSections.map((section, idx) => {
-        if (evt.clientY >= section.top && evt.clientY <= section.bottom && idx !== active) {
-          setActive(idx);
-        }
-        if (evt.clientY < section.top && idx === active) {
-          setActive();
-        }
-        if (evt.clientY >= section.bottom && idx === active) {
-          setActive();
-        }
-      });
-    }, 300);
+      const entryId = $selectedEl.data(CSK_ENTRY_ID_NAME);
+      if (!entryId) return;
 
-    window.addEventListener('mousemove', onMouseMove);
+      const url = getContentfulItemUrl(entryId, selectedPath);
+      if (window.self !== window.top) {
+        window.parent.postMessage(
+          {
+            type: 'NAVIGATE_TO',
+            payload: { url }
+          },
+          '*'
+        );
+        window.open(url);
+      } else {
+        window.open(url);
+      }
+    },
+    [selectedPath]
+  );
 
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-    };
-  }, [active, tree]);
+  const handleBugReport = React.useCallback(
+    e => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Try to find the currently blurred element
+      const $blurredElement = $('.csk-entry-unblur');
+
+      // If no blurred element, try to use the selected path
+      let $targetElement = $blurredElement.length ? $blurredElement : null;
+      if (!$targetElement?.length) {
+        const selectedUuid = selectedPath[selectedPath.length - 1]?.uuid;
+        if (selectedUuid) {
+          $targetElement = $(`[data-${CSK_ENTRY_UUID_NAME}="${selectedUuid}"]`);
+        }
+      }
+
+      if (!$targetElement?.length) {
+        // If still no element found, try to find any element under the blur actions
+        const $blurActions = $('#csk-blur-actions');
+        const blurRect = $blurActions[0]?.getBoundingClientRect();
+        if (blurRect) {
+          // Try points around the blur actions to find the element
+          const points = [
+            [blurRect.left - 10, blurRect.top],
+            [blurRect.left, blurRect.top - 10],
+            [blurRect.right + 10, blurRect.top],
+            [blurRect.left, blurRect.bottom + 10]
+          ];
+
+          for (const [x, y] of points) {
+            const el = document.elementFromPoint(x, y);
+            if (el) {
+              $targetElement = $(el).closest(CSK_ENTRY_SELECTOR);
+              if ($targetElement.length) break;
+            }
+          }
+        }
+      }
+
+      if (!$targetElement?.length) {
+        console.warn('No element found for bug report');
+        return;
+      }
+
+      const selectedElement = $targetElement[0];
+      const elementInfo = {
+        path: selectedPath,
+        uuid: selectedElement.getAttribute(`data-${CSK_ENTRY_UUID_NAME}`),
+        type: selectedElement.getAttribute('data-csk-entry-type'),
+        id: selectedElement.getAttribute('data-csk-entry-id')
+      };
+
+      setSelectedBugElement(selectedElement);
+      setSelectedBugInfo(elementInfo);
+    },
+    [selectedPath]
+  );
+
+  const handleCloseBugReport = React.useCallback(() => {
+    setSelectedBugElement(null);
+    setSelectedBugInfo(null);
+  }, []);
+
   return (
     <>
-      {['top', 'bottom', 'left', 'right'].map((dir) => (
+      {['top', 'bottom', 'left', 'right'].map(dir => (
         <div
           id={`csk-blur-${dir}`}
           key={dir}
           className={`csk-blur csk-blur-${dir}`}
           onClick={() => {
             resetSelectedOutline();
-            setSelected();
+            setSelected(null);
           }}
         />
       ))}
@@ -201,7 +358,7 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
 
       {sections.map((section, index) => (
         <SectionUI
-          key={section.cskEntryId}
+          key={section.cskEntryId || `section-${index}`}
           active={index === active ? 1 : 0}
           section={section}
           index={index}
@@ -210,22 +367,44 @@ const ElementHighlighter = ({ setAddToTemplate }) => {
         />
       ))}
       <div id="csk-blur-actions">
-        <a id="csk-edit-link" target="_blank">
-          Edit
-        </a>
-        {/* <a id="csk-template">Template</a> */}
+        <IconButton
+          sx={{
+            'color': 'black',
+            'backgroundColor': 'white',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.9)'
+            }
+          }}
+          onClick={handleOpen}>
+          <Tooltip title="Edit Content">
+            <IconEdit />
+          </Tooltip>
+        </IconButton>
+        <IconButton
+          sx={{
+            'color': 'red',
+            'backgroundColor': 'white',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.9)'
+            }
+          }}
+          onClick={e => handleBugReport(e)}>
+          <Tooltip title="Report Bug">
+            <BugReportIcon />
+          </Tooltip>
+        </IconButton>
       </div>
-      <div id="csk-selected-actions">
-        {/* <a id="csk-edit-link" target="_blank">
-          Edit
-        </a> */}
-        {/* <a id="csk-template">Template</a> */}
-      </div>
+
+      <BugReporter
+        selectedElement={selectedBugElement}
+        elementInfo={selectedBugInfo}
+        onClose={handleCloseBugReport}
+      />
     </>
   );
-};
+}
 
-const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
+function SectionUI({ pageId, section, setAddToTemplate, index, active }) {
   // const [active, setActive] = React.useState(false);
   const { reorderContent, removeContentFromIndex } = useContentfulContext();
   const handleDelete = async () => {
@@ -320,7 +499,7 @@ const SectionUI = ({ pageId, section, setAddToTemplate, index, active }) => {
       </SectionInner>
     </SectionUIContainer>
   );
-};
+}
 const SectionUIContainer = styled('div')`
   position: absolute;
   z-index: 999;

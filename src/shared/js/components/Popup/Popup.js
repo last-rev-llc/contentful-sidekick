@@ -43,7 +43,12 @@ function InnerPopup() {
       <main>
         <div className="enable">
           <span>Enable Sidekick</span>
-          <input type="checkbox" defaultChecked={sideKickEnabled} id="sideKickEnabled" onChange={handleChange} />
+          <input
+            type="checkbox"
+            defaultChecked={sideKickEnabled}
+            id="sideKickEnabled"
+            onChange={handleChange}
+          />
           {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
           <label htmlFor="sideKickEnabled" />
         </div>
@@ -73,12 +78,12 @@ function InnerPopup() {
   );
 }
 
-const Popup = () => {
+function Popup() {
   return (
     <ContentfulProvider>
       <InnerPopup />
     </ContentfulProvider>
   );
-};
+}
 
 export default Popup;

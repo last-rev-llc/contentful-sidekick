@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState, useMemo } from 'react';
 import { createClient as createMgmtClient } from 'contentful-management';
 import { createClient as createCdnClient } from 'contentful';
 import get from 'lodash/get';
@@ -8,7 +8,7 @@ import getContentfulVarsFromPage from './getContentfulVarsFromPgae';
 import getHashedIDFromString from './getHashedIDFromString';
 
 const CLIENT_ID = 'N0sUte_UZ7vaCjSEcP8n11Ta2VOZY3yYqD67ZQWHCT4';
-const getAuthUrl = (redirectUri) =>
+const getAuthUrl = redirectUri =>
   `https://be.contentful.com/oauth/authorize?response_type=token&client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&scope=content_management_manage`;
 
 const ContentfulContext = createContext();
@@ -18,6 +18,7 @@ function ContentfulProvider({ children }) {
   const [envId, setEnvId] = useState(null);
   const [cmaToken, setCmaToken] = useState(null);
   const [user, setUser] = useState(null);
+  const [userDetails, setUserDetails] = useState(null);
   const [environment, setEnvironment] = useState(null);
   const [previewClient, setPreviewClient] = useState(null);
   const [loaded, setLoaded] = useState(false);
@@ -33,14 +34,14 @@ function ContentfulProvider({ children }) {
 
       const allChildrenEntries = [];
 
-      const getAllContent = async (id) => {
+      const getAllContent = async id => {
         try {
           const entry = await environment.getEntry(id);
 
           const refEntryIds = [];
           const getChildrenRefIds = (content, key) => {
             if (Array.isArray(content)) {
-              const hashedEntrys = content.map((ref) => {
+              const hashedEntrys = content.map(ref => {
                 if (get(ref, 'sys.linkType') === 'Entry') {
                   refEntryIds.push(ref.sys.id);
                 }
@@ -60,7 +61,7 @@ function ContentfulProvider({ children }) {
             }
           };
 
-          Object.keys(entry.fields).map((key) => {
+          Object.keys(entry.fields).forEach(key => {
             const localizedField = get(entry, `fields.${key}.${defaultLocale}`);
             getChildrenRefIds(localizedField, key);
           });
@@ -69,7 +70,7 @@ function ContentfulProvider({ children }) {
           allChildrenEntries.push(entry);
 
           await Promise.all(
-            refEntryIds.map(async (refId) => {
+            refEntryIds.map(async refId => {
               await getAllContent(refId);
             })
           );
@@ -95,7 +96,7 @@ function ContentfulProvider({ children }) {
 
       const { allChildrenEntries, idsMap } = await getTemplateChildren(templateId, pageId);
 
-      const allEntryPromiseArray = allChildrenEntries.map(async (entry) => {
+      const allEntryPromiseArray = allChildrenEntries.map(async entry => {
         const origId = entry.sys.id;
         const newId = idsMap[origId];
         // Map fields, look for links and replace with new ids
@@ -199,10 +200,9 @@ function ContentfulProvider({ children }) {
 
   const handleLogin = () => {
     const redirectUri = chrome.runtime.getURL('html/oauth_redirect.html');
-
     const authUrl = getAuthUrl(redirectUri);
 
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       const currentTab = tabs[0];
       const newTabIndex = currentTab.index + 1;
       chrome.tabs.create({ url: authUrl, index: newTabIndex, openerTabId: currentTab.id });
@@ -217,8 +217,11 @@ function ContentfulProvider({ children }) {
 
   useEffect(() => {
     const setClientValues = async () => {
+      // console.log('Starting setClientValues with cmaToken:', cmaToken ? 'exists' : 'missing');
       if (!cmaToken) {
+        // console.log('No CMA token available, clearing user state');
         setUser(null);
+        setUserDetails(null);
         setEnvironment(null);
         setPreviewClient(null);
         if (cmaToken !== null) {
@@ -227,18 +230,48 @@ function ContentfulProvider({ children }) {
         return;
       }
       try {
+        // console.log('Creating Contentful management client...');
         const client = createMgmtClient({
           accessToken: cmaToken
         });
-        const [newSpace, newUser] = await Promise.all([client.getSpace(spaceId), client.getCurrentUser()]);
-        setUser(newUser.email);
-        const [newEnv, keys] = await Promise.all([newSpace.getEnvironment(envId), newSpace.getPreviewApiKeys()]);
+
+        console.log('Fetching space and user data...');
+        const [newSpace, newUser] = await Promise.all([
+          client.getSpace(spaceId),
+          client.getCurrentUser()
+        ]);
+
+        // Store full user details separately
+        const details = {
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          fullName: `${newUser.firstName} ${newUser.lastName}`.trim(),
+          spaceName: newSpace.name,
+          spaceId: newSpace.sys.id
+        };
+
+        console.log('Contentful Authentication Data:', {
+          user: details,
+          spaceId,
+          environmentId: envId,
+          space: {
+            name: newSpace.name,
+            id: newSpace.sys.id
+          }
+        });
+
+        setUser(newUser.email); // Keep the email for backward compatibility
+        setUserDetails(details); // Store full details separately
+        console.log('Fetching environment and preview keys...');
+        const [newEnv, keys] = await Promise.all([
+          newSpace.getEnvironment(envId),
+          newSpace.getPreviewApiKeys()
+        ]);
         const locales = await newEnv.getLocales();
 
         const newDefaultLocale = get(
-          locales.items.find((locale) => {
-            return get(locale, 'default') === true;
-          }),
+          locales.items.find(locale => get(locale, 'default') === true),
           'code',
           'en-US'
         );
@@ -252,13 +285,13 @@ function ContentfulProvider({ children }) {
             accessToken: previewToken,
             space: spaceId,
             environment: envId,
-            host: 'preview.contentful.com',
-            resolveLinks: true
+            host: 'preview.contentful.com'
           })
         );
       } catch (err) {
         console.log('error setting client values', err);
         setUser(null);
+        setUserDetails(null);
         setEnvironment(null);
         setPreviewClient(null);
       } finally {
@@ -271,7 +304,7 @@ function ContentfulProvider({ children }) {
   }, [cmaToken]);
 
   useEffect(() => {
-    const initCmaToken = (t) => {
+    const initCmaToken = t => {
       setCmaToken(t);
     };
 
@@ -292,7 +325,7 @@ function ContentfulProvider({ children }) {
       initCmaToken(cma);
     };
 
-    const listener = (changes) => {
+    const listener = changes => {
       if (changes.cma) {
         initCmaToken(changes.cma.newValue);
       }
@@ -306,21 +339,40 @@ function ContentfulProvider({ children }) {
     };
   }, []);
 
-  const contentful = {
-    user,
-    environment,
-    previewClient,
-    loaded,
-    envId,
-    defaultLocale,
-    handleLogin,
-    handleLogout,
-    insertTemplateIntoPage,
-    reorderContent,
-    removeContentFromIndex
-  };
+  const contextValue = useMemo(
+    () => ({
+      spaceId,
+      envId,
+      cmaToken,
+      user,
+      userDetails,
+      environment,
+      previewClient,
+      loaded,
+      defaultLocale,
+      handleLogin,
+      handleLogout,
+      insertTemplateIntoPage,
+      reorderContent,
+      removeContentFromIndex
+    }),
+    [
+      spaceId,
+      envId,
+      cmaToken,
+      user,
+      userDetails,
+      environment,
+      previewClient,
+      loaded,
+      defaultLocale,
+      insertTemplateIntoPage,
+      reorderContent,
+      removeContentFromIndex
+    ]
+  );
 
-  return <ContentfulContext.Provider value={contentful}>{children}</ContentfulContext.Provider>;
+  return <ContentfulContext.Provider value={contextValue}>{children}</ContentfulContext.Provider>;
 }
 
 function useContentfulContext() {

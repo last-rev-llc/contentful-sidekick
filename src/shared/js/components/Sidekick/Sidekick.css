@@ -120,7 +120,9 @@
   letter-spacing: 0.4px;
   text-decoration: none;
   text-transform: uppercase;
-  transition: background-color 0.1s linear, color 0.05s linear;
+  transition:
+    background-color 0.1s linear,
+    color 0.05s linear;
   opacity: 0;
 }
 
@@ -133,7 +135,9 @@
 .csk-element-sidebar .csk-item-group .view:hover {
   background-color: #9146ff;
   color: #fff;
-  transition: background-color 0.1s linear, color 0.05s linear;
+  transition:
+    background-color 0.1s linear,
+    color 0.05s linear;
 }
 
 .csk-element-sidebar .csk-icon-expand {
@@ -211,4 +215,61 @@
 }
 #csk-sidebar-container > * {
   pointer-events: auto;
+}
+
+.csk-selected {
+  position: absolute;
+  z-index: 999;
+  pointer-events: none;
+  border: 2px solid #9146ff;
+}
+
+.csk-selected-top {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+}
+
+.csk-selected-bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+}
+
+.csk-selected-left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+}
+
+.csk-selected-right {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 2px;
+}
+
+#csk-selected-actions {
+  position: absolute;
+  top: -30px;
+  right: 0;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+}
+
+#csk-selected-actions a {
+  padding: 4px 8px;
+  background: #9146ff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+#csk-selected-actions a:hover {
+  background: #7a3dd8;
 }
