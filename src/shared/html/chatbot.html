@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chatbot</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        background: transparent;
+      }
+
+      #chatbot-container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Theme styles */
+      .theme-default {
+        --button-bg: rgb(0, 0, 0);
+        --button-icon: #ffffff;
+        --chat-window-bg: #333333;
+        --powered-by-text: #ffffff;
+        --bot-message-bg: #808080;
+        --bot-message-text: #ffffff;
+        --user-message-bg: #1a1a1a;
+        --user-message-text: #ffffff;
+        --input-bg: #ffffff;
+        --input-text: #000000;
+        --input-send: #000000;
+        --feedback: #000000;
+        --footer-text: #ffffff;
+      }
+
+      .theme-impossible {
+        --button-bg: #b01b1f;
+        --button-icon: #ffffff;
+        --chat-window-bg: #1a0304;
+        --powered-by-text: #ffffff;
+        --bot-message-bg: #b01b1f;
+        --bot-message-text: #ffffff;
+        --user-message-bg: #400709;
+        --user-message-text: #ffffff;
+        --input-bg: #ffffff;
+        --input-text: #b01b1f;
+        --input-send: #b01b1f;
+        --feedback: #b01b1f;
+        --footer-text: #ffffff;
+      }
+    </style>
+    <script src="../js/vendor/web.js"></script>
+    <script>
+      // Configuration options based on domain
+      const CHATBOT_CONFIGS = {
+        impossible: {
+          apiHost: 'https://lastrev.flowise.theanswer.ai',
+          chatflowid: 'e24d5572-a27a-40b9-83fe-19a376535b9d'
+        },
+        default: {
+          apiHost: 'https://lastrev.flowise.theanswer.ai',
+          chatflowid: '9530dc18-17ee-4ff8-90ae-f1c786bdcea3'
+        }
+      };
+
+      // Initialize chatbot when DOM is loaded
+      document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('chatbot-container');
+
+        // Get current URL from parent frame
+        window.addEventListener('message', event => {
+          if (event.data.type === 'INIT_CHATBOT') {
+            const url = event.data.url;
+            initializeChatbot(url);
+          }
+        });
+
+        // Function to get the appropriate chatbot config based on domain
+        const getChatbotConfig = url => {
+          try {
+            const domain = new URL(url).hostname;
+            return domain.includes('impossiblefoods.com')
+              ? CHATBOT_CONFIGS.impossible
+              : CHATBOT_CONFIGS.default;
+          } catch (error) {
+            console.error('Error parsing URL:', error);
+            return CHATBOT_CONFIGS.default;
+          }
+        };
+
+        // Function to initialize chatbot with config
+        const initializeChatbot = url => {
+          const config = getChatbotConfig(url);
+          const isImpossibleFoods = url.includes('impossiblefoods.com');
+
+          // Set theme
+          document.body.className = isImpossibleFoods ? 'theme-impossible' : 'theme-default';
+
+          // Create chatbot element
+          const chatbotId = 'aai-chatbot';
+          let chatbotElement = document.getElementById(chatbotId);
+
+          if (!chatbotElement) {
+            chatbotElement = document.createElement('aai-fullchatbot');
+            chatbotElement.id = chatbotId;
+            container.appendChild(chatbotElement);
+          }
+
+          // Initialize chatbot with config
+          Chatbot.initFull({
+            apiHost: config.apiHost,
+            chatflowid: config.chatflowid,
+            theme: {
+              button: {
+                size: 'small',
+                backgroundColor: 'var(--button-bg)',
+                iconColor: 'var(--button-icon)',
+                bottom: 10,
+                right: 10
+              },
+              chatWindow: {
+                showTitle: true,
+                backgroundColor: 'var(--chat-window-bg)',
+                width: -1,
+                fontSize: 12,
+                botMessage: {
+                  backgroundColor: 'var(--bot-message-bg)',
+                  textColor: 'var(--bot-message-text)',
+                  showAvatar: true,
+                  avatarSrc: '/static/images/logos/answerai-logo.png'
+                },
+                userMessage: {
+                  backgroundColor: 'var(--user-message-bg)',
+                  textColor: 'var(--user-message-text)',
+                  showAvatar: false
+                },
+                textInput: {
+                  backgroundColor: 'var(--input-bg)',
+                  textColor: 'var(--input-text)',
+                  sendButtonColor: 'var(--input-send)',
+                  autoFocus: true
+                },
+                feedback: {
+                  color: 'var(--feedback)'
+                },
+                footer: {
+                  textColor: 'var(--footer-text)'
+                }
+              }
+            }
+          });
+        };
+
+        // Request initialization from parent
+        window.parent.postMessage({ type: 'CHATBOT_READY' }, '*');
+      });
+    </script>
+  </head>
+  <body>
+    <div id="chatbot-container"></div>
+  </body>
+</html>

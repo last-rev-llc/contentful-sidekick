@@ -114,15 +114,69 @@ async function handleBugReport(payload) {
   }
 }
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'OPEN_OPTIONS_PAGE') {
+// Function to ensure content script is injected
+async function ensureContentScript(tabId) {
+  try {
+    // Try to send a ping message to check if content script is ready
+    await chrome.tabs.sendMessage(tabId, { type: 'PING' });
+    return true;
+  } catch (error) {
+    // Content script not ready, inject it
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['js/vendor.js', 'js/content.js']
+      });
+      return true;
+    } catch (injectionError) {
+      console.error('Failed to inject content script:', injectionError);
+      return false;
+    }
+  }
+}
+
+// Listen for messages from the side panel or content script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'GET_ELEMENT_TREE') {
+    // Get the active tab
+    chrome.tabs.query({ active: true, currentWindow: true }, async tabs => {
+      const activeTab = tabs[0];
+      if (!activeTab) {
+        sendResponse({ error: 'No active tab found' });
+        return;
+      }
+
+      try {
+        // Ensure content script is ready
+        const isReady = await ensureContentScript(activeTab.id);
+        if (!isReady) {
+          sendResponse({ error: 'Could not initialize content script' });
+          return;
+        }
+
+        // Forward the request to content script
+        chrome.tabs.sendMessage(activeTab.id, { type: 'GET_ELEMENT_TREE' }, response => {
+          if (chrome.runtime.lastError) {
+            sendResponse({ error: chrome.runtime.lastError.message });
+            return;
+          }
+          sendResponse(response);
+        });
+      } catch (error) {
+        sendResponse({ error: error.message });
+      }
+    });
+    return true; // Will respond asynchronously
+  }
+
+  if (message.type === 'OPEN_OPTIONS_PAGE') {
     // Open options page
     chrome.runtime.openOptionsPage();
-  } else if (request.type === 'OPEN_OAUTH_WINDOW') {
+  } else if (message.type === 'OPEN_OAUTH_WINDOW') {
     // Handle OAuth window opening
-  } else if (request.type === 'SUBMIT_BUG_REPORT') {
+  } else if (message.type === 'SUBMIT_BUG_REPORT') {
     // Handle bug report submission
-    handleBugReport(request.payload)
+    handleBugReport(message.payload)
       .then(result => {
         sendResponse({ success: true, data: result });
       })
@@ -136,4 +190,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 chrome.runtime.onInstalled.addListener(() => {
   // Extension installed or updated
   // Initialize any required settings
+});
+
+// Service Worker for Contentful Sidekick
+
+// Handle side panel behavior
+chrome.sidePanel
+  .setPanelBehavior({ openPanelOnActionClick: true })
+  .catch(error => console.error('Failed to set panel behavior:', error));
+
+// Listen for tab updates to enable/disable the side panel as needed
+chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
+  if (!tab.url) return;
+
+  try {
+    // Enable the side panel for all URLs
+    await chrome.sidePanel.setOptions({
+      tabId,
+      path: 'html/sidepanel.html',
+      enabled: true
+    });
+  } catch (error) {
+    console.error('Error setting side panel options:', error);
+  }
+});
+
+// Listen for messages from the side panel
+chrome.runtime.onMessage.addListener(message => {
+  if (message.type === 'FROM_SIDEPANEL') {
+    // Handle messages from the side panel
+    console.log('Message from side panel:', message);
+  }
 });

@@ -169,18 +169,35 @@ const init = async () => {
   // Initialize sidekick
   document.body.setAttribute('data-init-csk', true);
 
-  // Build tree
-  const tree = buildCskEntryTree();
+  // Build initial tree
+  const currentTree = buildCskEntryTree();
 
   // Render React app
   const root = createRoot(sidekickContainer);
-  root.render(<Sidekick defaultTree={tree} />);
+  root.render(<Sidekick defaultTree={currentTree} />);
 
   // Add body padding
   const sidebarWidth = $('.csk-element-sidebar').outerWidth(true);
   if (sidebarWidth) {
     $('body').css('padding-left', sidebarWidth);
   }
+
+  // Set up observer to track tree changes
+  const observer = new MutationObserver(() => {
+    const updatedTree = buildCskEntryTree();
+    // Notify sidepanel of tree updates
+    chrome.runtime.sendMessage({
+      type: 'ELEMENT_TREE_UPDATE',
+      tree: updatedTree
+    });
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['data-contentful-entry-id']
+  });
 
   // Add click handler for overlay
   $('#csk-overlay').on('click', () => {
@@ -198,13 +215,13 @@ const init = async () => {
         {
           type: 'NAVIGATE_TO',
           payload: {
-            url: href
+            href
           }
         },
         '*'
       );
     } else {
-      window.open(href);
+      window.open(href, '_blank');
     }
   });
 
@@ -226,14 +243,45 @@ const init = async () => {
   }
 };
 
-// Initialize on load
-$(document).ready(() => {
-  init();
+// Listen for messages from the popup
+chrome.runtime.onMessage.addListener(message => {
+  if (message.type === 'INIT_SIDEKICK') {
+    init().catch(error => {
+      console.error('Failed to initialize sidekick:', error);
+    });
+  }
+});
+
+// Initialize on page load
+init().catch(error => {
+  console.error('Failed to initialize sidekick:', error);
 });
 
 // Listen for chrome storage changes
 chrome.storage.onChanged.addListener(changes => {
   if (changes.sidekickEnabled) {
     window.location.reload();
+  }
+});
+
+// Add message listener for Element Tree tab requests and ping
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'PING') {
+    // Respond to ping to indicate content script is ready
+    sendResponse({ status: 'ready' });
+    return true;
+  }
+
+  if (message.type === 'GET_ELEMENT_TREE') {
+    // Build and send the tree immediately
+    try {
+      const tree = buildCskEntryTree();
+      console.log('Built tree for sidepanel:', tree);
+      sendResponse({ tree });
+    } catch (error) {
+      console.error('Error building tree:', error);
+      sendResponse({ tree: [] });
+    }
+    return true;
   }
 });

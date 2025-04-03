@@ -12,10 +12,38 @@ function InnerPopup() {
   const [sideKickEnabled, setSideKickEnabled] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
   const { handleLogin, user, loaded: loadedAuth, handleLogout } = useContentfulContext();
-  const handleChange = () => {
+
+  const handleChange = async () => {
     const curSideKickEnabled = !sideKickEnabled;
     setSideKickEnabled(curSideKickEnabled);
     setSideKickEnabledInStorage(curSideKickEnabled);
+
+    // Get the current active tab
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    if (curSideKickEnabled) {
+      // Open the side panel
+      try {
+        await chrome.sidePanel.open({ tabId: tab.id });
+      } catch (error) {
+        console.error('Failed to open side panel:', error);
+      }
+
+      // Send message to content script to initialize sidekick
+      try {
+        await chrome.tabs.sendMessage(tab.id, { type: 'INIT_SIDEKICK' });
+      } catch (error) {
+        console.error('Failed to initialize sidekick:', error);
+      }
+    } else {
+      // When disabled, close the side panel
+      try {
+        await chrome.sidePanel.setOptions({ tabId: tab.id, enabled: false });
+      } catch (error) {
+        console.error('Failed to disable side panel:', error);
+      }
+    }
+
     window.close();
   };
 

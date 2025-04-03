@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Sidekick",
+  "version": "1.0",
+  "description": "A helpful sidekick for your browsing experience",
+  "permissions": ["sidePanel", "tabs", "scripting"],
+  "side_panel": {
+    "default_path": "src/shared/html/sidepanel.html"
+  },
+  "background": {
+    "service_worker": "src/shared/js/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/shared/js/content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/shared/html/chatbot.html",
+        "src/shared/js/vendor/web.js",
+        "src/shared/css/content.css",
+        "src/shared/css/sidepanel.css",
+        "static/images/logos/answerai-logo.png"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

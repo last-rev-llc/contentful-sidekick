@@ -18,6 +18,7 @@ import theme from '../../theme';
 import useStorageState from '../../helpers/useStorageState';
 import Banner from '../Banner';
 import { ContentfulProvider } from '../../helpers/ContentfulContext';
+// import Chat from './Chat';
 
 function InnerSidekick({ defaultTree }) {
   const [tree, setTree] = useState(defaultTree);
@@ -191,6 +192,7 @@ function Sidekick({ defaultTree }) {
     <ThemeProvider theme={theme}>
       <ContentfulProvider>
         <InnerSidekick defaultTree={defaultTree} />
+        {/* <Chat /> */}
       </ContentfulProvider>
     </ThemeProvider>
   );

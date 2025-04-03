@@ -93,10 +93,14 @@ module.exports = {
   // This is where you specify the files that will be the input
   // https://webpack.js.org/configuration/entry-context/
   entry: {
-    popup: `${sharedDir}/js/popup.js`,
-    service_worker: `${sharedDir}/js/service_worker.js`,
-    content: `${sharedDir}/js/content.js`,
-    oauth_redirect: `${sharedDir}/js/oauth_redirect.js`
+    'popup': `${sharedDir}/js/popup.js`,
+    'service_worker': `${sharedDir}/js/service_worker.js`,
+    'content': `${sharedDir}/js/content.js`,
+    'oauth_redirect': `${sharedDir}/js/oauth_redirect.js`,
+    'sidepanel': `${sharedDir}/js/sidepanel.js`,
+    'vendor/aai-embed': `${sharedDir}/js/vendor/aai-embed.js`,
+    'chatbot-init': `${sharedDir}/js/chatbot-init.js`,
+    'debug-panel': `${sharedDir}/js/debug-panel.js`
   },
   // This specifies where you want the files to be output to
   // and the name of the source maps, if your environment outputs them.
@@ -123,7 +127,11 @@ module.exports = {
       extensions: ['js', 'jsx'],
       fix: true,
       emitWarning: true,
-      failOnError: false
+      failOnError: false,
+      exclude: ['**/vendor/**', '**/node_modules/**', '**/chatbot-init.js'],
+      overrideConfig: {
+        ignorePatterns: ['**/vendor/**', '**/node_modules/**', '**/chatbot-init.js']
+      }
     }),
     // Use modules without having to use import/require
     // https://webpack.js.org/plugins/provide-plugin
