@@ -2,40 +2,12 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Sidekick</title>
+    <title>Last Rev Sidekick</title>
     <link rel="stylesheet" href="../css/content.css" />
     <link rel="stylesheet" href="../css/sidepanel.css" />
   </head>
   <body>
-    <div id="debug-info">Waiting for tab information...</div>
-    <div id="root">
-      <div class="tab-container">
-        <div class="tab-header">
-          <button class="tab-button active" data-tab-id="chatbot">Chat</button>
-          <button class="tab-button" data-tab-id="pageInfo">Page Info</button>
-          <button class="tab-button" data-tab-id="elementTree">Element Tree</button>
-        </div>
-        <div class="tab-content">
-          <div id="tab-chatbot" class="tab-content-panel active"><div id="chatbot-root"></div></div>
-          <div id="tab-pageInfo" class="tab-content-panel">
-            <div class="page-info">
-              <h3>Page Information</h3>
-              <div class="page-info-section">
-                <h4>URL</h4>
-                <div class="url-content"></div>
-              </div>
-              <div class="contentful-info"></div>
-            </div>
-          </div>
-          <div id="tab-elementTree" class="tab-content-panel">
-            <div class="element-tree">
-              <h3>Element Tree</h3>
-              <div id="element-tree-content"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div id="root"></div>
     <script src="../js/vendor.js"></script>
     <script src="../js/sidepanel.js" type="module"></script>
     <script src="../js/debug-panel.js" type="module"></script>

@@ -6,39 +6,112 @@ import addSidekickEnabledListener from './helpers/addSidekickEnabledListener';
 import buildCskEntryTree from './helpers/buildCskEntryTree';
 import { CSK_ENTRY_SELECTOR } from './helpers/constants';
 
-const shrinkContent = () => {
-  // $('body').css('padding-left', '20vw');
-  // $('*').filter(function () {
-  //   const $el = $(this);
-  //   if ($el.css('position') == 'fixed') {
-  //     const padding = $el.css('padding-left');
-  //     $el.data('padding-left', padding);
-  //     $el.css('padding-left', `calc(20vw + ${padding})`);
-  //   }
-  // });
-};
-
-const expandContent = () => {
-  // $('*').filter(function () {
-  //   const $el = $(this);
-  //   if ($el.css('position') == 'fixed') {
-  //     const padding = $el.data('padding-left');
-  //     $el.css('padding-left', padding);
-  //   }
-  // });
-  $('body').css('padding-left', 0);
-};
-
 const loadSidebar = () => {
-  $('body').prepend('<div id="csk-sidebar-container"></div>');
-  shrinkContent();
-  const root = createRoot(document.getElementById('csk-sidebar-container'));
-  root.render(<Sidekick defaultTree={buildCskEntryTree()} />);
+  // Only load if not already initialized
+  if (!document.getElementById('csk-sidekick')) {
+    // Add sidekick container
+    const sidekickContainer = document.createElement('div');
+    sidekickContainer.setAttribute('id', 'csk-sidekick');
+    document.body.appendChild(sidekickContainer);
+
+    // Add sidekick overlay
+    const overlayContainer = document.createElement('div');
+    overlayContainer.setAttribute('id', 'csk-overlay');
+    document.body.appendChild(overlayContainer);
+
+    // Add blur containers
+    ['top', 'bottom', 'left', 'right'].forEach(dir => {
+      const blurContainer = document.createElement('div');
+      blurContainer.setAttribute('id', `csk-blur-${dir}`);
+      blurContainer.setAttribute('class', 'csk-blur');
+      document.body.appendChild(blurContainer);
+    });
+
+    // Add blur actions container
+    const blurActionsContainer = document.createElement('div');
+    blurActionsContainer.setAttribute('id', 'csk-blur-actions');
+    blurActionsContainer.setAttribute('class', 'hidden');
+    blurActionsContainer.innerHTML = '<a id="csk-edit-link" target="_blank" href="#">Edit</a>';
+    document.body.appendChild(blurActionsContainer);
+
+    // Add selected containers
+    ['top', 'bottom', 'left', 'right'].forEach(dir => {
+      const selectedContainer = document.createElement('div');
+      selectedContainer.setAttribute('id', `csk-selected-${dir}`);
+      selectedContainer.setAttribute('class', 'csk-selected');
+      document.body.appendChild(selectedContainer);
+    });
+
+    // Add selected actions container
+    const selectedActionsContainer = document.createElement('div');
+    selectedActionsContainer.setAttribute('id', 'csk-selected-actions');
+    selectedActionsContainer.setAttribute('class', 'hidden');
+    document.body.appendChild(selectedActionsContainer);
+
+    // Initialize sidekick
+    document.body.setAttribute('data-init-csk', true);
+
+    // Build initial tree
+    const currentTree = buildCskEntryTree();
+
+    // Render React app
+    const root = createRoot(sidekickContainer);
+    root.render(<Sidekick defaultTree={currentTree} />);
+
+    // Set up observer to track tree changes
+    const observer = new MutationObserver(() => {
+      const updatedTree = buildCskEntryTree();
+      // Notify sidepanel of tree updates
+      chrome.runtime.sendMessage({
+        type: 'ELEMENT_TREE_UPDATE',
+        tree: updatedTree
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-contentful-entry-id']
+    });
+
+    // Add click handler for overlay
+    $('#csk-overlay').on('click', () => {
+      $('#csk-overlay').removeClass('show');
+    });
+
+    // Add click handler for edit link
+    $('#csk-edit-link').on('click', e => {
+      e.preventDefault();
+      const href = $(e.target).attr('href');
+      if (href === '#') return;
+
+      if (window.self !== window.top) {
+        window.parent.postMessage(
+          {
+            type: 'NAVIGATE_TO',
+            payload: {
+              href
+            }
+          },
+          '*'
+        );
+      } else {
+        window.open(href, '_blank');
+      }
+    });
+  }
 };
 
 const removeSidebar = () => {
-  $('#csk-sidebar-container').remove();
-  expandContent();
+  // Remove all sidekick-related elements
+  $('#csk-sidekick').remove();
+  $('#csk-overlay').remove();
+  $('.csk-blur').remove();
+  $('#csk-blur-actions').remove();
+  $('.csk-selected').remove();
+  $('#csk-selected-actions').remove();
+  document.body.removeAttribute('data-init-csk');
 };
 
 const addInitAttribute = () => {
@@ -127,103 +200,8 @@ const init = async () => {
   // Add sidekick enabled listener
   addSidekickEnabledListener();
 
-  // Add sidekick container
-  const sidekickContainer = document.createElement('div');
-  sidekickContainer.setAttribute('id', 'csk-sidekick');
-  document.body.appendChild(sidekickContainer);
-
-  // Add sidekick overlay
-  const overlayContainer = document.createElement('div');
-  overlayContainer.setAttribute('id', 'csk-overlay');
-  document.body.appendChild(overlayContainer);
-
-  // Add blur containers
-  ['top', 'bottom', 'left', 'right'].forEach(dir => {
-    const blurContainer = document.createElement('div');
-    blurContainer.setAttribute('id', `csk-blur-${dir}`);
-    blurContainer.setAttribute('class', 'csk-blur');
-    document.body.appendChild(blurContainer);
-  });
-
-  // Add blur actions container
-  const blurActionsContainer = document.createElement('div');
-  blurActionsContainer.setAttribute('id', 'csk-blur-actions');
-  blurActionsContainer.setAttribute('class', 'hidden');
-  blurActionsContainer.innerHTML = '<a id="csk-edit-link" target="_blank" href="#">Edit</a>';
-  document.body.appendChild(blurActionsContainer);
-
-  // Add selected containers
-  ['top', 'bottom', 'left', 'right'].forEach(dir => {
-    const selectedContainer = document.createElement('div');
-    selectedContainer.setAttribute('id', `csk-selected-${dir}`);
-    selectedContainer.setAttribute('class', 'csk-selected');
-    document.body.appendChild(selectedContainer);
-  });
-
-  // Add selected actions container
-  const selectedActionsContainer = document.createElement('div');
-  selectedActionsContainer.setAttribute('id', 'csk-selected-actions');
-  selectedActionsContainer.setAttribute('class', 'hidden');
-  document.body.appendChild(selectedActionsContainer);
-
-  // Initialize sidekick
-  document.body.setAttribute('data-init-csk', true);
-
-  // Build initial tree
-  const currentTree = buildCskEntryTree();
-
-  // Render React app
-  const root = createRoot(sidekickContainer);
-  root.render(<Sidekick defaultTree={currentTree} />);
-
-  // Add body padding
-  const sidebarWidth = $('.csk-element-sidebar').outerWidth(true);
-  if (sidebarWidth) {
-    $('body').css('padding-left', sidebarWidth);
-  }
-
-  // Set up observer to track tree changes
-  const observer = new MutationObserver(() => {
-    const updatedTree = buildCskEntryTree();
-    // Notify sidepanel of tree updates
-    chrome.runtime.sendMessage({
-      type: 'ELEMENT_TREE_UPDATE',
-      tree: updatedTree
-    });
-  });
-
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['data-contentful-entry-id']
-  });
-
-  // Add click handler for overlay
-  $('#csk-overlay').on('click', () => {
-    $('#csk-overlay').removeClass('show');
-  });
-
-  // Add click handler for edit link
-  $('#csk-edit-link').on('click', e => {
-    e.preventDefault();
-    const href = $(e.target).attr('href');
-    if (href === '#') return;
-
-    if (window.self !== window.top) {
-      window.parent.postMessage(
-        {
-          type: 'NAVIGATE_TO',
-          payload: {
-            href
-          }
-        },
-        '*'
-      );
-    } else {
-      window.open(href, '_blank');
-    }
-  });
+  // Load the sidebar (which now includes all initialization)
+  loadSidebar();
 
   // Listen for messages from parent frame
   window.addEventListener('message', event => {
@@ -249,6 +227,13 @@ chrome.runtime.onMessage.addListener(message => {
     init().catch(error => {
       console.error('Failed to initialize sidekick:', error);
     });
+  } else if (message.type === 'TOGGLE_HIGHLIGHT') {
+    // Toggle highlight functionality
+    const root = document.getElementById('csk-sidekick');
+    if (root) {
+      const event = new CustomEvent('TOGGLE_HIGHLIGHT', { detail: { enabled: message.enabled } });
+      root.dispatchEvent(event);
+    }
   }
 });
 

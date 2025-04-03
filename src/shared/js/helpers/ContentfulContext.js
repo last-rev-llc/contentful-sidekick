@@ -217,31 +217,39 @@ function ContentfulProvider({ children }) {
 
   useEffect(() => {
     const setClientValues = async () => {
-      // console.log('Starting setClientValues with cmaToken:', cmaToken ? 'exists' : 'missing');
       if (!cmaToken) {
-        // console.log('No CMA token available, clearing user state');
         setUser(null);
         setUserDetails(null);
         setEnvironment(null);
         setPreviewClient(null);
-        if (cmaToken !== null) {
-          setLoaded(true);
-        }
+        setLoaded(true);
         return;
       }
       try {
-        // console.log('Creating Contentful management client...');
         const client = createMgmtClient({
           accessToken: cmaToken
         });
 
-        console.log('Fetching space and user data...');
-        const [newSpace, newUser] = await Promise.all([
-          client.getSpace(spaceId),
-          client.getCurrentUser()
-        ]);
+        // First get the user info
+        const newUser = await client.getCurrentUser();
 
-        // Store full user details separately
+        // If we don't have a space/env, get the first available ones
+        let newSpace;
+        if (!spaceId) {
+          const spaces = await client.getSpaces();
+          if (spaces.items.length > 0) {
+            [newSpace] = spaces.items;
+            setSpaceId(newSpace.sys.id);
+            // Save for next time
+            await chrome.storage.sync.set({ spaceId: newSpace.sys.id });
+          } else {
+            throw new Error('No spaces available');
+          }
+        } else {
+          newSpace = await client.getSpace(spaceId);
+        }
+
+        // Store full user details
         const details = {
           email: newUser.email,
           firstName: newUser.firstName,
@@ -251,24 +259,29 @@ function ContentfulProvider({ children }) {
           spaceId: newSpace.sys.id
         };
 
-        console.log('Contentful Authentication Data:', {
-          user: details,
-          spaceId,
-          environmentId: envId,
-          space: {
-            name: newSpace.name,
-            id: newSpace.sys.id
-          }
-        });
+        setUser(newUser.email);
+        setUserDetails(details);
 
-        setUser(newUser.email); // Keep the email for backward compatibility
-        setUserDetails(details); // Store full details separately
-        console.log('Fetching environment and preview keys...');
-        const [newEnv, keys] = await Promise.all([
-          newSpace.getEnvironment(envId),
+        // Get or set environment
+        let newEnv;
+        if (!envId) {
+          const environments = await newSpace.getEnvironments();
+          if (environments.items.length > 0) {
+            [newEnv] = environments.items;
+            setEnvId(newEnv.sys.id);
+            // Save for next time
+            await chrome.storage.sync.set({ env: newEnv.sys.id });
+          } else {
+            throw new Error('No environments available');
+          }
+        } else {
+          newEnv = await newSpace.getEnvironment(envId);
+        }
+
+        const [locales, keys] = await Promise.all([
+          newEnv.getLocales(),
           newSpace.getPreviewApiKeys()
         ]);
-        const locales = await newEnv.getLocales();
 
         const newDefaultLocale = get(
           locales.items.find(locale => get(locale, 'default') === true),
@@ -283,13 +296,13 @@ function ContentfulProvider({ children }) {
         setPreviewClient(
           createCdnClient({
             accessToken: previewToken,
-            space: spaceId,
-            environment: envId,
+            space: newSpace.sys.id,
+            environment: newEnv.sys.id,
             host: 'preview.contentful.com'
           })
         );
       } catch (err) {
-        console.log('error setting client values', err);
+        console.error('Error setting client values:', err);
         setUser(null);
         setUserDetails(null);
         setEnvironment(null);
@@ -300,8 +313,7 @@ function ContentfulProvider({ children }) {
     };
 
     setClientValues();
-    // spaceId and env will not change, so we can ignore them
-  }, [cmaToken]);
+  }, [cmaToken, spaceId, envId]);
 
   useEffect(() => {
     const initCmaToken = t => {
@@ -309,25 +321,50 @@ function ContentfulProvider({ children }) {
     };
 
     const init = async () => {
-      let { spaceId: s, env: e } = getContentfulVarsFromPage();
+      // First check if we have a token
+      const { cma } = await chrome.storage.sync.get('cma');
 
+      // Get space and env from page or storage
+      let { spaceId: s, env: e } = getContentfulVarsFromPage();
       if (!s || !e) {
         ({ spaceId: s, env: e } = await chrome.storage.sync.get(['spaceId', 'env']));
       }
 
+      // If we have a token but no space/env, we need to fetch them from the token
+      if (cma && (!s || !e)) {
+        try {
+          const client = createMgmtClient({
+            accessToken: cma
+          });
+
+          // Get the first space this token has access to
+          const spaces = await client.getSpaces();
+          if (spaces.items.length > 0) {
+            const space = spaces.items[0];
+            s = space.sys.id;
+
+            // Get the first environment (usually 'master')
+            const environments = await space.getEnvironments();
+            if (environments.items.length > 0) {
+              e = environments.items[0].sys.id;
+
+              // Save these for next time
+              await chrome.storage.sync.set({ spaceId: s, env: e });
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching space/environment:', err);
+        }
+      }
+
       setSpaceId(s);
       setEnvId(e);
-
-      if (!s || !e) {
-        return;
-      }
-      const { cma } = await chrome.storage.sync.get('cma');
       initCmaToken(cma);
     };
 
     const listener = changes => {
       if (changes.cma) {
-        initCmaToken(changes.cma.newValue);
+        init(); // Re-run init when token changes to get space/env if needed
       }
     };
 

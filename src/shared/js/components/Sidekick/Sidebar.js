@@ -1,11 +1,10 @@
 import React from 'react';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { IconButton, Tooltip } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
 import HighlightIcon from '@mui/icons-material/HighlightAlt';
 import TreeNode from './TreeNode';
 
-function Sidebar({ tree, show }) {
+function Sidebar({ tree }) {
   const nodes = React.useMemo(
     () => tree && tree.map(node => <TreeNode key={node.uuid} node={node} level={0} />),
     [tree]
@@ -18,13 +17,29 @@ function Sidebar({ tree, show }) {
     setExpanded(nodeIds);
   };
 
+  const handleHighlightToggle = () => {
+    const newHighlightState = !highlight;
+    setHighlight(newHighlightState);
+    // Send message to content script to toggle highlight
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'TOGGLE_HIGHLIGHT',
+          enabled: newHighlightState
+        });
+      }
+    });
+  };
+
   return (
-    <div className={`csk-element-sidebar ${show ? 'show' : ''}`}>
+    <div
+      className="csk-element-sidebar"
+      style={{ position: 'static', width: '100%', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px' }}>
         <Tooltip title={highlight ? 'Disable Highlight' : 'Enable Highlight'}>
           <IconButton
             size="small"
-            onClick={() => setHighlight(!highlight)}
+            onClick={handleHighlightToggle}
             color={highlight ? 'primary' : 'default'}>
             <HighlightIcon />
           </IconButton>

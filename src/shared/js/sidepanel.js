@@ -1,22 +1,25 @@
 // Side panel specific functionality
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { initTabs } from './tabs';
-import ElementTreePanel from './components/ElementTree/ElementTreePanel';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from './theme';
+import SidePanel from './components/SidePanel/SidePanel';
 
 document.addEventListener('DOMContentLoaded', function () {
   // Initialize the side panel
   console.log('Side panel loaded');
 
-  // Initialize tabs
-  const tabs = initTabs();
-  console.log('Tabs initialized:', tabs);
-
-  // Initialize React component for Element Tree
-  const elementTreeContainer = document.getElementById('element-tree-content');
-  if (elementTreeContainer) {
-    const root = createRoot(elementTreeContainer);
-    root.render(React.createElement(ElementTreePanel));
+  // Initialize React component for Side Panel
+  const container = document.getElementById('root');
+  if (container) {
+    const root = createRoot(container);
+    root.render(
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <SidePanel />
+      </ThemeProvider>
+    );
   }
 
   // You can add more functionality here to interact with the main extension

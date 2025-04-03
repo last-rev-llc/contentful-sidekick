@@ -13,7 +13,7 @@ import { TreeProvider } from './tree-context';
 import ElementHighlighter from './ElementHighlighter';
 import Sidebar from './Sidebar';
 import AddContentDialog from './AddContentDialog';
-import './Sidekick.css';
+// import './Sidekick.css';
 import theme from '../../theme';
 import useStorageState from '../../helpers/useStorageState';
 import Banner from '../Banner';
@@ -33,6 +33,23 @@ function InnerSidekick({ defaultTree }) {
   useEffect(() => {
     treeRef.current = tree;
   }, [tree]);
+
+  useEffect(() => {
+    // Listen for highlight toggle events
+    const handleHighlightToggle = event => {
+      setHighlight(event.detail.enabled);
+    };
+
+    document
+      .getElementById('csk-sidekick')
+      .addEventListener('TOGGLE_HIGHLIGHT', handleHighlightToggle);
+
+    return () => {
+      document
+        .getElementById('csk-sidekick')
+        ?.removeEventListener('TOGGLE_HIGHLIGHT', handleHighlightToggle);
+    };
+  }, [setHighlight]);
 
   useEffect(() => {
     const callback = debounce(() => {
@@ -103,7 +120,7 @@ function InnerSidekick({ defaultTree }) {
         }
       });
 
-      mutationObserver.observe(document.documentElement || document.body, {
+      mutationObserver.observe(document.body, {
         childList: true,
         subtree: true,
         attributes: true,

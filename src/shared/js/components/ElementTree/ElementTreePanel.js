@@ -35,43 +35,15 @@ function ElementTreePanel() {
     } catch (err) {
       console.error('Error getting tree:', err);
       setError('An error occurred while loading the element tree.');
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     let mounted = true;
 
-    // Function to handle tab visibility changes
-    const handleTabVisibility = mutationsList => {
-      for (const mutation of mutationsList) {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-          const isActive = mutation.target.classList.contains('active');
-          if (isActive && mounted) {
-            console.log('Element Tree tab became active, refreshing tree...');
-            setIsLoading(true);
-            getTreeFromTab();
-          }
-        }
-      }
-    };
-
-    // Set up observer for the tab panel
-    const tabPanel = document.getElementById('tab-elementTree');
-    if (tabPanel) {
-      const observer = new MutationObserver(handleTabVisibility);
-      observer.observe(tabPanel, { attributes: true });
-
-      // Initial load if the tab is already active
-      if (tabPanel.classList.contains('active')) {
-        getTreeFromTab();
-      }
-
-      // Cleanup observer
-      return () => {
-        observer.disconnect();
-        mounted = false;
-      };
-    }
+    // Initial load
+    getTreeFromTab();
 
     // Listen for updates from the main page
     const messageListener = message => {
@@ -103,7 +75,7 @@ function ElementTreePanel() {
     return <div className="element-tree-empty">No elements found</div>;
   }
 
-  return <Sidebar tree={elementTree} show />;
+  return <Sidebar tree={elementTree} />;
 }
 
 export default ElementTreePanel;
