@@ -18,12 +18,14 @@ import theme from '../../theme';
 import useStorageState from '../../helpers/useStorageState';
 import Banner from '../Banner';
 import { ContentfulProvider } from '../../helpers/ContentfulContext';
+import { loadSidebar, removeSidebar } from '../../helpers/sidebarUtils';
 // import Chat from './Chat';
 
 function InnerSidekick({ defaultTree }) {
   const [tree, setTree] = useState(defaultTree);
   const [show, setShow] = useStorageState(false, 'sidebarEnabled');
-  const [highlight, setHighlight] = useStorageState(true, 'highlightEnabled');
+  const [highlight, setHighlight] = useStorageState(false, 'highlightEnabled');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [addToTemplate, setAddToTemplate] = useState(false);
   const [templatesAvailable, setTemplatesAvailable] = useState(false);
 
@@ -34,22 +36,51 @@ function InnerSidekick({ defaultTree }) {
     treeRef.current = tree;
   }, [tree]);
 
+  // Check authentication state on mount and when it changes
   useEffect(() => {
-    // Listen for highlight toggle events
-    const handleHighlightToggle = event => {
-      setHighlight(event.detail.enabled);
+    const checkAuth = async () => {
+      const result = await new Promise(resolve => {
+        chrome.storage.sync.get(['cma'], data => {
+          resolve(!!data.cma);
+        });
+      });
+      setIsAuthenticated(result);
+      if (!result) {
+        setHighlight(false);
+      }
     };
 
-    document
-      .getElementById('csk-sidekick')
-      .addEventListener('TOGGLE_HIGHLIGHT', handleHighlightToggle);
+    checkAuth();
 
+    // Listen for auth state changes
+    const authListener = changes => {
+      if (changes.cma) {
+        setIsAuthenticated(!!changes.cma.newValue);
+        if (!changes.cma.newValue) {
+          setHighlight(false);
+        }
+      }
+    };
+
+    chrome.storage.onChanged.addListener(authListener);
     return () => {
-      document
-        .getElementById('csk-sidekick')
-        ?.removeEventListener('TOGGLE_HIGHLIGHT', handleHighlightToggle);
+      chrome.storage.onChanged.removeListener(authListener);
     };
   }, [setHighlight]);
+
+  // Prevent highlighting when not authenticated and handle sidebar visibility
+  const handleHighlightToggle = () => {
+    if (!isAuthenticated) {
+      return;
+    }
+    const newHighlightState = !highlight;
+    if (newHighlightState) {
+      loadSidebar();
+    } else {
+      removeSidebar();
+    }
+    setHighlight(newHighlightState);
+  };
 
   useEffect(() => {
     const callback = debounce(() => {
@@ -143,6 +174,13 @@ function InnerSidekick({ defaultTree }) {
     };
   }, []);
 
+  const getTooltipText = () => {
+    if (!isAuthenticated) {
+      return 'Login required';
+    }
+    return highlight ? 'Disable inspect content' : 'Enable inspect content';
+  };
+
   return (
     <TreeProvider tree={tree}>
       <Banner />
@@ -165,10 +203,14 @@ function InnerSidekick({ defaultTree }) {
         }>
         <SpeedDialAction
           icon={<HighlightIcon />}
-          tooltipTitle={`${!highlight ? 'Enable' : 'Disable'} inspect content`}
+          tooltipTitle={getTooltipText()}
           tooltipPlacement="right"
           color={highlight ? 'primary' : 'secondary'}
-          onClick={() => setHighlight(!highlight)}
+          onClick={handleHighlightToggle}
+          sx={{
+            opacity: isAuthenticated ? 1 : 0.5,
+            pointerEvents: isAuthenticated ? 'auto' : 'none'
+          }}
         />
         <SpeedDialAction
           icon={<ReadMoreIcon />}
@@ -192,7 +234,9 @@ function InnerSidekick({ defaultTree }) {
         />
       </SpeedDial>
       <Sidebar show={show} tree={tree} />
-      {highlight ? <ElementHighlighter setAddToTemplate={setAddToTemplate} /> : null}
+      {highlight && isAuthenticated ? (
+        <ElementHighlighter setAddToTemplate={setAddToTemplate} />
+      ) : null}
       <AddContentDialog
         open={!!addToTemplate}
         {...addToTemplate}

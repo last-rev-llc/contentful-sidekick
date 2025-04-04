@@ -39,8 +39,8 @@ function InnerSidePanel() {
       chrome.tabs.query({ active: true, currentWindow: true }, async tabs => {
         if (tabs[0]) {
           // Import the chatbot initialization function
-          const { getCurrentTabInfo } = await import('../../chatbot-init');
-          await getCurrentTabInfo();
+          await import('../../chatbot-init');
+          // await getCurrentTabInfo();
         }
       });
     }

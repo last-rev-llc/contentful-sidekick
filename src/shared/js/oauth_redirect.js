@@ -12,7 +12,21 @@ try {
   if (token) {
     chrome.storage.sync.set({ cma: token }, () => {
       // Clear any existing space/env IDs to force fetching fresh ones
-      chrome.storage.sync.remove(['spaceId', 'env'], () => {
+      chrome.storage.sync.remove(['spaceId', 'env'], async () => {
+        // Notify all tabs about the authentication state change
+        const tabs = await chrome.tabs.query({});
+        await Promise.all(
+          tabs.map(tab =>
+            chrome.tabs
+              .sendMessage(tab.id, {
+                type: 'AUTH_STATE_CHANGED',
+                payload: { isAuthenticated: true }
+              })
+              .catch(() => {
+                // Ignore errors for tabs that don't have the content script
+              })
+          )
+        );
         window.close();
       });
     });
