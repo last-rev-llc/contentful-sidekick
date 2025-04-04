@@ -1,39 +1,54 @@
-export const setBlur = ($target, editUrl) => {
-  let $el = $target;
-  if (!$el.data('cskEntryId')) {
-    const $parentEl = $target.parents('[data-csk-entry-id]');
-    $el = $($parentEl[0]);
+export const setBlur = (target, editUrl) => {
+  let el = target;
+  if (!el.getAttribute('data-csk-entry-id')) {
+    const parentEl = target.closest('[data-csk-entry-id]');
+    el = parentEl;
   }
-  const docHeight = $(document).height();
-  const docWidth = $(window).width();
-  const bodyHeight = $('body').height();
-  const ctHeight = $el.outerHeight(true);
-  const ctWidth = $el.outerWidth(true);
-  const ctType = $el.data('cskEntryType');
-  const posTop = parseInt($el.offset().top, 10);
+  const docHeight = document.documentElement.scrollHeight;
+  const docWidth = window.innerWidth;
+  const ctHeight = el.offsetHeight;
+  const ctWidth = el.offsetWidth;
+  const ctType = el.getAttribute('data-csk-entry-type');
+  const posTop = parseInt(el.getBoundingClientRect().top + window.scrollY, 10);
   const posBottom = docHeight - (posTop + ctHeight);
-  const posLeft = parseInt($el.offset().left - $(document).scrollLeft(), 10);
+  const posLeft = parseInt(el.getBoundingClientRect().left + window.scrollX, 10);
   const posRight = docWidth - posLeft - ctWidth;
-  $('.csk-blur').css('opacity', 1);
-  $('.csk-blur').css('display', 'block');
-  $('#csk-blur-left').css({ width: posLeft, height: docHeight });
-  $('#csk-blur-right').css({ width: posRight, height: docHeight });
-  $('#csk-blur-top').css('height', posTop);
-  $('#csk-blur-bottom').css({ bottom: bodyHeight - docHeight, height: posBottom });
+  document.querySelectorAll('.csk-blur').forEach(blur => {
+    const element = blur;
+    element.style.opacity = 1;
+    element.style.display = 'block';
+  });
+  document.getElementById('csk-blur-left').style.width = `${posLeft}px`;
+  document.getElementById('csk-blur-left').style.height = `${docHeight}px`;
+  document.getElementById('csk-blur-right').style.width = `${posRight}px`;
+  document.getElementById('csk-blur-right').style.height = `${docHeight}px`;
+  document.getElementById('csk-blur-top').style.height = `${posTop}px`;
+  document.getElementById('csk-blur-bottom').style.height = `${posBottom}px`;
 
   if (editUrl) {
-    $('#csk-blur-actions').removeClass('hidden').css({ top: posTop, left: posLeft });
-    $('#csk-blur-actions #csk-edit-link').attr('href', editUrl);
-    $('#csk-blur-actions #csk-edit-link').text(`Edit ${ctType}`);
+    const actions = document.getElementById('csk-blur-actions');
+    actions.classList.remove('hidden');
+    actions.style.top = `${posTop}px`;
+    actions.style.left = `${posLeft}px`;
+    const editLink = document.getElementById('csk-edit-link');
+    editLink.setAttribute('href', editUrl);
+    editLink.textContent = `Edit ${ctType}`;
   }
 };
 
 export const resetBlur = () => {
-  $('#csk-blur-top').css('height', 0);
-  $('#csk-blur-bottom').css('height', 0);
-  $('#csk-blur-left').css('width', 0);
-  $('#csk-blur-right').css('width', 0);
-  $('#csk-blur-actions').addClass('hidden').css({ left: 0, top: 0 }).attr('href', '#');
-  $('.csk-blur').css('opacity', 0);
-  $('.csk-blur').css('display', 'none');
+  document.getElementById('csk-blur-top').style.height = '0';
+  document.getElementById('csk-blur-bottom').style.height = '0';
+  document.getElementById('csk-blur-left').style.width = '0';
+  document.getElementById('csk-blur-right').style.width = '0';
+  const actions = document.getElementById('csk-blur-actions');
+  actions.classList.add('hidden');
+  actions.style.left = '0';
+  actions.style.top = '0';
+  actions.setAttribute('href', '#');
+  document.querySelectorAll('.csk-blur').forEach(blur => {
+    const element = blur;
+    element.style.opacity = 0;
+    element.style.display = 'none';
+  });
 };

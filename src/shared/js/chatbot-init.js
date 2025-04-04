@@ -1,4 +1,5 @@
-import Chatbot from './vendor/web.js';
+import Chatbot from './vendor/web';
+import { logger } from '../../core/utils/logger';
 
 const themeColors = {
   default: {
@@ -56,7 +57,7 @@ const themeColors = {
   }
 };
 
-console.log({ Chatbot });
+logger.debug('Initializing chatbot', { Chatbot });
 
 // Configuration options based on domain
 const CHATBOT_CONFIGS = {
@@ -76,12 +77,12 @@ let currentChatflowId = null;
 const getChatbotConfig = url => {
   try {
     const domain = new URL(url).hostname;
-    console.log({ domain });
+    logger.debug('Getting chatbot config for domain', { domain });
     return domain.includes('impossiblefoods.com')
       ? CHATBOT_CONFIGS.impossible
       : CHATBOT_CONFIGS.default;
   } catch (error) {
-    console.error('Error parsing URL:', error);
+    logger.error('Error parsing URL', error);
     return CHATBOT_CONFIGS.default;
   }
 };
@@ -104,7 +105,7 @@ const initializeChatbot = url => {
     if (!chatbotElement) {
       const rootElement = document.getElementById('chatbot-root');
       if (!rootElement) {
-        console.error('Root element not found');
+        logger.error('Chatbot root element not found');
         return;
       }
 
@@ -174,7 +175,7 @@ const initializeChatbot = url => {
 const getTabInfo = async tabId => {
   try {
     const tab = await chrome.tabs.get(tabId);
-    console.log('Current tab URL:', tab.url);
+    logger.debug('Processing current tab', { url: tab.url });
 
     // Initialize chatbot with the current URL
     initializeChatbot(tab.url);
@@ -203,11 +204,11 @@ const getTabInfo = async tabId => {
         });
         metaTags = results[0].result;
       } catch (error) {
-        console.log('Could not execute script in tab:', error);
+        logger.warn('Could not execute script in tab', error);
       }
     }
 
-    console.log('Meta tags:', metaTags);
+    logger.debug('Retrieved meta tags', { metaTags });
 
     const info = {
       url: tab.url,
@@ -222,7 +223,7 @@ const getTabInfo = async tabId => {
 
     return info;
   } catch (error) {
-    console.error('Error getting tab info:', error);
+    logger.error('Error getting tab info', error);
     chrome.runtime.sendMessage({
       type: 'TAB_INFO_UPDATE',
       data: { error: error.message }
@@ -239,7 +240,7 @@ const getCurrentTabInfo = async () => {
       await getTabInfo(tab.id);
     }
   } catch (error) {
-    console.error('Error getting current tab:', error);
+    logger.error('Error getting current tab', error);
   }
 };
 

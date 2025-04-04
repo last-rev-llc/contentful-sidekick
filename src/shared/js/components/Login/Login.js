@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import { useContentfulContext } from '../../helpers/ContentfulContext';
 
@@ -20,7 +22,7 @@ const Title = styled('h1')(({ theme }) => ({
   fontWeight: 'bold'
 }));
 
-function Login() {
+export function Login() {
   const { handleLogin } = useContentfulContext();
 
   return (
@@ -57,5 +59,3 @@ function Login() {
     </Box>
   );
 }
-
-export default Login;

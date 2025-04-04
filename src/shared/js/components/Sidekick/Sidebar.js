@@ -1,17 +1,34 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
-import { IconButton, Tooltip } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import HighlightIcon from '@mui/icons-material/HighlightAlt';
-import TreeNode from './TreeNode';
+import { TreeNode } from './TreeNode';
+import { logger } from '../../../../core/utils/logger';
 
-function Sidebar({ tree }) {
+export function Sidebar({ tree }) {
   const nodes = React.useMemo(
     () => tree && tree.map(node => <TreeNode key={node.uuid} node={node} level={0} />),
     [tree]
   );
 
   const [expanded, setExpanded] = React.useState([]);
-  const [highlight, setHighlight] = React.useState(true);
+
+  // Initialize highlight state based on DOM state
+  const checkInitialHighlightState = () => {
+    // Check if highlight elements exist in DOM
+    return document.querySelector('[id^="csk-blur"]') !== null;
+  };
+
+  const [highlight, setHighlight] = React.useState(checkInitialHighlightState());
+
+  // Check and synchronize highlight state when component mounts
+  useEffect(() => {
+    const initialState = checkInitialHighlightState();
+    if (initialState !== highlight) {
+      setHighlight(initialState);
+    }
+  }, []);
 
   const handleToggle = (event, nodeIds) => {
     setExpanded(nodeIds);
@@ -20,13 +37,18 @@ function Sidebar({ tree }) {
   const handleHighlightToggle = () => {
     const newHighlightState = !highlight;
     setHighlight(newHighlightState);
+
     // Send message to content script to toggle highlight
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          type: 'TOGGLE_HIGHLIGHT',
-          enabled: newHighlightState
-        });
+        chrome.tabs
+          .sendMessage(tabs[0].id, {
+            type: 'TOGGLE_HIGHLIGHT',
+            enabled: newHighlightState
+          })
+          .catch(error => {
+            logger.error('Error sending highlight toggle message:', error);
+          });
       }
     });
   };
@@ -46,8 +68,9 @@ function Sidebar({ tree }) {
         </Tooltip>
       </div>
       <SimpleTreeView
-        expanded={expanded}
-        onNodeToggle={handleToggle}
+        aria-label="Element Tree"
+        expandedItems={expanded}
+        onExpandedItemsChange={handleToggle}
         sx={{
           'height': 'calc(100% - 48px)',
           'flexGrow': 1,
@@ -69,5 +92,3 @@ function Sidebar({ tree }) {
     </div>
   );
 }
-
-export default React.memo(Sidebar);

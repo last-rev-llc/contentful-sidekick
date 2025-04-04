@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Banner.css';
 import { useContentfulContext } from '../../helpers/ContentfulContext';
 
-function Banner() {
+export function Banner() {
   const [show, setShow] = useState(false);
   const { user } = useContentfulContext();
 
@@ -27,5 +27,3 @@ function Banner() {
     </div>
   );
 }
-
-export default Banner;

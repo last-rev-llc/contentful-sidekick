@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
-import { Box, Tab, Tabs } from '@mui/material';
+import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import ChatIcon from '@mui/icons-material/Chat';
 import InfoIcon from '@mui/icons-material/Info';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import ElementTreePanel from '../ElementTree/ElementTreePanel';
+import { ElementTreePanel } from '../ElementTree/ElementTreePanel';
 import { ContentfulProvider, useContentfulContext } from '../../helpers/ContentfulContext';
-import Login from '../Login/Login';
+import { Login } from '../Login/Login';
 
 function TabPanel({ children, value, index }) {
   return (
@@ -25,7 +27,7 @@ function TabPanel({ children, value, index }) {
 }
 
 function InnerSidePanel() {
-  const [value, setValue] = React.useState(2); // Start with Element Tree tab active
+  const [value, setValue] = React.useState(0); // Start with Chat tab active (index 0)
   const { user, loaded } = useContentfulContext();
 
   const handleChange = (event, newValue) => {
@@ -117,12 +119,10 @@ function InnerSidePanel() {
   );
 }
 
-function SidePanel() {
+export function SidePanel() {
   return (
     <ContentfulProvider>
       <InnerSidePanel />
     </ContentfulProvider>
   );
 }
-
-export default SidePanel;

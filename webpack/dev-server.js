@@ -1,13 +1,15 @@
 const WebSocket = require('ws');
+const { logger } = require('../src/core/utils/logger');
+
 const wss = new WebSocket.Server({ port: 8082 });
 
-console.log('Development WebSocket server started on port 8082');
+logger.info('Development WebSocket server started on port 8082');
 
 wss.on('connection', ws => {
-  console.log('Client connected');
+  logger.debug('Client connected');
 
   ws.on('close', () => {
-    console.log('Client disconnected');
+    logger.debug('Client disconnected');
   });
 });
 

@@ -39,6 +39,8 @@ module.exports = {
     'array-callback-return': 'warn',
     'consistent-return': 'warn',
     'no-loss-of-precision': 'warn',
-    'eqeqeq': ['error', 'always']
+    'eqeqeq': ['error', 'always'],
+    'import/prefer-default-export': 'off',
+    'import/no-default-export': 'error'
   }
 };

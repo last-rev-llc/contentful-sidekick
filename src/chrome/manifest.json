@@ -22,7 +22,6 @@
     "256": "img/icon256.png"
   },
   "action": {
-    "default_popup": "html/popup.html",
     "default_title": "Contentful Sidekick"
   },
   "side_panel": {

@@ -3,6 +3,7 @@ import { styled } from '@mui/material';
 import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';
 import HeightIcon from '@mui/icons-material/Height';
+import { logger } from '../../../../core/utils/logger';
 
 const settings = {
   chatflowid: 'f767158b-775c-4e6b-92ea-fc78e9b0494a',
@@ -127,8 +128,11 @@ function Chat() {
   const ref = React.useRef(null);
 
   React.useEffect(() => {
-    console.log({ window });
-    console.log({ chat: window?.Chatbot });
+    logger.debug('Initializing chat component', {
+      window: !!window,
+      chatbot: !!window?.Chatbot
+    });
+
     if (!ref.current) return;
     Object.assign(ref.current, settings);
   }, [settings]);

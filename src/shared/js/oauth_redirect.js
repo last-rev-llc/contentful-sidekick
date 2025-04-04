@@ -1,3 +1,5 @@
+import { logger } from '../../core/utils/logger';
+
 try {
   const { hash } = window.location;
   if (!hash) {
@@ -34,6 +36,6 @@ try {
     document.body.innerHTML = 'No token in URL';
   }
 } catch (err) {
-  console.error('Error during OAuth redirect:', err);
+  logger.error('Error during OAuth redirect', err);
   document.body.innerHTML = 'Error processing OAuth response';
 }

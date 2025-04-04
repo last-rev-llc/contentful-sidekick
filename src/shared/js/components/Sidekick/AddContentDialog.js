@@ -15,8 +15,9 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useContentfulContext } from '../../helpers/ContentfulContext';
+import { logger } from '../../../../core/utils/logger';
 
-function Templates({ open, handleClose: onClose, index, onTemplatesAvailable }) {
+export function AddContentDialog({ open, onClose, onSubmit }) {
   const { insertTemplateIntoPage, envId, previewClient } = useContentfulContext();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = React.useState(false);
@@ -44,16 +45,14 @@ function Templates({ open, handleClose: onClose, index, onTemplatesAvailable }) 
         });
         const hasTemplates = response.items && response.items.length > 0;
         setTemplatesAvailable(hasTemplates);
-        onTemplatesAvailable(hasTemplates);
         setTemplates(response.items);
       } catch (err) {
-        console.log('error', err);
+        logger.error('Error fetching templates:', err);
         setTemplatesAvailable(false);
-        onTemplatesAvailable(false);
       }
     }
     fetchTemplates();
-  }, [previewClient, onTemplatesAvailable]);
+  }, [previewClient]);
 
   useEffect(() => {
     if (uniqueId) {
@@ -84,7 +83,7 @@ function Templates({ open, handleClose: onClose, index, onTemplatesAvailable }) 
       try {
         setMessage();
         setLoading(true);
-        await insertTemplateIntoPage(pageId, template.sys.id, index, uniqueId);
+        await insertTemplateIntoPage(pageId, template.sys.id, 0, uniqueId);
 
         onClose();
         setMessage(`Template inserted in ${pageId}`);
@@ -213,4 +212,3 @@ function Loading({ visible }) {
     </Box>
   );
 }
-export default Templates;

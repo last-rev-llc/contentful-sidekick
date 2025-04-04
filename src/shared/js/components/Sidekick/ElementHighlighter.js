@@ -25,38 +25,40 @@ import {
   CSK_ENTRY_SELECTOR,
   CSK_ENTRY_UUID_NAME
 } from '../../helpers/constants';
-import { TreeStateContext, useTreeUpdater } from './tree-context';
+import { TreeContext } from './tree-context';
 import { useContentfulContext } from '../../helpers/ContentfulContext';
-import getContentfulItemUrl from '../../helpers/getContentfulItemUrl';
-import BugReporter from '../BugReporter/BugReporter';
+import { getContentfulItemUrl } from '../../helpers/getContentfulItemUrl';
+import { BugReporter } from '../BugReporter/BugReporter';
+import { logger } from '../../../../core/utils/logger';
 
-function ElementHighlighter({ setAddToTemplate }) {
+export function ElementHighlighter({ setAddToTemplate }) {
   const [pageId, setPageId] = React.useState('');
   const [selectedBugElement, setSelectedBugElement] = React.useState(null);
   const [selectedBugInfo, setSelectedBugInfo] = React.useState(null);
   const [sections, setSections] = React.useState([]);
   const [active, setActive] = React.useState(0);
 
-  const { setSelected } = useTreeUpdater();
-  const selectedPath = useContextSelector(TreeStateContext, context => context.selectedPath);
+  const selectedPath = useContextSelector(TreeContext, context => context.selectedPath);
 
   // Memoize event handlers
   const handleCskEntryMouseenter = React.useMemo(
     () =>
       throttle(e => {
-        if (!e.target) return;
-        const $ct = $(e.target);
-        let id = $ct.data(CSK_ENTRY_ID_NAME);
+        if (!e.target) {
+          return;
+        }
+        const { target } = e;
+        let id = target.getAttribute(`data-${CSK_ENTRY_ID_NAME}`);
         let url = id ? getContentfulItemUrl(id, selectedPath) : null;
-        let uuid = $(e.target).data(CSK_ENTRY_UUID_NAME);
+        let uuid = target.getAttribute(`data-${CSK_ENTRY_UUID_NAME}`);
         if (!uuid) {
-          const $parentEl = $(e.target).parents(`[data-${CSK_ENTRY_UUID_NAME}]`);
-          uuid = $($parentEl[0]).data(CSK_ENTRY_UUID_NAME);
-          id = $($parentEl[0]).data(CSK_ENTRY_ID_NAME);
+          const parentEl = target.closest(`[data-${CSK_ENTRY_UUID_NAME}]`);
+          uuid = parentEl.getAttribute(`data-${CSK_ENTRY_UUID_NAME}`);
+          id = parentEl.getAttribute(`data-${CSK_ENTRY_ID_NAME}`);
           url = id ? getContentfulItemUrl(id, selectedPath) : null;
         }
 
-        const computedFontSize = window.getComputedStyle($ct[0]).fontSize;
+        const computedFontSize = window.getComputedStyle(target).fontSize;
         const numericFontSize = parseFloat(computedFontSize) * 0.5;
         let overlayFontSize = `${numericFontSize}px`;
 
@@ -66,8 +68,8 @@ function ElementHighlighter({ setAddToTemplate }) {
           overlayFontSize = '16px';
         }
 
-        $('#csk-blur-actions').css('font-size', overlayFontSize);
-        setBlur($(e.target), url);
+        document.getElementById('csk-blur-actions').style.fontSize = overlayFontSize;
+        setBlur(target, url);
       }, 300),
     [selectedPath]
   );
@@ -78,21 +80,20 @@ function ElementHighlighter({ setAddToTemplate }) {
         if (e.target !== e.currentTarget) return;
         e.stopPropagation();
         e.preventDefault();
-        let uuid = $(e.target).data(CSK_ENTRY_UUID_NAME);
+        let uuid = e.target.getAttribute(`data-${CSK_ENTRY_UUID_NAME}`);
         if (!uuid) {
-          const $parentEl = $(e.target).parents(`[data-${CSK_ENTRY_UUID_NAME}]`);
-          uuid = $($parentEl[0]).data(CSK_ENTRY_UUID_NAME);
+          const parentEl = e.target.closest(`[data-${CSK_ENTRY_UUID_NAME}]`);
+          uuid = parentEl.getAttribute(`data-${CSK_ENTRY_UUID_NAME}`);
         }
-        setSelected(uuid);
         resetBlur();
       }, 300),
-    [setSelected]
+    []
   );
 
   const handleCskEntryMouseleave = React.useMemo(
     () =>
       throttle(e => {
-        if (e.toElement && e.toElement.getAttribute('id') === 'csk-blur-actions') {
+        if (e.relatedTarget && e.relatedTarget.id === 'csk-blur-actions') {
           return;
         }
         if (!e.target) {
@@ -106,7 +107,10 @@ function ElementHighlighter({ setAddToTemplate }) {
   const handleActionsMouseleave = React.useMemo(
     () =>
       throttle(e => {
-        if (e.toElement && $(CSK_ENTRY_SELECTOR).is(e.toElement)) {
+        if (
+          e.relatedTarget &&
+          document.querySelector(CSK_ENTRY_SELECTOR).contains(e.relatedTarget)
+        ) {
           return;
         }
         resetBlur();
@@ -116,19 +120,16 @@ function ElementHighlighter({ setAddToTemplate }) {
 
   // Setup event listeners once
   React.useEffect(() => {
-    if (!setSelected) return;
-
-    const body = $('body');
-    const blurActions = $('#csk-blur-actions');
+    const { body } = document;
+    const blurActions = document.getElementById('csk-blur-actions');
 
     // Add event listeners
-    body
-      .on('click', CSK_ENTRY_SELECTOR, handleCskEntryClick)
-      .on('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
-      .on('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave)
-      .on('mouseover', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter);
+    body.addEventListener('click', handleCskEntryClick, true);
+    body.addEventListener('mouseenter', handleCskEntryMouseenter, true);
+    body.addEventListener('mouseleave', handleCskEntryMouseleave, true);
+    body.addEventListener('mouseover', handleCskEntryMouseenter, true);
 
-    blurActions.on('mouseleave', handleActionsMouseleave);
+    blurActions.addEventListener('mouseleave', handleActionsMouseleave);
 
     // Cleanup
     return () => {
@@ -139,16 +140,14 @@ function ElementHighlighter({ setAddToTemplate }) {
       handleActionsMouseleave.cancel();
 
       // Remove event listeners
-      body
-        .off('click', CSK_ENTRY_SELECTOR, handleCskEntryClick)
-        .off('mouseenter', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter)
-        .off('mouseleave', CSK_ENTRY_SELECTOR, handleCskEntryMouseleave)
-        .off('mouseover', CSK_ENTRY_SELECTOR, handleCskEntryMouseenter);
+      body.removeEventListener('click', handleCskEntryClick, true);
+      body.removeEventListener('mouseenter', handleCskEntryMouseenter, true);
+      body.removeEventListener('mouseleave', handleCskEntryMouseleave, true);
+      body.removeEventListener('mouseover', handleCskEntryMouseenter, true);
 
-      blurActions.off('mouseleave', handleActionsMouseleave);
+      blurActions.removeEventListener('mouseleave', handleActionsMouseleave);
     };
   }, [
-    setSelected,
     handleCskEntryClick,
     handleCskEntryMouseenter,
     handleCskEntryMouseleave,
@@ -245,16 +244,16 @@ function ElementHighlighter({ setAddToTemplate }) {
   const handleOpen = React.useCallback(
     e => {
       e.preventDefault();
-      const $selectedEl = $(CSK_ENTRY_SELECTOR).filter((_, el) => {
-        const uuid = $(el).data(CSK_ENTRY_UUID_NAME);
-        return uuid === selectedPath[selectedPath.length - 1]?.uuid;
-      });
+      const $selectedEl = document
+        .querySelector(CSK_ENTRY_SELECTOR)
+        .closest(`[data-${CSK_ENTRY_UUID_NAME}="${selectedPath[selectedPath.length - 1]?.uuid}"]`);
 
-      const entryId = $selectedEl.data(CSK_ENTRY_ID_NAME);
+      const entryId = $selectedEl.getAttribute(`data-${CSK_ENTRY_ID_NAME}`);
       if (!entryId) return;
 
       const url = getContentfulItemUrl(entryId, selectedPath);
       if (window.self !== window.top) {
+        logger.debug('Opening in parent window', { url });
         window.parent.postMessage(
           {
             type: 'NAVIGATE_TO',
@@ -276,21 +275,21 @@ function ElementHighlighter({ setAddToTemplate }) {
       e.stopPropagation();
 
       // Try to find the currently blurred element
-      const $blurredElement = $('.csk-entry-unblur');
+      const blurredElement = document.querySelector('.csk-entry-unblur');
 
       // If no blurred element, try to use the selected path
-      let $targetElement = $blurredElement.length ? $blurredElement : null;
-      if (!$targetElement?.length) {
+      let targetElement = blurredElement || null;
+      if (!targetElement) {
         const selectedUuid = selectedPath[selectedPath.length - 1]?.uuid;
         if (selectedUuid) {
-          $targetElement = $(`[data-${CSK_ENTRY_UUID_NAME}="${selectedUuid}"]`);
+          targetElement = document.querySelector(`[data-${CSK_ENTRY_UUID_NAME}="${selectedUuid}"]`);
         }
       }
 
-      if (!$targetElement?.length) {
+      if (!targetElement) {
         // If still no element found, try to find any element under the blur actions
-        const $blurActions = $('#csk-blur-actions');
-        const blurRect = $blurActions[0]?.getBoundingClientRect();
+        const blurActions = document.getElementById('csk-blur-actions');
+        const blurRect = blurActions.getBoundingClientRect();
         if (blurRect) {
           // Try points around the blur actions to find the element
           const points = [
@@ -303,19 +302,19 @@ function ElementHighlighter({ setAddToTemplate }) {
           for (const [x, y] of points) {
             const el = document.elementFromPoint(x, y);
             if (el) {
-              $targetElement = $(el).closest(CSK_ENTRY_SELECTOR);
-              if ($targetElement.length) break;
+              targetElement = el.closest(CSK_ENTRY_SELECTOR);
+              if (targetElement) break;
             }
           }
         }
       }
 
-      if (!$targetElement?.length) {
-        console.warn('No element found for bug report');
+      if (!targetElement) {
+        logger.warn('No element found for bug report');
         return;
       }
 
-      const selectedElement = $targetElement[0];
+      const selectedElement = targetElement;
       const elementInfo = {
         path: selectedPath,
         uuid: selectedElement.getAttribute(`data-${CSK_ENTRY_UUID_NAME}`),
@@ -343,7 +342,6 @@ function ElementHighlighter({ setAddToTemplate }) {
           className={`csk-blur csk-blur-${dir}`}
           onClick={() => {
             resetSelectedOutline();
-            setSelected(null);
           }}
         />
       ))}
@@ -409,26 +407,27 @@ function SectionUI({ pageId, section, setAddToTemplate, index, active }) {
   const { reorderContent, removeContentFromIndex } = useContentfulContext();
   const handleDelete = async () => {
     try {
-      await removeContentFromIndex({ pageId, index, field: 'contents' });
+      await removeContentFromIndex({
+        pageId,
+        index
+      });
     } catch (err) {
-      // console.log('Delete error', err);
+      logger.debug('Delete operation failed', { error: err });
     }
   };
 
   const handleOpen = () => {
-    // console.log('HandleOpen', { self: window.self, top: window.top });
     if (window.self !== window.top) {
+      logger.debug('Opening in parent window', { href: getContentfulItemUrl(section.cskEntryId) });
       window.parent.postMessage(
         {
           type: 'NAVIGATE_TO',
           payload: {
-            url: getContentfulItemUrl(section.cskEntryId)
+            href: getContentfulItemUrl(section.cskEntryId)
           }
         },
         '*'
       );
-      // window.location.href = getContentfulItemUrl(section.cskEntryId);
-      window.open(getContentfulItemUrl(section.cskEntryId));
     } else {
       window.open(getContentfulItemUrl(section.cskEntryId));
     }
@@ -535,5 +534,3 @@ const AddSectionButton = styled(Button)`
 
   font-size: 12px;
 `;
-
-export default ElementHighlighter;

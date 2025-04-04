@@ -1,70 +1,36 @@
-import React, { useMemo, useCallback } from 'react';
-import { createContext as createContextSelector, useContextSelector } from 'use-context-selector';
+import React, { createContext, useContext, useState } from 'react';
 
-const TreeStateContext = createContextSelector({
+// Create a simple context
+const TreeContext = createContext({
   tree: [],
-  selectedPath: [],
   expandedNodes: new Set(),
-  selectedNode: null,
-  setIsExpanded: () => {},
-  setSelected: () => {}
+  selectedNode: null
 });
 
+// Hook to access node state
 export const useNode = uuid => {
-  const expandedNodes = useContextSelector(TreeStateContext, state => state.expandedNodes);
-  const selectedNode = useContextSelector(TreeStateContext, state => state.selectedNode);
+  const context = useContext(TreeContext);
 
   return {
-    isExpanded: expandedNodes.has(uuid),
-    isSelected: selectedNode === uuid
+    isExpanded: context.expandedNodes.has(uuid),
+    isSelected: context.selectedNode === uuid
   };
 };
 
-export const useTreeUpdater = () => {
-  const [state, setState] = React.useState({
-    selectedPath: [],
-    expandedNodes: new Set(),
-    selectedNode: null
-  });
-
-  const setIsExpanded = useCallback((uuid, isExpanded) => {
-    if (!uuid) return;
-    setState(prevState => ({
-      ...prevState,
-      expandedNodes: isExpanded
-        ? new Set([...prevState.expandedNodes, uuid])
-        : new Set([...prevState.expandedNodes].filter(id => id !== uuid))
-    }));
-  }, []);
-
-  const setSelected = useCallback(uuid => {
-    setState(prevState => ({
-      ...prevState,
-      selectedNode: uuid || null
-    }));
-  }, []);
-
-  return {
-    ...state,
-    setIsExpanded,
-    setSelected
-  };
-};
-
+// Provider component
 export function TreeProvider({ children, tree = [] }) {
-  const { setIsExpanded, setSelected, ...state } = useTreeUpdater();
+  const [expandedNodes, setExpandedNodes] = useState(new Set());
+  const [selectedNode, setSelectedNode] = useState(null);
 
-  const contextValue = useMemo(
-    () => ({
-      ...state,
-      tree,
-      setIsExpanded,
-      setSelected
-    }),
-    [state, tree, setIsExpanded, setSelected]
-  );
+  const value = {
+    tree,
+    expandedNodes,
+    selectedNode,
+    setExpandedNodes,
+    setSelectedNode
+  };
 
-  return <TreeStateContext.Provider value={contextValue}>{children}</TreeStateContext.Provider>;
+  return <TreeContext.Provider value={value}>{children}</TreeContext.Provider>;
 }
 
-export { TreeStateContext };
+export { TreeContext };

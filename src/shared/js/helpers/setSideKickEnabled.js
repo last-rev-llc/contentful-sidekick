@@ -1,1 +1,3 @@
-export default sideKickEnabled => chrome.storage.sync.set({ sideKickEnabled });
+export const setSideKickEnabled = async enabled => {
+  chrome.storage.sync.set({ sideKickEnabled: enabled });
+};

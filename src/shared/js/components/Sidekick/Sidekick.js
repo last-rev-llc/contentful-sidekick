@@ -1,25 +1,22 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { SpeedDial, SpeedDialAction } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
 import HighlightIcon from '@mui/icons-material/HighlightAlt';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import AddIcon from '@mui/icons-material/Add';
-
 import { ThemeProvider } from '@mui/system';
 import debounce from 'lodash/debounce';
 
-import React, { useEffect, useState } from 'react';
-import buildCskEntryTree from '../../helpers/buildCskEntryTree';
+import { buildCskEntryTree } from '../../helpers/buildCskEntryTree';
 import { TreeProvider } from './tree-context';
-import ElementHighlighter from './ElementHighlighter';
-import Sidebar from './Sidebar';
-import AddContentDialog from './AddContentDialog';
-// import './Sidekick.css';
-import theme from '../../theme';
-import useStorageState from '../../helpers/useStorageState';
-import Banner from '../Banner';
+import { ElementHighlighter } from './ElementHighlighter';
+import { Sidebar } from './Sidebar';
+import { AddContentDialog } from './AddContentDialog';
+import { theme } from '../../theme';
+import { useStorageState } from '../../helpers/useStorageState';
+import { Banner } from '../Banner';
 import { ContentfulProvider } from '../../helpers/ContentfulContext';
-import { loadSidebar, removeSidebar } from '../../helpers/sidebarUtils';
-// import Chat from './Chat';
 
 function InnerSidekick({ defaultTree }) {
   const [tree, setTree] = useState(defaultTree);
@@ -74,11 +71,7 @@ function InnerSidekick({ defaultTree }) {
       return;
     }
     const newHighlightState = !highlight;
-    if (newHighlightState) {
-      loadSidebar();
-    } else {
-      removeSidebar();
-    }
+
     setHighlight(newHighlightState);
   };
 
@@ -248,7 +241,7 @@ function InnerSidekick({ defaultTree }) {
   );
 }
 
-function Sidekick({ defaultTree }) {
+export function Sidekick({ defaultTree }) {
   return (
     <ThemeProvider theme={theme}>
       <ContentfulProvider>
@@ -258,5 +251,3 @@ function Sidekick({ defaultTree }) {
     </ThemeProvider>
   );
 }
-
-export default Sidekick;

@@ -1,9 +1,11 @@
+import { logger } from '../../core/utils/logger';
+
 // Service Worker for Contentful Sidekick
 
 // Handle side panel behavior
 chrome.sidePanel
   .setPanelBehavior({ openPanelOnActionClick: true })
-  .catch(error => console.error('Failed to set panel behavior:', error));
+  .catch(error => logger.error('Failed to set panel behavior:', error));
 
 // Listen for tab updates to enable/disable the side panel as needed
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
@@ -17,7 +19,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
       enabled: true
     });
   } catch (error) {
-    console.error('Error setting side panel options:', error);
+    logger.error('Error setting side panel options:', error);
   }
 });
 
@@ -25,7 +27,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
 chrome.runtime.onMessage.addListener(message => {
   if (message.type === 'FROM_SIDEPANEL') {
     // Handle messages from the side panel
-    console.log('Message from side panel:', message);
+    logger.debug('Message from side panel:', message);
   } else if (message.type === 'GET_TAB_INFO') {
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       const tab = tabs[0];

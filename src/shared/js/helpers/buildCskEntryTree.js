@@ -1,5 +1,6 @@
 // import { each } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '../../../core/utils/logger';
 import {
   CSK_ENTRY_ID_NAME,
   CSK_ENTRY_TYPE_NAME,
@@ -9,10 +10,10 @@ import {
   CSK_ENTRY_ERROR
 } from './constants';
 
-const parseErrors = $el => {
+const parseErrors = el => {
   try {
-    const error = $el.data(CSK_ENTRY_ERROR);
-    return error.errors;
+    const error = el.getAttribute(`data-${CSK_ENTRY_ERROR}`);
+    return error ? JSON.parse(error).errors : null;
   } catch (e) {
     return null;
   }
@@ -21,55 +22,52 @@ const parseErrors = $el => {
 function isValidNode(node) {
   const isValid =
     node && typeof node === 'object' && typeof node.uuid === 'string' && node.uuid.length > 0;
-  if (!isValid) {
-    // Only log in development
-    if (process.env.NODE_ENV === 'development') {
-      let reason;
-      if (!node) {
-        reason = 'node is null/undefined';
-      } else if (!node.uuid) {
-        reason = 'missing uuid';
-      } else {
-        reason = 'invalid uuid type';
-      }
-      console.warn('Invalid node found:', { node, reason });
+  if (!isValid && process.env.NODE_ENV === 'development') {
+    let reason;
+    if (!node) {
+      reason = 'node is null/undefined';
+    } else if (!node.uuid) {
+      reason = 'missing uuid';
+    } else {
+      reason = 'invalid uuid type';
     }
+    logger.warn('Invalid node found', { node, reason });
   }
   return isValid;
 }
 
-function traverseDomNode(jqObj, domEl, results) {
-  const isEl = jqObj.is(domEl);
+function traverseDomNode(domEl, results) {
+  const isEl = domEl.matches(
+    `[data-${CSK_ENTRY_ID_NAME}], [data-${CSK_ENTRY_TYPE_NAME}], [data-${CSK_ENTRY_FIELD_NAME}], [data-${CSK_ENTRY_DISPLAY_TEXT_NAME}]`
+  );
   const children = [];
 
   if (isEl) {
-    const $el = $(domEl);
-    const prevUuid = $el.attr(`data-${CSK_ENTRY_UUID_NAME}`);
+    const prevUuid = domEl.getAttribute(`data-${CSK_ENTRY_UUID_NAME}`);
     const uuid = prevUuid || uuidv4();
 
-    // Only log in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('Creating node for element:', {
+      logger.debug('Creating node for element', {
         el: domEl,
         prevUuid,
         newUuid: uuid,
         data: {
-          id: $el.data(CSK_ENTRY_ID_NAME),
-          field: $el.data(CSK_ENTRY_FIELD_NAME),
-          type: $el.data(CSK_ENTRY_TYPE_NAME),
-          displayText: $el.data(CSK_ENTRY_DISPLAY_TEXT_NAME)
+          id: domEl.getAttribute(`data-${CSK_ENTRY_ID_NAME}`),
+          field: domEl.getAttribute(`data-${CSK_ENTRY_FIELD_NAME}`),
+          type: domEl.getAttribute(`data-${CSK_ENTRY_TYPE_NAME}`),
+          displayText: domEl.getAttribute(`data-${CSK_ENTRY_DISPLAY_TEXT_NAME}`)
         }
       });
     }
 
-    $el.attr(`data-${CSK_ENTRY_UUID_NAME}`, uuid);
+    domEl.setAttribute(`data-${CSK_ENTRY_UUID_NAME}`, uuid);
 
     const node = {
-      id: $el.data(CSK_ENTRY_ID_NAME),
-      field: $el.data(CSK_ENTRY_FIELD_NAME),
-      type: $el.data(CSK_ENTRY_TYPE_NAME),
-      displayText: $el.data(CSK_ENTRY_DISPLAY_TEXT_NAME),
-      errors: parseErrors($el),
+      id: domEl.getAttribute(`data-${CSK_ENTRY_ID_NAME}`),
+      field: domEl.getAttribute(`data-${CSK_ENTRY_FIELD_NAME}`),
+      type: domEl.getAttribute(`data-${CSK_ENTRY_TYPE_NAME}`),
+      displayText: domEl.getAttribute(`data-${CSK_ENTRY_DISPLAY_TEXT_NAME}`),
+      errors: parseErrors(domEl),
       uuid,
       children
     };
@@ -81,30 +79,30 @@ function traverseDomNode(jqObj, domEl, results) {
 
   if (domEl.children) {
     Array.from(domEl.children).forEach(child => {
-      traverseDomNode(jqObj, child, isEl ? children : results);
+      traverseDomNode(child, isEl ? children : results);
     });
   }
 }
 
-export default () => {
+export const buildCskEntryTree = () => {
   try {
     const tree = [];
-    const selector = `[data-${CSK_ENTRY_ID_NAME}],[data-${CSK_ENTRY_TYPE_NAME}],[data-${CSK_ENTRY_FIELD_NAME}],[data-${CSK_ENTRY_DISPLAY_TEXT_NAME}]`;
+    const selector = `[data-${CSK_ENTRY_ID_NAME}], [data-${CSK_ENTRY_TYPE_NAME}], [data-${CSK_ENTRY_FIELD_NAME}], [data-${CSK_ENTRY_DISPLAY_TEXT_NAME}]`;
 
-    // Only log in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('Building tree with selector:', selector);
-      const $matches = $(selector);
-      console.log('Found matching elements:', $matches.length);
+      const matches = document.querySelectorAll(selector);
+      logger.debug('Building tree', {
+        selector,
+        matchingElements: matches.length
+      });
     }
 
-    traverseDomNode($(selector), document.body, tree);
+    traverseDomNode(document.body, tree);
 
     const validTree = tree.filter(isValidNode);
 
-    // Only log in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('Final tree:', {
+      logger.debug('Tree building completed', {
         originalLength: tree.length,
         validLength: validTree.length,
         tree: validTree
@@ -113,7 +111,7 @@ export default () => {
 
     return validTree;
   } catch (error) {
-    console.warn('Error building CSK entry tree:', error);
+    logger.error('Error building CSK entry tree', error);
     return [];
   }
 };

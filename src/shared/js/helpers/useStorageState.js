@@ -1,12 +1,13 @@
 import React from 'react';
+import { logger } from '../../../core/utils/logger';
 
-export default (defaultValue, key) => {
+export const useStorageState = (key, defaultValue) => {
   const [value, setValuestate] = React.useState(() => {
     try {
       const storedValue = localStorage.getItem(key);
       return storedValue ? JSON.parse(storedValue) : defaultValue;
     } catch (error) {
-      console.warn('Error accessing localStorage:', error);
+      logger.warn('Error accessing localStorage', error, { key });
       return defaultValue;
     }
   });
@@ -29,7 +30,7 @@ export default (defaultValue, key) => {
       try {
         localStorage.setItem(key, JSON.stringify(valueToStore));
       } catch (error) {
-        console.warn('Error setting localStorage:', error);
+        logger.warn('Error setting localStorage', error, { key, valueToStore });
       }
     },
     [key, value]

@@ -5,10 +5,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import { logger } from '../../../../core/utils/logger';
 
 const CHATFLOW_ID = 'b98e2d5b-00ac-4ee0-bbd9-e18eae3f9670';
 
-function BugReporter({
+export function BugReporter({
   selectedElement,
   elementInfo,
   onClose,
@@ -47,18 +48,6 @@ function BugReporter({
     setError(null);
 
     try {
-      // Get element information
-      // const elementData = selectedElement
-      //   ? {
-      //       elementType: selectedElement.tagName,
-      //       elementId: selectedElement.getAttribute('data-csk-entry-id'),
-      //       elementUuid: selectedElement.getAttribute('data-csk-entry-uuid'),
-      //       elementPath: elementInfo?.path || [],
-      //       elementInfo: elementInfo || {},
-      //       url: window.location.href
-      //     }
-      //   : null;
-
       const message = {
         type: 'SUBMIT_BUG_REPORT',
         payload: {
@@ -88,45 +77,11 @@ function BugReporter({
         }
       );
       const results = await responseNew.json();
-      // console.log(results.text);
 
-      // Simple one-time message with timeout
-      // const response = await new Promise((resolve, reject) => {
-      //   const timeoutId = setTimeout(() => {
-      //     reject(new Error('Request timed out'));
-      //   }, 30000); // 30 second timeout
-
-      //   try {
-      //     chrome.runtime.sendMessage(message, result => {
-      //       clearTimeout(timeoutId);
-
-      //       if (chrome.runtime.lastError) {
-      //         console.error('Chrome runtime error:', chrome.runtime.lastError);
-      //         reject(new Error(chrome.runtime.lastError.message));
-      //         return;
-      //       }
-
-      //       if (!result) {
-      //         reject(new Error('No response received'));
-      //         return;
-      //       }
-
-      //       resolve(result);
-      //     });
-      //   } catch (err) {
-      //     clearTimeout(timeoutId);
-      //     reject(new Error('Failed to send message to background script'));
-      //   }
-      // });
-
-      // if (!response || !response.success) {
-      //   throw new Error((response && response.error) || 'Failed to submit bug report');
-      // }
-
-      console.log('Bug report submitted successfully:', results.text);
-      // handleClose();
+      logger.info('Bug report submitted successfully', { results });
+      handleClose();
     } catch (err) {
-      console.error('Error submitting bug report:', err);
+      logger.error('Error submitting bug report', err);
       setError(err.message || 'Failed to submit bug report. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -173,5 +128,3 @@ function BugReporter({
     </Dialog>
   );
 }
-
-export default BugReporter;

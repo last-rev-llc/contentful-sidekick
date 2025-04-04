@@ -4,8 +4,9 @@ import { createClient as createMgmtClient } from 'contentful-management';
 import { createClient as createCdnClient } from 'contentful';
 import get from 'lodash/get';
 import set from 'lodash/set';
-import getContentfulVarsFromPage from './getContentfulVarsFromPgae';
-import getHashedIDFromString from './getHashedIDFromString';
+import { getContentfulVarsFromPage } from './getContentfulVarsFromPage';
+import { getHashedIDFromString } from './getHashedIDFromString';
+import { logger } from '../../../core/utils/logger';
 
 const CLIENT_ID = 'N0sUte_UZ7vaCjSEcP8n11Ta2VOZY3yYqD67ZQWHCT4';
 const getAuthUrl = redirectUri =>
@@ -45,9 +46,6 @@ function ContentfulProvider({ children }) {
                 if (get(ref, 'sys.linkType') === 'Entry') {
                   refEntryIds.push(ref.sys.id);
                 }
-                // if (get(content, 'sys.id')) {
-                //   refEntryIds.push(content.sys.id);
-                // }
                 idsMap[ref.sys.id] = getHashedIDFromString(`${hashId}-${pageId}-${ref.sys.id}`);
                 return {
                   sys: {
@@ -75,7 +73,7 @@ function ContentfulProvider({ children }) {
             })
           );
         } catch (error) {
-          console.log('ERROR->getAllContent', { id, error });
+          logger.error('Error getting content', error, { id });
           throw error;
         }
       };
@@ -302,7 +300,7 @@ function ContentfulProvider({ children }) {
           })
         );
       } catch (err) {
-        console.error('Error setting client values:', err);
+        logger.error('Error setting client values', err);
         setUser(null);
         setUserDetails(null);
         setEnvironment(null);
@@ -316,50 +314,29 @@ function ContentfulProvider({ children }) {
   }, [cmaToken, spaceId, envId]);
 
   useEffect(() => {
-    const initCmaToken = t => {
-      setCmaToken(t);
-    };
-
     const init = async () => {
-      // First check if we have a token
-      const { cma } = await chrome.storage.sync.get('cma');
-
-      // Get space and env from page or storage
-      let { spaceId: s, env: e } = getContentfulVarsFromPage();
-      if (!s || !e) {
-        ({ spaceId: s, env: e } = await chrome.storage.sync.get(['spaceId', 'env']));
-      }
-
-      // If we have a token but no space/env, we need to fetch them from the token
-      if (cma && (!s || !e)) {
-        try {
-          const client = createMgmtClient({
-            accessToken: cma
-          });
-
-          // Get the first space this token has access to
-          const spaces = await client.getSpaces();
-          if (spaces.items.length > 0) {
-            const space = spaces.items[0];
-            s = space.sys.id;
-
-            // Get the first environment (usually 'master')
-            const environments = await space.getEnvironments();
-            if (environments.items.length > 0) {
-              e = environments.items[0].sys.id;
-
-              // Save these for next time
-              await chrome.storage.sync.set({ spaceId: s, env: e });
-            }
-          }
-        } catch (err) {
-          console.error('Error fetching space/environment:', err);
+      try {
+        // Get space/env from page
+        const { spaceId: pageSpaceId, envId: pageEnvId } = getContentfulVarsFromPage();
+        logger.debug('pageSpaceId', pageSpaceId, 'pageEnvId', pageEnvId);
+        if (pageSpaceId) {
+          setSpaceId(pageSpaceId);
         }
-      }
+        if (pageEnvId) {
+          setEnvId(pageEnvId);
+        }
 
-      setSpaceId(s);
-      setEnvId(e);
-      initCmaToken(cma);
+        // Get token from storage
+        const result = await chrome.storage.sync.get(['cma', 'spaceId']);
+        if (result.cma) {
+          setCmaToken(result.cma);
+        }
+        if (result.spaceId && !pageSpaceId) {
+          setSpaceId(result.spaceId);
+        }
+      } catch (err) {
+        logger.error('Error fetching space/environment', err);
+      }
     };
 
     const listener = changes => {

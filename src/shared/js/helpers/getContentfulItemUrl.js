@@ -1,6 +1,6 @@
-import getContentfulVarsFromPage from './getContentfulVarsFromPgae';
+import { getContentfulVarsFromPage } from './getContentfulVarsFromPage';
 
-export default (contentId, selectedPath = []) => {
+export const getContentfulItemUrl = (contentId, selectedPath = []) => {
   const { spaceId: SPACE_ID, env: ENV } = getContentfulVarsFromPage();
   const reversed = [...selectedPath].reverse();
   const previousEntries = selectedPath

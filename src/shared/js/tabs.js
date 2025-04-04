@@ -1,47 +1,52 @@
 // Tab management for the sidebar
-console.log('Loading tabs.js module...');
+import { logger } from '../../core/utils/logger';
+
+logger.debug('Loading tabs module');
 
 // Initialize tabs and return containers
 const initTabs = () => {
-  console.log('Initializing tabs...');
+  logger.debug('Initializing tabs');
   const buttons = Array.from(document.querySelectorAll('.tab-button'));
   const panels = Array.from(document.querySelectorAll('.tab-content-panel'));
 
-  console.log(
-    'Found buttons:',
-    buttons.map(b => b.dataset.tabId)
-  );
-  console.log(
-    'Found panels:',
-    panels.map(p => p.id)
-  );
+  logger.debug('Found tab elements', {
+    buttons: buttons.map(b => b.dataset.tabId),
+    panels: panels.map(p => p.id)
+  });
 
   if (buttons.length === 0) {
-    console.error('No tab buttons found! Check if DOM is loaded properly.');
+    logger.error('No tab buttons found - DOM may not be loaded properly');
     return null;
   }
 
   const setTabVisibility = selectedTabId => {
-    console.log('Switching to tab:', selectedTabId);
+    logger.debug('Switching tab visibility', { selectedTabId });
+
     // Update button classes
     buttons.forEach(button => {
       const isActive = button.dataset.tabId === selectedTabId;
       button.classList.toggle('active', isActive);
-      console.log(`Button ${button.dataset.tabId} active: ${isActive}`);
+      logger.debug('Updated button state', {
+        buttonId: button.dataset.tabId,
+        active: isActive
+      });
     });
 
     // Update content visibility
     panels.forEach(panel => {
       const isActive = panel.id === `tab-${selectedTabId}`;
       panel.classList.toggle('active', isActive);
-      console.log(`Panel ${panel.id} active: ${isActive}`);
+      logger.debug('Updated panel state', {
+        panelId: panel.id,
+        active: isActive
+      });
     });
   };
 
   // Add click handlers
   buttons.forEach(button => {
     button.addEventListener('click', () => {
-      console.log('Tab button clicked:', button.dataset.tabId);
+      logger.debug('Tab button clicked', { tabId: button.dataset.tabId });
       setTabVisibility(button.dataset.tabId);
     });
   });
@@ -98,11 +103,11 @@ const updatePageInfo = info => {
 // Initialize tabs immediately if DOM is ready, otherwise wait for DOMContentLoaded
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM Content Loaded - initializing tabs');
+    logger.debug('DOM Content Loaded - initializing tabs');
     window.sidekickTabs = initTabs();
   });
 } else {
-  console.log('DOM already ready - initializing tabs immediately');
+  logger.debug('DOM already ready - initializing tabs immediately');
   window.sidekickTabs = initTabs();
 }
 
