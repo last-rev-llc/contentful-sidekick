@@ -2,6 +2,7 @@ import debounce from 'lodash/debounce';
 import { handlePageStateChange } from './pageState';
 import { buildCskEntryTree } from './buildCskEntryTree';
 import { logger } from '../../../core/utils/logger';
+import { getContentfulVarsFromPage } from './getContentfulVarsFromPage';
 
 let isInitialized = false;
 let currentUrl = window.location.href;
@@ -150,12 +151,7 @@ export const initializeMessageListeners = () => {
     }
 
     if (message.type === 'GET_CONTENTFUL_VARS') {
-      const spaceElement = document.querySelector('[name="contentful_space"]');
-      const envElement = document.querySelector('[name="contentful_environment"]');
-
-      const spaceId = spaceElement ? spaceElement.getAttribute('content') : null;
-      const env = envElement ? envElement.getAttribute('content') : null;
-
+      const { spaceId, env } = getContentfulVarsFromPage();
       sendResponse({ spaceId, env });
       return true;
     }

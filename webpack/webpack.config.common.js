@@ -141,10 +141,7 @@ module.exports = {
     }),
     // Use modules without having to use import/require
     // https://webpack.js.org/plugins/provide-plugin
-    new webpack.ProvidePlugin({
-      $: 'jquery',
-      jQuery: 'jquery'
-    }),
+
     // This plugin will copy all files
     // to the dist directory
     new CopyWebpackPlugin({

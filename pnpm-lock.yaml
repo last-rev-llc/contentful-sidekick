@@ -44,9 +44,6 @@ importers:
       imurmurhash:
         specifier: ^0.1.4
         version: 0.1.4
-      jquery:
-        specifier: ^3.7.1
-        version: 3.7.1
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -3183,9 +3180,6 @@ packages:
     peerDependenciesMeta:
       node-notifier:
         optional: true
-
-  jquery@3.7.1:
-    resolution: {integrity: sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -8597,8 +8591,6 @@ snapshots:
       - babel-plugin-macros
       - supports-color
       - ts-node
-
-  jquery@3.7.1: {}
 
   js-tokens@4.0.0: {}
 

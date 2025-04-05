@@ -4,7 +4,6 @@ import { createClient as createMgmtClient } from 'contentful-management';
 import { createClient as createCdnClient } from 'contentful';
 import get from 'lodash/get';
 import set from 'lodash/set';
-import { getContentfulVarsFromPage } from './getContentfulVarsFromPage';
 import { getHashedIDFromString } from './getHashedIDFromString';
 import { logger } from '../../../core/utils/logger';
 
@@ -316,24 +315,23 @@ function ContentfulProvider({ children }) {
   useEffect(() => {
     const init = async () => {
       try {
-        // Get space/env from page
-        const { spaceId: pageSpaceId, envId: pageEnvId } = getContentfulVarsFromPage();
-        logger.debug('pageSpaceId', pageSpaceId, 'pageEnvId', pageEnvId);
-        if (pageSpaceId) {
-          setSpaceId(pageSpaceId);
-        }
-        if (pageEnvId) {
-          setEnvId(pageEnvId);
-        }
-
         // Get token from storage
         const result = await chrome.storage.sync.get(['cma', 'spaceId']);
-        if (result.cma) {
-          setCmaToken(result.cma);
-        }
-        if (result.spaceId && !pageSpaceId) {
-          setSpaceId(result.spaceId);
-        }
+        chrome.runtime.sendMessage({ type: 'GET_CONTENTFUL_VARS' }, response => {
+          if (response) {
+            const { spaceId: pageSpaceId, env: pageEnvId } = response;
+            logger.debug('pageSpaceId', pageSpaceId, 'pageEnvId', pageEnvId);
+            if (result.cma) {
+              setCmaToken(result.cma);
+            }
+            if (result.spaceId && !pageSpaceId) {
+              setSpaceId(result.spaceId);
+            }
+            if (pageEnvId) {
+              setEnvId(pageEnvId);
+            }
+          }
+        });
       } catch (err) {
         logger.error('Error fetching space/environment', err);
       }

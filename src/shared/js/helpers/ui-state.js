@@ -1,6 +1,6 @@
 import { logger } from '../../../core/utils/logger';
 import { loadSidebar, removeSidebar } from './sidebar';
-// import { initializeSidekickApp, uninitializeSidekickApp } from '../components/Sidekick/Sidekick';
+import { initializeSidekickApp, uninitializeSidekickApp } from './sidekick';
 import { cleanupTreeObserver } from '../../../core/services/treeService';
 
 // // UI State management
@@ -17,7 +17,7 @@ export const resetUI = async () => {
   }
 
   cleanupTreeObserver();
-  // uninitializeSidekickApp();
+  uninitializeSidekickApp();
   removeSidebar();
   isUIInitialized = false;
   logger.info('UI reset successfully');
@@ -32,7 +32,7 @@ export const initializeUI = async () => {
 
   try {
     loadSidebar();
-    // initializeSidekickApp();
+    initializeSidekickApp();
     isUIInitialized = true;
     logger.info('UI initialized successfully');
   } catch (error) {

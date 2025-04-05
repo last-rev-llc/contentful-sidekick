@@ -42,7 +42,6 @@
     "contentful": "^11.5.10",
     "contentful-management": "11.48.1",
     "imurmurhash": "^0.1.4",
-    "jquery": "^3.7.1",
     "lodash": "^4.17.21",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",

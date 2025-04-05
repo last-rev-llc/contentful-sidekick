@@ -14,9 +14,7 @@ let root = null;
 // Initialize the React app
 export const initializeSidekickApp = () => {
   try {
-    // Build initial tree
-    const currentTree = buildCskEntryTree();
-
+    logger.debug('initializeSidekickApp');
     // Get container element
     const container = document.getElementById('csk-sidekick');
     if (!container) {
@@ -25,7 +23,7 @@ export const initializeSidekickApp = () => {
 
     // Render React app
     root = createRoot(container);
-    root.render(<Sidekick defaultTree={currentTree} />);
+    root.render(<Sidekick />);
 
     // Set up tree observer
     initializeTreeObserver(() => {

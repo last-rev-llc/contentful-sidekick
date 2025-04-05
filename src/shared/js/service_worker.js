@@ -252,6 +252,67 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     return true; // Will respond asynchronously
   }
+
+  // Handle authentication state changes
+  if (message.type === 'AUTH_STATE_CHANGED') {
+    logger.info('Authentication state changed in service worker', message);
+
+    // Forward this to all tabs and the side panel
+    chrome.tabs.query({}, tabs => {
+      const messagePromises = tabs.map(tab => {
+        return chrome.tabs.sendMessage(tab.id, message).catch(() => {
+          // Ignore errors for tabs without content script
+        });
+      });
+
+      Promise.allSettled(messagePromises).then(() => {
+        logger.debug('Auth state change forwarded to all tabs');
+      });
+    });
+
+    // Also notify the side panel directly if it's open
+    chrome.runtime.sendMessage(message).catch(error => {
+      logger.debug('Could not forward auth state to side panel', error?.message);
+    });
+
+    return true;
+  }
+
+  // Handle GET_CONTENTFUL_VARS message forwarding
+  if (message.type === 'GET_CONTENTFUL_VARS') {
+    // Forward to active tab to get the variables from the page
+    chrome.tabs.query({ active: true, currentWindow: true }, async tabs => {
+      if (!tabs || !tabs[0]) {
+        sendResponse({ error: 'No active tab found' });
+        return;
+      }
+
+      try {
+        // Ensure content script is ready
+        const isReady = await ensureContentScript(tabs[0].id);
+        if (!isReady) {
+          sendResponse({ error: 'Could not initialize content script' });
+          return;
+        }
+
+        // Forward the request to content script
+        chrome.tabs.sendMessage(tabs[0].id, { type: 'GET_CONTENTFUL_VARS' }, response => {
+          if (chrome.runtime.lastError) {
+            sendResponse({ error: chrome.runtime.lastError.message });
+            return;
+          }
+
+          logger.debug('Forwarding Contentful vars from page to requester', response);
+          sendResponse(response);
+        });
+      } catch (error) {
+        logger.error('Error getting Contentful vars', error);
+        sendResponse({ error: error.message });
+      }
+    });
+
+    return true; // Will respond asynchronously
+  }
 });
 
 chrome.runtime.onInstalled.addListener(() => {
