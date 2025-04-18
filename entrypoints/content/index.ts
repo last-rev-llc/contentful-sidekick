@@ -1,7 +1,7 @@
 import type { ContentScriptContext } from "#imports";
 import { onMessage } from "../utils/messaging";
-import { getPageContent } from "../utils-document/getPageContent";
-import { getMetaTag } from "../utils-document/getMetaTag";
+import { getPageContent } from "./utils/getPageContent";
+import { getMetaTag } from "./utils/getMetaTag";
 
 import type { ProtocolMap } from "../utils/messaging";
 import {

@@ -1,4 +1,4 @@
-import "../utils/types";
+import "./types";
 
 export async function openSidePanel(): Promise<void> {
   try {

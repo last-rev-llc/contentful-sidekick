@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { PanelName } from "../utils/types";
-import { ChatbotPanel } from "./chatbot/ChatbotPanel";
-import { WelcomePanel } from "./welcome/WelcomePanel";
-import { ElementTreePanel } from "./element-tree/ElementTreePanel";
+import { ChatbotPanel } from "../panels/chatbot/ChatbotPanel";
+import { WelcomePanel } from "../panels/welcome/WelcomePanel";
+import { ElementTreePanel } from "../panels/element-tree/ElementTreePanel";
 import { createRoot } from "react-dom/client";
-import "../styles/theme.css";
+import "./theme.css";
 
 export const MainPanel: React.FC = () => {
   const [currentPanel, setCurrentPanel] = useState<PanelName>("welcome");
