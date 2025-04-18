@@ -4,5 +4,4 @@ export const CSK_ENTRY_TYPE_NAME = "csk-entry-type";
 export const CSK_ENTRY_DISPLAY_TEXT_NAME = "csk-entry-display-text";
 export const CSK_ENTRY_UUID_NAME = "csk-entry-uuid";
 export const CSK_ENTRY_ERROR = "csk-error";
-// Section have a special UI on top of them
 export const CSK_ENTRY_SELECTOR = `[data-${CSK_ENTRY_UUID_NAME}]`;

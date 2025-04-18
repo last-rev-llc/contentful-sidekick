@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { TreeNodeProps } from "./types";
 import { getContentfulItemUrl } from "./utils";
-import "../../styles/theme.css";
 
 export const TreeNode: React.FC<TreeNodeProps> = ({
   node,
@@ -93,95 +92,6 @@ export const TreeNode: React.FC<TreeNodeProps> = ({
           ))}
         </div>
       )}
-      <style>{`
-        .tree-node {
-          margin: var(--spacing-xs) 0;
-          font-family: var(--font-family-mono);
-        }
-        .node-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: var(--spacing-sm);
-          border-radius: var(--border-radius-sm);
-          background: var(--color-background-paper);
-          transition: all 0.2s ease;
-          position: relative;
-        }
-        .node-header:hover,
-        .node-header.is-hovered {
-          background: var(--color-background-hover);
-        }
-        .node-content {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-sm);
-          flex-wrap: wrap;
-          cursor: pointer;
-          flex: 1;
-          min-width: 0;
-          padding-right: var(--spacing-md);
-        }
-        .expand-icon {
-          margin-right: var(--spacing-sm);
-          color: var(--color-text-secondary);
-          font-size: 0.8em;
-          min-width: 1em;
-          text-align: center;
-          flex-shrink: 0;
-        }
-        .node-type {
-          color: var(--color-primary);
-          font-weight: 500;
-        }
-        .node-field {
-          color: var(--color-text-secondary);
-          font-size: 0.9em;
-          padding: 2px var(--spacing-xs);
-          background: var(--color-background-subtle);
-          border-radius: var(--border-radius-xs);
-          flex-shrink: 0;
-        }
-        .node-id {
-          color: var(--color-text-tertiary);
-          font-size: 0.9em;
-          font-family: var(--font-family-mono);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-        .node-children {
-          margin-left: var(--spacing-lg);
-          padding-left: var(--spacing-sm);
-          border-left: 1px solid var(--color-border-subtle);
-        }
-        .edit-link {
-          display: none;
-          align-items: center;
-          justify-content: center;
-          padding: var(--spacing-xs);
-          color: var(--color-text-secondary);
-          position: absolute;
-          right: var(--spacing-sm);
-          top: 50%;
-          transform: translateY(-50%);
-          border-radius: var(--border-radius-sm);
-          background: var(--color-background-paper);
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .node-header:hover .edit-link,
-        .node-header.is-hovered .edit-link {
-          display: flex;
-        }
-        .edit-link:hover {
-          color: var(--color-primary);
-          background: var(--color-background-hover);
-          transform: translateY(-50%) scale(1.1);
-        }
-        .edit-link svg {
-          display: block;
-        }
-      `}</style>
     </div>
   );
 };

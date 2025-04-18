@@ -3,6 +3,7 @@ import { browser } from "wxt/browser";
 import { TreeNode } from "./TreeNode";
 import { buildElementTree } from "./utils";
 import type { TreeNode as TreeNodeType } from "./types";
+import "./styles.css";
 
 export const ElementTreePanel: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeNodeType[]>([]);
@@ -104,59 +105,6 @@ export const ElementTreePanel: React.FC = () => {
           </div>
         )}
       </div>
-      <style>{`
-        .element-tree-panel {
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          background-color: var(--color-background-default);
-          color: var(--color-text-primary);
-        }
-        .header {
-          padding: var(--spacing-md);
-          border-bottom: 1px solid var(--color-border-default);
-          background: var(--color-background-paper);
-        }
-        .refresh-button {
-          padding: var(--spacing-sm) var(--spacing-md);
-          border: none;
-          border-radius: var(--border-radius-sm);
-          background: var(--color-primary);
-          color: var(--color-text-on-primary);
-          cursor: pointer;
-          font-weight: 500;
-          box-shadow: var(--shadow-1);
-          transition: all 0.2s ease;
-        }
-        .refresh-button:hover:not(:disabled) {
-          background: var(--color-primary-dark);
-        }
-        .refresh-button:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
-        .content {
-          flex: 1;
-          padding: var(--spacing-md);
-          overflow-y: auto;
-        }
-        .message {
-          padding: var(--spacing-lg);
-          text-align: center;
-          color: var(--color-text-secondary);
-        }
-        .error-message {
-          padding: var(--spacing-lg);
-          text-align: center;
-          color: var(--color-error);
-          background: var(--color-error-light);
-          border-radius: var(--border-radius-md);
-          margin: var(--spacing-md) 0;
-        }
-        .tree-container {
-          padding: var(--spacing-sm);
-        }
-      `}</style>
     </div>
   );
 };
