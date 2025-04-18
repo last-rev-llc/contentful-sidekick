@@ -1,84 +1,26 @@
 {
-  "name": "contentful-sidekick",
-  "version": "2.1.0",
-  "description": "Chrome Extension that enables inline editing for websites created in Contentful",
-  "main": "index.js",
-  "browserslist": [
-    "last 1 Chrome versions"
-  ],
+  "name": "sidekick-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "test": "jest tests/*.test.js",
-    "build:clean": "rimraf dist",
-    "build:chrome": "npm run build:clean && webpack --progress --config webpack/webpack.config.chrome.js",
-    "dev": "npm run build:clean && webpack --watch --progress --config webpack/webpack.config.chrome.js"
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "postinstall": "wxt prepare"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bradtaylorsf/contentful-sidekick.git"
-  },
-  "keywords": [
-    "contentful",
-    "chrome",
-    "cms"
-  ],
-  "author": "Brad Taylor <bradtaylorsf@gmail.com>",
-  "license": "GPL-1.0-or-later",
-  "bugs": {
-    "url": "https://github.com/bradtaylorsf/contentful-sidekick/issues"
-  },
-  "homepage": "https://github.com/bradtaylorsf/contentful-sidekick#readme",
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
-    "@emotion/react": "^11.7.0",
-    "@emotion/styled": "^11.6.0",
-    "@mui/icons-material": "^5.2.1",
-    "@mui/material": "^5.2.3",
-    "@mui/system": "^5.2.3",
-    "common-tags": "^1.8.0",
-    "contentful": "^7.14.6",
-    "contentful-management": "10.0.0",
-    "copy-webpack-plugin": "^4.6.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-loader": "^2.1.1",
-    "imurmurhash": "^0.1.4",
-    "jquery": "^3.5.0",
-    "lodash": "^4.17.19",
-    "react": "^17.0.2",
-    "react-dom": "^16.13.1",
-    "regenerator-runtime": "^0.13.7",
-    "scheduler": "^0.20.2",
-    "use-context-selector": "^1.3.7",
-    "uuid": "^8.3.0",
-    "webpack": "^4.28.4",
-    "webpack-merge": "^4.2.1"
+    "@webext-core/messaging": "^2.2.0",
+    "react": "^19",
+    "react-dom": "^19",
+    "uuid": "^11"
   },
   "devDependencies": {
-    "@babel/core": "^7.11.6",
-    "@babel/plugin-transform-runtime": "^7.17.10",
-    "@babel/preset-env": "^7.11.5",
-    "@babel/preset-react": "^7.10.4",
-    "@last-rev/generator": "^1.0.8",
-    "@types/chrome": "^0.0.231",
-    "babel-eslint": "^10.1.0",
-    "babel-loader": "^8.1.0",
-    "copy-webpack-plugin": "^4.6.0",
-    "css-loader": "^4.2.2",
-    "dotenv": "^8.2.0",
-    "eslint": "^7.2.0",
-    "eslint-config-airbnb": "^18.2.0",
-    "eslint-config-airbnb-base": "^13.2.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-loader": "^2.2.1",
-    "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-jsx-a11y": "^6.3.1",
-    "eslint-plugin-prettier": "^3.1.4",
-    "eslint-plugin-react": "^7.20.6",
-    "eslint-plugin-react-hooks": "^4.0.0",
-    "jest": "^24.5.0",
-    "sinon-chrome": "^2.3.2",
-    "style-loader": "^1.2.1",
-    "webpack": "^4.44.1",
-    "webpack-cli": "^3.2.1",
-    "webpack-merge": "^4.2.2"
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
+    "@wxt-dev/module-react": "^1.1.3",
+    "typescript": "^5.8.3",
+    "wxt": "0.20.0"
   }
 }
