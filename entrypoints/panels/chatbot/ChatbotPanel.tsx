@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { browser } from "wxt/browser";
 import type { Browser } from "#imports";
-import { CHATBOT_CONFIGS, ChatbotConfig } from "./config";
+import { CHATBOT_CONFIGS } from "./configs";
+import { ChatbotConfig } from "./types";
 import { Message, sendMessage, onMessage } from "../../utils/messaging";
 import { sendToChatbot } from "../../utils/chatbot";
 import { getCurrentTabUrl } from "../../utils/getCurrentTabUrl";
@@ -26,7 +27,7 @@ export const ChatbotPanel: React.FC = () => {
     null
   );
   const [currentConfig, setCurrentConfig] = useState<ChatbotConfig>(
-    CHATBOT_CONFIGS.default
+    CHATBOT_CONFIGS.get("default")!
   );
   const [pageContent, setPageContent] = useState<{
     html: string;
@@ -36,17 +37,18 @@ export const ChatbotPanel: React.FC = () => {
   const getChatbotConfig = (url: string): ChatbotConfig => {
     try {
       // Find the first config whose patterns match the URL
-      const matchingConfig = Object.values(CHATBOT_CONFIGS).find((config) =>
-        config.urlPatterns.some((pattern) => new RegExp(pattern).test(url))
+      const matchingConfig = Array.from(CHATBOT_CONFIGS.values()).find(
+        (config) =>
+          config.urlPatterns.some((pattern) => new RegExp(pattern).test(url))
       );
 
       console.log({ url, matchingConfig });
 
       // Return the matching config or default to the 'default' config
-      return matchingConfig || CHATBOT_CONFIGS.default;
+      return matchingConfig || CHATBOT_CONFIGS.get("default")!;
     } catch (error) {
       console.error("[Chatbot] Error matching URL patterns:", error);
-      return CHATBOT_CONFIGS.default;
+      return CHATBOT_CONFIGS.get("default")!;
     }
   };
 
@@ -80,10 +82,7 @@ export const ChatbotPanel: React.FC = () => {
       const config =
         selectedChatflow === "auto"
           ? getChatbotConfig(url)
-          : CHATBOT_CONFIGS[selectedChatflow];
-
-      // const shouldReinitialize =
-      //   currentChatflowId !== config.chatflowid || !window.Chatbot;
+          : CHATBOT_CONFIGS.get(selectedChatflow)!;
 
       const shouldReinitialize = true;
       console.log({
@@ -125,10 +124,6 @@ export const ChatbotPanel: React.FC = () => {
               webContentText: pageContent?.text || "",
               url: url || "",
               additional_instructions: "Always talk like a princess",
-
-              // contentful_content_type_id: pageContent?.text || "",
-              // contentful_content_type_name: pageContent?.text || "",
-              // contentful_content_item_field_name: pageContent?.text || "",
             },
             ...(config.overrideConfig || {}),
           },
@@ -223,17 +218,14 @@ export const ChatbotPanel: React.FC = () => {
     });
 
     // Set up message listener for chatbot messages using the sendToChatbot utility
-    const unsubscribeChatbot = onMessage(
-      "sendToChatbot",
-      async (message: { data: { message: string } }) => {
-        console.log("[Chatbot] Handling sendToChatbot message:", message);
-        try {
-          await sendToChatbot(message.data.message);
-        } catch (error) {
-          console.error("[Chatbot] Failed to send message:", error);
-        }
+    const unsubscribeChatbot = onMessage("sendToChatbot", async (message) => {
+      console.log("[Chatbot] Handling sendToChatbot message:", message);
+      try {
+        await sendToChatbot(message.data);
+      } catch (error) {
+        console.error("[Chatbot] Failed to send message:", error);
       }
-    );
+    });
 
     // Cleanup
     return () => {
@@ -252,8 +244,8 @@ export const ChatbotPanel: React.FC = () => {
   useEffect(() => {
     const newConfig =
       selectedChatflow === "auto"
-        ? CHATBOT_CONFIGS.default
-        : CHATBOT_CONFIGS[selectedChatflow];
+        ? CHATBOT_CONFIGS.get("default")!
+        : CHATBOT_CONFIGS.get(selectedChatflow)!;
     setCurrentConfig(newConfig);
   }, [selectedChatflow]);
 
@@ -271,7 +263,6 @@ export const ChatbotPanel: React.FC = () => {
           backgroundColor: currentConfig.theme.buttonBackgroundColor,
           position: "absolute",
           zIndex: 20000,
-          //width: "calc(100% - 120px)",
           maxWidth: "calc(100% - 120px)",
           height: "50px",
           display: "flex",
@@ -292,7 +283,7 @@ export const ChatbotPanel: React.FC = () => {
           }}
         >
           <option value="auto">Auto (Based on URL)</option>
-          {Object.entries(CHATBOT_CONFIGS).map(([id, config]) => (
+          {Array.from(CHATBOT_CONFIGS.entries()).map(([id, config]) => (
             <option key={id} value={id}>
               {config.title}
             </option>
